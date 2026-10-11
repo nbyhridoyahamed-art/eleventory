@@ -24,7 +24,7 @@ export function useUpdateStoreSeo(storeId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (seo: Record<string, string | null>) => api.put<StoreSeoResponse>("/store-seo", { store_id: storeId, seo }),
+    mutationFn: (seo: Record<string, string | Record<string, unknown> | null>) => api.put<StoreSeoResponse>("/store-seo", { store_id: storeId, seo }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["store-seo", storeId] });
       toast.success("Site-wide SEO updated.");

@@ -28,7 +28,7 @@ export interface ProductFormValues {
   low_stock_threshold?: number | null;
   status?: "draft" | "active" | "archived";
   featured?: boolean;
-  seo?: Record<string, string | null>;
+  seo?: Record<string, string | Record<string, unknown> | null>;
 }
 
 export interface ProductFilters {

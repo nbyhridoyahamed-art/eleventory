@@ -16,7 +16,7 @@ export interface CategoryFormValues {
   image_path?: string | null;
   sort_order?: number;
   status?: "active" | "inactive";
-  seo?: Record<string, string | null>;
+  seo?: Record<string, string | Record<string, unknown> | null>;
 }
 
 export function useCategories(storeId: number | null | undefined) {

@@ -29,6 +29,7 @@ class BlogCategoryResource extends JsonResource
                 'twitter_image' => $this->seoMetadata->twitter_image,
                 'canonical_url' => $this->seoMetadata->canonical_url,
                 'robots' => $this->seoMetadata->robots,
+                'score' => $this->seoMetadata->score,
                 'schema_json' => $this->seoMetadata->schema_json,
             ] : null),
             'created_at' => $this->created_at,

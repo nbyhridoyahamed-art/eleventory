@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CalendarDays, Clock } from "lucide-react";
 
 import { BlogPostCard } from "@/components/storefront/blog-post-card";
+import { PageBanner, type Crumb } from "@/components/storefront/page-banner";
+import { SectionHeading } from "@/components/homepage-blocks/section-heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStorefrontBlogPost } from "@/hooks/use-storefront-blog";
 import { ApiError } from "@/types/api";
@@ -42,59 +45,66 @@ export function BlogPostClient({ slug }: { slug: string }) {
 
   const { post, related_posts: relatedPosts } = data;
 
+  const crumbs: Crumb[] = [
+    { label: "Home", href: "/" },
+    { label: "Blog", href: "/blog" },
+    ...(post.category ? [{ label: post.category.name, href: `/blog/category/${post.category.slug}` }] : []),
+    { label: post.title },
+  ];
+
   return (
-    <article className="mx-auto max-w-3xl space-y-6 px-4 py-8">
-      <header className="space-y-3">
-        {post.category ? (
-          <Link
-            href={`/blog/category/${post.category.slug}`}
-            className="text-xs font-semibold uppercase text-primary hover:underline"
-          >
-            {post.category.name}
-          </Link>
-        ) : null}
-        <h1 className="text-page-title font-semibold text-text-primary">{post.title}</h1>
-        <div className="flex flex-wrap items-center gap-2 text-sm text-text-muted">
-          {post.published_at ? <span>{new Date(post.published_at).toLocaleDateString()}</span> : null}
-          <span>&middot;</span>
-          <span>{post.reading_time_minutes} min read</span>
+    <div>
+      <PageBanner title={post.title} crumbs={crumbs}>
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-text-muted">
+          {post.published_at ? (
+            <span className="flex items-center gap-1">
+              <CalendarDays className="size-3.5" />
+              {new Date(post.published_at).toLocaleDateString()}
+            </span>
+          ) : null}
+          <span className="flex items-center gap-1">
+            <Clock className="size-3.5" />
+            {post.reading_time_minutes} min read
+          </span>
         </div>
+      </PageBanner>
+
+      <article className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+        {post.featured_image_url ? (
+          <div className="overflow-hidden border border-border bg-shop-tint">
+            {/* eslint-disable-next-line @next/next/no-img-element -- remote storage URL, not a static asset */}
+            <img src={post.featured_image_url} alt={post.title} className="w-full object-cover" />
+          </div>
+        ) : null}
+
+        {post.body ? <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: post.body }} /> : null}
+
         {post.tags.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+            <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Tags</span>
             {post.tags.map((tag) => (
               <Link
                 key={tag.slug}
                 href={`/blog/tag/${tag.slug}`}
-                className="rounded-full border border-border px-3 py-1 text-xs text-text-secondary hover:border-primary hover:text-primary"
+                className="border border-border px-3 py-1 text-xs text-text-secondary transition-colors hover:border-shop-accent hover:text-text-primary"
               >
                 {tag.name}
               </Link>
             ))}
           </div>
         ) : null}
-      </header>
-
-      {post.featured_image_url ? (
-        <div className="overflow-hidden rounded-lg bg-border/20">
-          {/* eslint-disable-next-line @next/next/no-img-element -- remote storage URL, not a static asset */}
-          <img src={post.featured_image_url} alt={post.title} className="w-full object-cover" />
-        </div>
-      ) : null}
-
-      {post.body ? (
-        <div className="rich-text-content" dangerouslySetInnerHTML={{ __html: post.body }} />
-      ) : null}
+      </article>
 
       {relatedPosts.length > 0 ? (
-        <div className="space-y-4 border-t border-border pt-6">
-          <h2 className="text-lg font-semibold text-text-primary">Related posts</h2>
-          <div className="grid grid-cols-1 gap-4 tablet:grid-cols-3">
+        <section className="mx-auto max-w-[1400px] space-y-4 px-4 pb-10">
+          <SectionHeading title="Related posts" />
+          <div className="grid grid-cols-1 gap-6 tablet:grid-cols-3">
             {relatedPosts.map((related) => (
               <BlogPostCard key={related.id} post={related} />
             ))}
           </div>
-        </div>
+        </section>
       ) : null}
-    </article>
+    </div>
   );
 }

@@ -6,17 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Delivery\ShipmentDeliveredRequest;
 use App\Http\Requests\Delivery\ShipmentRequest;
 use App\Http\Resources\ShipmentResource;
+use App\Models\Courier;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Shipment;
 use App\Models\StockLevel;
 use App\Models\StockMovement;
+use App\Services\Couriers\CourierApiException;
+use App\Services\Couriers\SteadfastClient;
 use App\Support\ApiResponse;
 use App\Support\InsufficientStockException;
 use App\Support\Money;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ShipmentController extends Controller
 {
@@ -55,62 +59,166 @@ class ShipmentController extends Controller
     {
         $this->authorize('create', Shipment::class);
 
+        $guard = $this->guardDispatch($order);
+
+        if ($guard) {
+            return $guard;
+        }
+
+        try {
+            $shipment = $this->createShipment($order, $request->validated(), $request->user()->id);
+        } catch (InsufficientStockException $exception) {
+            return ApiResponse::error($exception->getMessage(), [], 422);
+        }
+
+        return ApiResponse::success(new ShipmentResource($shipment->load(self::RELATIONS)), 'Shipment created successfully.', status: 201);
+    }
+
+    /**
+     * Hands a shipped order to a courier with an API integration (Steadfast),
+     * stores the consignment it returns and records the shipment.
+     */
+    public function sendToCourier(Request $request, Order $order, SteadfastClient $steadfast): JsonResponse
+    {
+        $this->authorize('create', Shipment::class);
+
+        $data = $request->validate([
+            'courier_id' => ['required', Rule::exists('couriers', 'id')->where('store_id', $order->store_id)],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $courier = Courier::query()->findOrFail($data['courier_id']);
+
+        if ($courier->provider !== 'steadfast' || blank($courier->api_key) || blank($courier->api_secret)) {
+            return ApiResponse::error('This courier is not connected to Steadfast. Add its API key and secret first.', [], 422);
+        }
+
+        $guard = $this->guardDispatch($order);
+
+        if ($guard) {
+            return $guard;
+        }
+
+        $order->loadMissing('items', 'payments');
+
+        $phone = SteadfastClient::normalisePhone((string) $order->shipping_phone);
+
+        if ($phone === null) {
+            return ApiResponse::error('The delivery phone number must be a valid 11-digit Bangladesh mobile number.', [], 422);
+        }
+
+        // Steadfast collects the unpaid balance of cash-on-delivery orders only.
+        $due = $order->payment_method === 'cod'
+            ? max($order->totalAmount() - (int) $order->payments->sum('amount_amount'), 0)
+            : 0;
+
+        try {
+            $consignment = $steadfast->createOrder($courier, [
+                'invoice' => $order->order_number,
+                'recipient_name' => $order->shipping_recipient_name,
+                'recipient_phone' => $phone,
+                'recipient_address' => $order->shipping_address_line,
+                'cod_amount' => (new Money($due, $order->currency_code))->toDecimal(),
+                'note' => $data['note'] ?? $order->notes,
+            ]);
+        } catch (CourierApiException $exception) {
+            return ApiResponse::error($exception->getMessage(), [], 422);
+        }
+
+        try {
+            $shipment = $this->createShipment($order, [
+                'courier_id' => $courier->id,
+                'tracking_number' => $consignment['tracking_code'],
+                'external_id' => $consignment['consignment_id'],
+                'courier_status' => $consignment['status'],
+                'notes' => $data['note'] ?? null,
+            ], $request->user()->id);
+        } catch (InsufficientStockException $exception) {
+            return ApiResponse::error($exception->getMessage(), [], 422);
+        }
+
+        return ApiResponse::success(
+            new ShipmentResource($shipment->load(self::RELATIONS)),
+            'Order sent to Steadfast successfully.',
+            status: 201,
+        );
+    }
+
+    /** Pulls the courier's own delivery status for a Steadfast shipment. */
+    public function syncCourier(Shipment $shipment, SteadfastClient $steadfast): JsonResponse
+    {
+        $this->authorize('update', $shipment);
+
+        $shipment->load('courier');
+
+        if ($shipment->courier?->provider !== 'steadfast' || blank($shipment->external_id)) {
+            return ApiResponse::error('This shipment was not sent through Steadfast.', [], 422);
+        }
+
+        try {
+            $status = $steadfast->status($shipment->courier, $shipment->external_id);
+        } catch (CourierApiException $exception) {
+            return ApiResponse::error($exception->getMessage(), [], 422);
+        }
+
+        $shipment->update(['courier_status' => $status]);
+
+        return ApiResponse::success(new ShipmentResource($shipment->load(self::RELATIONS)), 'Courier status refreshed.');
+    }
+
+    private function guardDispatch(Order $order): ?JsonResponse
+    {
         if ($order->status !== 'shipped') {
             return ApiResponse::error('Only shipped orders can be assigned a shipment.', [], 422);
         }
 
-        // Wave 2: an order can have more than one shipment over its lifetime
-        // — re-dispatching after the prior one failed to arrive. A shipment
-        // that's still active (anything short of failed_delivery/
-        // returned_to_seller) still blocks a second one, same as Wave 1.
+        // An order can have more than one shipment over its lifetime (re-dispatch
+        // after a failed delivery); only a still-active one blocks a new one.
         $previous = $order->shipments()->latest('id')->first();
 
         if ($previous && ! in_array($previous->status, ['failed_delivery', 'returned_to_seller'], true)) {
             return ApiResponse::error('This order already has an active shipment.', [], 422);
         }
 
-        $data = $request->validated();
+        return null;
+    }
 
-        try {
-            $shipment = DB::transaction(function () use ($data, $order, $request, $previous) {
-                $shipment = Shipment::create([
-                    'store_id' => $order->store_id,
-                    'order_id' => $order->id,
-                    'courier_id' => $data['courier_id'],
-                    'tracking_number' => $data['tracking_number'],
-                    'status' => 'pending_pickup',
-                    'delivery_charge_amount' => isset($data['delivery_charge'])
-                        ? Money::fromDecimal($data['delivery_charge'], $order->currency_code)->amountMinor
-                        : $order->shipping_amount,
-                    'notes' => $data['notes'] ?? null,
-                    'created_by' => $request->user()->id,
-                ]);
+    /** @param array<string, mixed> $data */
+    private function createShipment(Order $order, array $data, int $userId): Shipment
+    {
+        $previous = $order->shipments()->latest('id')->first();
 
-                $shipment->statusHistory()->create([
-                    'from_status' => null,
-                    'to_status' => 'pending_pickup',
-                    'created_by' => $request->user()->id,
-                ]);
+        return DB::transaction(function () use ($data, $order, $userId, $previous) {
+            $shipment = Shipment::create([
+                'store_id' => $order->store_id,
+                'order_id' => $order->id,
+                'courier_id' => $data['courier_id'],
+                'tracking_number' => $data['tracking_number'],
+                'external_id' => $data['external_id'] ?? null,
+                'courier_status' => $data['courier_status'] ?? null,
+                'status' => 'pending_pickup',
+                'delivery_charge_amount' => isset($data['delivery_charge'])
+                    ? Money::fromDecimal($data['delivery_charge'], $order->currency_code)->amountMinor
+                    : $order->shipping_amount,
+                'notes' => $data['notes'] ?? null,
+                'created_by' => $userId,
+            ]);
 
-                // A prior shipment that made it all the way back to the
-                // seller already had its stock restocked (see returned()
-                // below) — re-dispatching sends the same physical goods out
-                // again, so stock needs decrementing a second time, the same
-                // real-world effect Order.ship() had originally. A prior
-                // shipment that's only failed_delivery (never physically
-                // returned) never had its stock reversed, so re-dispatching
-                // it needs no stock change — it's already correctly "out".
-                if ($previous?->status === 'returned_to_seller') {
-                    $this->redecrementStock($order, $shipment, $request->user()->id);
-                }
+            $shipment->statusHistory()->create([
+                'from_status' => null,
+                'to_status' => 'pending_pickup',
+                'created_by' => $userId,
+            ]);
 
-                return $shipment;
-            });
-        } catch (InsufficientStockException $exception) {
-            return ApiResponse::error($exception->getMessage(), [], 422);
-        }
+            // A prior shipment that made it all the way back to the seller
+            // already had its stock restocked - re-dispatching sends the same
+            // goods out again, so stock is decremented a second time.
+            if ($previous?->status === 'returned_to_seller') {
+                $this->redecrementStock($order, $shipment, $userId);
+            }
 
-        return ApiResponse::success(new ShipmentResource($shipment->load(self::RELATIONS)), 'Shipment created successfully.', status: 201);
+            return $shipment;
+        });
     }
 
     private function redecrementStock(Order $order, Shipment $shipment, int $userId): void

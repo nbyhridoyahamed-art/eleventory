@@ -24,16 +24,7 @@ class BlogPostDetailResource extends JsonResource
             ])),
             'reading_time_minutes' => $this->readingTimeMinutes(),
             'published_at' => $this->published_at,
-            'seo' => $this->whenLoaded('seoMetadata', fn () => $this->seoMetadata ? [
-                'title' => $this->seoMetadata->title,
-                'description' => $this->seoMetadata->description,
-                'canonical_url' => $this->seoMetadata->canonical_url,
-                'robots' => $this->seoMetadata->robots,
-                'og_title' => $this->seoMetadata->og_title,
-                'og_description' => $this->seoMetadata->og_description,
-                'og_image' => $this->seoMetadata->og_image,
-                'schema_json' => $this->seoMetadata->schema_json,
-            ] : null),
+            'seo' => $this->whenLoaded('seoMetadata', fn () => \App\Support\SeoTemplateResolver::payload($this->resource)),
         ];
     }
 }

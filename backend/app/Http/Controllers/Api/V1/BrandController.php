@@ -22,6 +22,7 @@ class BrandController extends Controller
         $perPage = min((int) $request->integer('per_page', 20), 100);
 
         $brands = Brand::query()
+            ->with('seoMetadata')
             ->withCount('products')
             ->when($request->filled('store_id'), fn ($query) => $query->where('store_id', $request->integer('store_id')))
             ->when($request->filled('search'), fn ($query) => $query->where('name', 'like', '%'.$request->string('search').'%'))

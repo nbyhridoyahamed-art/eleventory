@@ -20,6 +20,7 @@ import { LatestProductsBlock } from "@/components/homepage-blocks/renderers/late
 import { MultiColumnBannerBlock } from "@/components/homepage-blocks/renderers/multi-column-banner-block";
 import { NewsletterBlock } from "@/components/homepage-blocks/renderers/newsletter-block";
 import { ProductCarouselBlock } from "@/components/homepage-blocks/renderers/product-carousel-block";
+import { ProductTabsBlock } from "@/components/homepage-blocks/renderers/product-tabs-block";
 import { PromoBannerBlock } from "@/components/homepage-blocks/renderers/promo-banner-block";
 import { ReviewsBlock } from "@/components/homepage-blocks/renderers/reviews-block";
 import { RichTextBlock } from "@/components/homepage-blocks/renderers/rich-text-block";
@@ -48,6 +49,7 @@ import type {
   MultiBannerSettings,
   NewsletterSettings,
   ProductCarouselSettings,
+  ProductTabsSettings,
   PromoBannerSettings,
   RichTextSettings,
   SpacerSettings,
@@ -101,6 +103,8 @@ function renderContent(block: StorefrontHomepageBlock) {
       return <BrandCarouselBlock settings={block.settings as unknown as AutoManualBrandSettings} brands={block.data.brands ?? []} />;
     case "product_carousel":
       return <ProductCarouselBlock settings={block.settings as unknown as ProductCarouselSettings} products={block.data.products ?? []} />;
+    case "product_tabs":
+      return <ProductTabsBlock settings={block.settings as unknown as ProductTabsSettings} />;
     case "flash_sale":
       return <FlashSaleBlock settings={block.settings as unknown as FlashSaleSettings} items={block.data.items ?? []} />;
     case "countdown":

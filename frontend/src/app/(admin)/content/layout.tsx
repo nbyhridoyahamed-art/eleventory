@@ -7,11 +7,13 @@ import { cn } from "@/lib/utils";
 import { can } from "@/lib/permissions";
 import { useCurrentUser } from "@/hooks/use-auth";
 
-const TABS = [
+// `match` is the path prefix that keeps a tab highlighted when its link goes to a
+// sub-page (the blog section opens on its first sub-tab). SEO has its own
+// sidebar entry and lives at /seo, not here.
+const TABS: { label: string; href: string; permission: string; match?: string }[] = [
   { label: "Pages", href: "/content/pages", permission: "pages.manage" },
   { label: "Homepage", href: "/content/homepage", permission: "builder.view" },
-  { label: "Blog", href: "/content/blog/posts", permission: "blog.manage" },
-  { label: "SEO", href: "/content/seo/redirects", permission: "seo.manage" },
+  { label: "Blog", href: "/content/blog/posts", permission: "blog.manage", match: "/content/blog" },
 ];
 
 /**
@@ -36,7 +38,7 @@ export default function ContentLayout({ children }: { children: React.ReactNode 
         <div className="border-b border-border">
           <nav aria-label="Content sections" className="flex gap-1">
             {visibleTabs.map((tab) => {
-              const isActive = pathname.startsWith(tab.href);
+              const isActive = pathname.startsWith(tab.match ?? tab.href);
               return (
                 <Link
                   key={tab.href}

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Courier\CourierRequest;
 use App\Http\Resources\CourierResource;
 use App\Models\Courier;
+use App\Services\Couriers\CourierApiException;
+use App\Services\Couriers\SteadfastClient;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,6 +45,7 @@ class CourierController extends Controller
 
         $data = $request->validated();
         $data['status'] ??= 'active';
+        $data['provider'] ??= 'manual';
 
         $courier = Courier::create($data);
 
@@ -60,9 +63,35 @@ class CourierController extends Controller
     {
         $this->authorize('update', $courier);
 
-        $courier->update($request->validated());
+        // A blank key/secret field means "keep what is stored".
+        $data = array_filter($request->validated(), fn ($value, $key) => ! in_array($key, ['api_key', 'api_secret'], true) || filled($value), ARRAY_FILTER_USE_BOTH);
+
+        if (($data['provider'] ?? $courier->provider) === 'manual') {
+            $data['api_key'] = null;
+            $data['api_secret'] = null;
+        }
+
+        $courier->update($data);
 
         return ApiResponse::success(new CourierResource($courier), 'Courier updated successfully.');
+    }
+
+    /** Verifies the saved Steadfast credentials by reading the account balance. */
+    public function testConnection(Courier $courier, SteadfastClient $steadfast): JsonResponse
+    {
+        $this->authorize('update', $courier);
+
+        if ($courier->provider !== 'steadfast' || blank($courier->api_key)) {
+            return ApiResponse::error('This courier is not connected to Steadfast.', [], 422);
+        }
+
+        try {
+            $balance = $steadfast->balance($courier);
+        } catch (CourierApiException $exception) {
+            return ApiResponse::error($exception->getMessage(), [], 422);
+        }
+
+        return ApiResponse::success(['balance' => $balance], 'Connected to Steadfast.');
     }
 
     public function destroy(Courier $courier): JsonResponse

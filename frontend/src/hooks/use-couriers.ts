@@ -15,6 +15,10 @@ export interface CourierFormValues {
   phone?: string | null;
   tracking_url_template?: string | null;
   status?: "active" | "inactive";
+  provider?: "manual" | "steadfast";
+  /** Blank on edit keeps the stored value. */
+  api_key?: string | null;
+  api_secret?: string | null;
 }
 
 export function useCouriers(storeId: number | null | undefined, page: number, search: string) {
@@ -86,5 +90,13 @@ export function useDeleteCourier() {
     onError: (error) => {
       toast.error(error instanceof ApiError ? error.message : "Could not delete courier.");
     },
+  });
+}
+
+export function useTestCourierConnection(id: number) {
+  return useMutation({
+    mutationFn: () => api.post<{ balance: number }>(`/couriers/${id}/test-connection`),
+    onSuccess: ({ balance }) => toast.success(`Connected to Steadfast. Balance: ৳${balance.toLocaleString("en-US")}`),
+    onError: (error) => toast.error(error instanceof ApiError ? error.message : "Could not reach Steadfast."),
   });
 }

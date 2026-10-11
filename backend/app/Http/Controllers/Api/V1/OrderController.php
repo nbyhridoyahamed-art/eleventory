@@ -24,7 +24,7 @@ use App\Support\StoreCreditResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
+use App\Support\SafeNotification;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller
@@ -126,7 +126,7 @@ class OrderController extends Controller
             return ApiResponse::error($exception->getMessage(), [], 422);
         }
 
-        Notification::send($order->customer, new OrderPlacedNotification($order));
+        SafeNotification::send($order->customer, new OrderPlacedNotification($order));
 
         return ApiResponse::success(new OrderResource($order->load(self::RELATIONS)), 'Order created successfully.', status: 201);
     }
@@ -220,7 +220,7 @@ class OrderController extends Controller
             ]);
         });
 
-        Notification::send($order->customer, new OrderStatusChangedNotification($order));
+        SafeNotification::send($order->customer, new OrderStatusChangedNotification($order));
 
         return ApiResponse::success(new OrderResource($order->load(self::RELATIONS)), 'Order moved to processing.');
     }
@@ -286,7 +286,7 @@ class OrderController extends Controller
             return ApiResponse::error($exception->getMessage(), [], 422);
         }
 
-        Notification::send($order->customer, new OrderStatusChangedNotification($order));
+        SafeNotification::send($order->customer, new OrderStatusChangedNotification($order));
 
         return ApiResponse::success(new OrderResource($order->load(self::RELATIONS)), 'Order shipped successfully.');
     }
@@ -312,7 +312,7 @@ class OrderController extends Controller
             ]);
         });
 
-        Notification::send($order->customer, new OrderStatusChangedNotification($order));
+        SafeNotification::send($order->customer, new OrderStatusChangedNotification($order));
 
         return ApiResponse::success(new OrderResource($order->load(self::RELATIONS)), 'Order marked as delivered.');
     }
@@ -342,7 +342,7 @@ class OrderController extends Controller
             ]);
         });
 
-        Notification::send($order->customer, new OrderStatusChangedNotification($order));
+        SafeNotification::send($order->customer, new OrderStatusChangedNotification($order));
 
         return ApiResponse::success(new OrderResource($order->load(self::RELATIONS)), 'Order cancelled successfully.');
     }

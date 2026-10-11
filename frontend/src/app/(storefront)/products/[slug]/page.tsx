@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { breadcrumbJsonLd, JsonLd, productJsonLd } from "@/lib/json-ld";
+import { breadcrumbJsonLd, FaqJsonLd, disabledSchemas, JsonLd, productJsonLd } from "@/lib/json-ld";
 import { storefrontApi } from "@/lib/storefront-api";
 import { buildStorefrontMetadata, resolveRedirectOrNotFound } from "@/lib/storefront-seo";
 import { ApiError } from "@/types/api";
@@ -49,6 +49,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/products
   return (
     <>
       <JsonLd
+        disabled={disabledSchemas(product.seo)}
         data={productJsonLd({
           name: product.name,
           description: product.description,
@@ -61,12 +62,14 @@ export default async function ProductDetailPage({ params }: PageProps<"/products
         })}
       />
       <JsonLd
+        disabled={disabledSchemas(product.seo)}
         data={breadcrumbJsonLd([
           { name: "Home", url: SITE_URL },
           ...(product.category ? [{ name: product.category.name, url: `${SITE_URL}/category/${product.category.slug}` }] : []),
           { name: product.name, url },
         ])}
       />
+      <FaqJsonLd seo={product.seo} />
       <ProductDetailClient slug={slug} />
     </>
   );

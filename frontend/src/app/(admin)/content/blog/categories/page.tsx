@@ -10,6 +10,8 @@ import { useBlogCategories, useDeleteBlogCategory } from "@/hooks/use-blog-categ
 import { PermissionDenied } from "@/components/permission-denied";
 import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
+import { SeoScoreBadge } from "@/components/shared/seo-score-badge";
+import { ViewOnSiteLink } from "@/components/shared/view-on-site-link";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +37,23 @@ export default function BlogCategoriesPage() {
 
   const columns: DataTableColumn<BlogCategory>[] = [
     { id: "name", header: "Name", cell: (category) => <span className="font-medium">{category.name}</span> },
+    {
+      id: "seo",
+      header: "SEO",
+      cell: (category) => <SeoScoreBadge seo={category.seo} />,
+    },
     { id: "slug", header: "Slug", cell: (category) => category.slug },
+    {
+      id: "view",
+      header: "View",
+      cell: (category) => (
+        <ViewOnSiteLink
+          href={`/blog/category/${category.slug}`}
+          visible={true}
+          label={category.name}
+        />
+      ),
+    },
     { id: "posts", header: "Posts", cell: (category) => category.posts_count ?? 0 },
     {
       id: "actions",

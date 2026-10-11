@@ -11,6 +11,8 @@ import { PermissionDenied } from "@/components/permission-denied";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
+import { SeoScoreBadge } from "@/components/shared/seo-score-badge";
+import { ViewOnSiteLink } from "@/components/shared/view-on-site-link";
 import {
   Dialog,
   DialogContent,
@@ -54,7 +56,24 @@ export default function BrandsPage() {
         </div>
       ),
     },
+    {
+      id: "seo",
+      header: "SEO",
+      cell: (brand) => <SeoScoreBadge seo={brand.seo} />,
+    },
     { id: "slug", header: "Slug", cell: (brand) => brand.slug },
+    {
+      id: "view",
+      header: "View",
+      cell: (brand) => (
+        <ViewOnSiteLink
+          href={`/brand/${brand.slug}`}
+          visible={brand.status === "active"}
+          label={brand.name}
+          hiddenReason="This brand is inactive, so it isn't on the storefront"
+        />
+      ),
+    },
     { id: "products", header: "Products", cell: (brand) => brand.products_count ?? 0 },
     {
       id: "status",

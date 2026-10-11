@@ -103,7 +103,7 @@ export function BuilderCanvas({
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-border/10 p-6">
+    <div className="h-full min-h-0 overflow-y-auto overscroll-contain bg-border/10 p-6">
       <div className="mx-auto space-y-4 transition-[max-width]" style={{ maxWidth: FRAME_WIDTH[activeBreakpoint] }}>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>

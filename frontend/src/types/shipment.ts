@@ -34,7 +34,9 @@ export interface Shipment {
     shipping_phone: string;
     shipping_address_line: string;
   };
-  courier: { id: number; name: string };
+  courier: { id: number; name: string; provider?: string };
+  external_id?: string | null;
+  courier_status?: string | null;
   tracking_url?: string;
   status_history: ShipmentStatusHistoryEntry[];
   created_by: string | null;

@@ -1,5 +1,6 @@
-import { CreditCard, Headset, Lock, RotateCcw, ShieldCheck, Truck } from "lucide-react";
+import { Banknote, BadgeCheck, CreditCard, Headset, Lock, RotateCcw, ShieldCheck, Tag, Truck } from "lucide-react";
 
+import { SectionHeading } from "@/components/homepage-blocks/section-heading";
 import type { TrustBadgesSettings } from "@/types/homepage-block";
 
 const ICONS: Record<string, typeof Truck> = {
@@ -9,25 +10,29 @@ const ICONS: Record<string, typeof Truck> = {
   "credit-card": CreditCard,
   "rotate-ccw": RotateCcw,
   headset: Headset,
+  banknote: Banknote,
+  "badge-check": BadgeCheck,
+  tag: Tag,
 };
 
+/** A single-row service strip (delivery, returns, support ...), separated by hairlines. Wraps by the block's own width. */
 export function TrustBadgesBlock({ settings }: { settings: TrustBadgesSettings }) {
   if (settings.items.length === 0) return null;
 
   return (
-    <section className="space-y-4">
-      {settings.heading ? <h2 className="text-section font-semibold text-text-primary">{settings.heading}</h2> : null}
-      <div className="flex flex-wrap justify-center gap-6">
+    <section className="@container space-y-4">
+      {settings.heading ? <SectionHeading title={settings.heading} /> : null}
+      <ul className="grid grid-cols-2 border-l border-t border-border bg-surface @xl:grid-cols-3 @4xl:[grid-template-columns:repeat(var(--cols),minmax(0,1fr))]" style={{ "--cols": settings.items.length } as React.CSSProperties}>
         {settings.items.map((item, index) => {
           const Icon = ICONS[item.icon] ?? ShieldCheck;
           return (
-            <div key={index} className="flex items-center gap-2">
-              <Icon className="size-6 text-primary" />
-              <span className="text-sm font-medium text-text-primary">{item.label}</span>
-            </div>
+            <li key={index} className="flex items-center gap-3 border-b border-r border-border px-4 py-4">
+              <Icon className="size-7 shrink-0 text-shop-ink" aria-hidden="true" />
+              <span className="text-[13px] font-medium leading-snug text-text-primary">{item.label}</span>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </section>
   );
 }

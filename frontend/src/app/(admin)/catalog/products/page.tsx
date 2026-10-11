@@ -14,6 +14,8 @@ import { PermissionDenied } from "@/components/permission-denied";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
+import { SeoScoreBadge } from "@/components/shared/seo-score-badge";
+import { ViewOnSiteLink } from "@/components/shared/view-on-site-link";
 import {
   Dialog,
   DialogContent,
@@ -88,10 +90,28 @@ export default function ProductsPage() {
         );
       },
     },
+    {
+      id: "seo",
+      header: "SEO",
+      cell: (product) => <SeoScoreBadge seo={product.seo} />,
+    },
     { id: "category", header: "Category", cell: (product) => product.category?.name ?? "—" },
+    {
+      id: "view",
+      header: "View",
+      cell: (product) => (
+        <ViewOnSiteLink
+          href={`/products/${product.slug}`}
+          visible={product.status === "active"}
+          label={product.name}
+          hiddenReason="This product isn't active, so it isn't on the storefront"
+        />
+      ),
+    },
     {
       id: "price",
       header: "Price",
+      className: "whitespace-nowrap",
       cell: (product) => (
         <div>
           {product.sale_price ? (

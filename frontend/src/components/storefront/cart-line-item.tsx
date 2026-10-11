@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Minus, Package, Plus, X } from "lucide-react";
 
 import { formatMoney } from "@/lib/money";
-import { Button } from "@/components/ui/button";
 import { useCartStore, type CartItem } from "@/stores/cart-store";
 
 export function CartLineItem({ item }: { item: CartItem }) {
@@ -11,19 +11,27 @@ export function CartLineItem({ item }: { item: CartItem }) {
 
   return (
     <div className="flex gap-3 py-3">
-      <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-border/20">
+      <Link
+        href={`/products/${item.slug}`}
+        className="flex size-16 shrink-0 items-center justify-center overflow-hidden border border-border bg-white p-1"
+      >
         {item.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- remote storage URL, not a static asset
-          <img src={item.imageUrl} alt={item.name} className="size-full object-cover" />
+          <img src={item.imageUrl} alt={item.name} className="max-h-full max-w-full object-contain" />
         ) : (
           <Package className="size-6 text-text-muted" />
         )}
-      </div>
+      </Link>
 
-      <div className="flex flex-1 flex-col gap-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-sm font-medium text-text-primary">{item.name}</p>
+          <div className="min-w-0">
+            <Link
+              href={`/products/${item.slug}`}
+              className="line-clamp-2 text-sm font-medium text-text-primary hover:text-shop-ink"
+            >
+              {item.name}
+            </Link>
             {item.variantLabel ? <p className="text-xs text-text-muted">{item.variantLabel}</p> : null}
           </div>
           <button
@@ -37,30 +45,26 @@ export function CartLineItem({ item }: { item: CartItem }) {
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <Button
+          <div className="inline-flex items-center border border-border">
+            <button
               type="button"
-              variant="outline"
-              size="icon"
-              className="size-7"
               aria-label="Decrease quantity"
               onClick={() => updateQuantity(item.productId, item.variantId, item.quantity - 1)}
+              className="flex size-7 items-center justify-center text-text-secondary hover:bg-border/40"
             >
               <Minus className="size-3" />
-            </Button>
+            </button>
             <span className="w-8 text-center text-sm">{item.quantity}</span>
-            <Button
+            <button
               type="button"
-              variant="outline"
-              size="icon"
-              className="size-7"
               aria-label="Increase quantity"
               onClick={() => updateQuantity(item.productId, item.variantId, item.quantity + 1)}
+              className="flex size-7 items-center justify-center text-text-secondary hover:bg-border/40"
             >
               <Plus className="size-3" />
-            </Button>
+            </button>
           </div>
-          <span className="text-sm font-semibold text-text-primary">
+          <span className="text-sm font-semibold text-shop-ink">
             {formatMoney(item.unitPrice * item.quantity, item.currencyCode)}
           </span>
         </div>

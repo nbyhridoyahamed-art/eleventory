@@ -1,110 +1,63 @@
-"use client";
+import type { Metadata } from "next";
 
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Newspaper, Search } from "lucide-react";
+import { blogJsonLd, breadcrumbJsonLd, JsonLd } from "@/lib/json-ld";
+import { getPublicSeo } from "@/lib/seo-settings";
+import { storefrontApi } from "@/lib/storefront-api";
+import type { StorefrontBlogPostSummary } from "@/types/storefront";
+import { BlogIndexClient } from "./blog-index-client";
 
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { BlogPostCard } from "@/components/storefront/blog-post-card";
-import { StorefrontPagination } from "@/components/storefront/storefront-pagination";
-import { useStorefrontBlogPosts } from "@/hooks/use-storefront-blog";
+/**
+ * The blog landing page's title, description and image come from the SEO
+ * section (Site & Homepage tab), so it can be optimised separately from the
+ * individual posts. Blank fields fall back to "Blog | <store>".
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const { settings, storeName, siteUrl } = await getPublicSeo();
+  const blog = settings.blog;
 
-function BlogGridSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-4 tablet:grid-cols-2 desktop:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, index) => (
-        <Skeleton key={index} className="aspect-[4/3] w-full" />
-      ))}
-    </div>
-  );
-}
+  const title = blog.title || `Blog | ${storeName}`;
+  const description = blog.description || `News, guides and updates from ${storeName}.`;
+  const image = blog.og_image || settings.site.default_og_image || undefined;
+  const url = `${siteUrl}/blog`;
 
-function BlogPageContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const search = searchParams.get("search") ?? "";
-  const page = Number(searchParams.get("page") ?? "1");
-  const [searchInput, setSearchInput] = useState(search);
-
-  const { data, isLoading } = useStorefrontBlogPosts(page, search || undefined);
-  const posts = data?.data ?? [];
-
-  function updateParam(key: string, value: string | null) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    if (key !== "page") {
-      params.delete("page");
-    }
-    router.push(`/blog?${params.toString()}`);
-  }
-
-  const submitSearch = (event: React.FormEvent) => {
-    event.preventDefault();
-    updateParam("search", searchInput.trim() || null);
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: url },
+    openGraph: { title, description, url, type: "website", images: image ? [image] : undefined },
+    twitter: { card: "summary_large_image", title, description, images: image ? [image] : undefined },
   };
-
-  return (
-    <div className="mx-auto max-w-[1100px] space-y-6 px-4 py-8">
-      <div className="space-y-2">
-        <h1 className="text-page-title font-semibold text-text-primary">
-          {search ? `Search results for "${search}"` : "Blog"}
-        </h1>
-        <p className="text-text-secondary">News, guides, and updates from our team.</p>
-      </div>
-
-      <form onSubmit={submitSearch} className="flex max-w-sm gap-2">
-        <Input
-          type="search"
-          placeholder="Search posts..."
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          aria-label="Search posts"
-        />
-        <Button type="submit" variant="secondary" size="icon" aria-label="Search">
-          <Search className="size-4" />
-        </Button>
-      </form>
-
-      {isLoading ? (
-        <BlogGridSkeleton />
-      ) : posts.length === 0 ? (
-        <EmptyState icon={<Newspaper />} title="No posts found" description="Try a different search." />
-      ) : (
-        <>
-          <div className="grid grid-cols-1 gap-4 tablet:grid-cols-2 desktop:grid-cols-3">
-            {posts.map((post) => (
-              <BlogPostCard key={post.id} post={post} />
-            ))}
-          </div>
-          <StorefrontPagination
-            meta={data?.meta}
-            itemLabel="posts"
-            onPageChange={(newPage) => updateParam("page", String(newPage))}
-          />
-        </>
-      )}
-    </div>
-  );
 }
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const { settings, storeName, siteUrl } = await getPublicSeo();
+  const posts = await storefrontApi
+    .get<StorefrontBlogPostSummary[]>("/storefront/blog?per_page=10")
+    .catch(() => [] as StorefrontBlogPostSummary[]);
+
+  const blog = settings.blog;
+
   return (
-    <Suspense
-      fallback={
-        <div className="mx-auto max-w-[1100px] px-4 py-8">
-          <BlogGridSkeleton />
-        </div>
-      }
-    >
-      <BlogPageContent />
-    </Suspense>
+    <>
+      <JsonLd
+        data={blogJsonLd({
+          name: blog.title || `${storeName} Blog`,
+          description: blog.description,
+          url: `${siteUrl}/blog`,
+          posts: posts.map((post) => ({
+            title: post.title,
+            url: `${siteUrl}/blog/${post.slug}`,
+            datePublished: post.published_at,
+          })),
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", url: siteUrl },
+          { name: "Blog", url: `${siteUrl}/blog` },
+        ])}
+      />
+      <BlogIndexClient />
+    </>
   );
 }

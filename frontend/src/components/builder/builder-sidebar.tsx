@@ -28,8 +28,8 @@ export function BuilderSidebar({ blocks, selectedId, onSelectBlock, onAddBlock, 
   const [tab, setTab] = useState<SidebarTab>("Blocks");
 
   return (
-    <div className="flex h-full flex-col border-r border-border">
-      <div className="flex gap-1 border-b border-border p-2">
+    <div className="flex h-full min-h-0 flex-col border-r border-border">
+      <div className="flex shrink-0 gap-1 border-b border-border p-2">
         {TABS.map((t) => (
           <button
             key={t}
@@ -45,7 +45,7 @@ export function BuilderSidebar({ blocks, selectedId, onSelectBlock, onAddBlock, 
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
         {tab === "Blocks" ? <BlockPicker onAddBlock={onAddBlock} disabled={!canEdit} /> : null}
         {tab === "Layers" ? <LayersList blocks={blocks} selectedId={selectedId} onSelect={onSelectBlock} /> : null}
         {tab === "Saved" ? <SavedSectionsList storeId={storeId} disabled={!canEdit} /> : null}

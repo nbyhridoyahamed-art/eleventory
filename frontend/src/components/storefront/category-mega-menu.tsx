@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Menu } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +12,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useStorefrontCategories } from "@/hooks/use-storefront-catalog";
 
-export function CategoryMegaMenu() {
+export function CategoryMegaMenu({
+  label = "Categories",
+  triggerClassName,
+  showMenuIcon = false,
+}: {
+  label?: string;
+  triggerClassName?: string;
+  showMenuIcon?: boolean;
+}) {
   const { data: categories } = useStorefrontCategories();
 
   if (!categories || categories.length === 0) {
@@ -20,11 +29,17 @@ export function CategoryMegaMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-text-primary outline-none hover:text-primary">
-        Categories
-        <ChevronDown className="size-4" />
+      <DropdownMenuTrigger
+        className={cn(
+          "flex items-center gap-1 text-sm font-medium text-text-primary outline-none hover:text-primary",
+          triggerClassName,
+        )}
+      >
+        {showMenuIcon ? <Menu className="size-4" /> : null}
+        {label}
+        <ChevronDown className="ml-auto size-4" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[min(90vw,720px)] p-4">
+      <DropdownMenuContent align="start" className="max-h-[70vh] w-[min(90vw,960px)] overflow-y-auto p-4">
         <div className="grid grid-cols-2 gap-6 tablet:grid-cols-3 desktop:grid-cols-4">
           {categories.map((category) => (
             <div key={category.id} className="space-y-2">

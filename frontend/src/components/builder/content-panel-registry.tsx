@@ -27,6 +27,7 @@ import { SpacerPanel } from "@/components/builder/panels/spacer-panel";
 import { StatisticsPanel } from "@/components/builder/panels/statistics-panel";
 import { TestimonialsPanel } from "@/components/builder/panels/testimonials-panel";
 import { TrustBadgesPanel } from "@/components/builder/panels/trust-badges-panel";
+import { ProductTabsPanel } from "@/components/builder/panels/product-tabs-panel";
 import { VideoPanel } from "@/components/builder/panels/video-panel";
 import type { ContentPanelProps } from "@/components/builder/panel-types";
 import type { HomepageBlockType } from "@/types/homepage-block";
@@ -52,6 +53,7 @@ export const CONTENT_PANELS: Partial<Record<HomepageBlockType, ComponentType<Con
   category_carousel: CategoryCarouselPanel,
   brand_carousel: BrandCarouselPanel,
   product_carousel: ProductCarouselPanel,
+  product_tabs: ProductTabsPanel,
   flash_sale: FlashSalePanel,
   countdown: CountdownPanel,
   promo_banner: PromoBannerPanel,

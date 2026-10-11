@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CodSettlementController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\CourierController;
+use App\Http\Controllers\Api\V1\NotificationSettingController;
 use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\CustomerAddressController;
 use App\Http\Controllers\Api\V1\CustomerController;
@@ -61,9 +62,12 @@ use App\Http\Controllers\Api\V1\Storefront\DeliveryZoneController as StorefrontD
 use App\Http\Controllers\Api\V1\Storefront\HomepageController as StorefrontHomepageController;
 use App\Http\Controllers\Api\V1\Storefront\NewsletterController as StorefrontNewsletterController;
 use App\Http\Controllers\Api\V1\Storefront\PageController as StorefrontPageController;
+use App\Http\Controllers\Api\V1\Storefront\SeoSettingController as StorefrontSeoSettingController;
 use App\Http\Controllers\Api\V1\Storefront\ProductController as StorefrontProductController;
 use App\Http\Controllers\Api\V1\Storefront\RedirectController as StorefrontRedirectController;
 use App\Http\Controllers\Api\V1\Storefront\StoreController as StorefrontStoreController;
+use App\Http\Controllers\Api\V1\SeoSettingController;
+use App\Http\Controllers\Api\V1\SeoToolsController;
 use App\Http\Controllers\Api\V1\StoreSeoController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\SupplierPaymentController;
@@ -76,7 +80,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->middleware('throttle:6,1');
-        Route::post('login', [AuthController::class, 'login'])->middleware('throttle:6,1');
+        Route::post('login', [AuthController::class, 'login']);
         Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:6,1');
         Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:6,1');
 
@@ -91,7 +95,11 @@ Route::prefix('v1')->group(function () {
     // real multi-tenant domain routing is a documented Wave 2 concern.
     Route::prefix('storefront')->group(function () {
         Route::get('store', [StorefrontStoreController::class, 'show']);
+        Route::get('seo-settings', [StorefrontSeoSettingController::class, 'show']);
+        Route::post('seo/not-found', [StorefrontSeoSettingController::class, 'notFound'])->middleware('throttle:600,1');
         Route::get('products', [StorefrontProductController::class, 'index']);
+        Route::get('products/facets', [StorefrontProductController::class, 'facets']);
+        Route::get('search/suggestions', [StorefrontProductController::class, 'suggestions'])->middleware('throttle:120,1');
         Route::get('products/{slug}/reviews', [StorefrontProductController::class, 'reviews']);
         Route::get('products/{slug}', [StorefrontProductController::class, 'show']);
         Route::get('categories', [StorefrontCategoryController::class, 'index']);
@@ -174,6 +182,12 @@ Route::prefix('v1')->group(function () {
 
         // Always the current staff user's own inbox — no permission to
         // gate beyond being authenticated, same reasoning as auth/me.
+        Route::get('notification-settings', [NotificationSettingController::class, 'show']);
+        Route::put('notification-settings', [NotificationSettingController::class, 'update']);
+        Route::get('notification-settings/sms-balance', [NotificationSettingController::class, 'smsBalance']);
+        Route::post('notification-settings/test-sms', [NotificationSettingController::class, 'testSms'])->middleware('throttle:10,1');
+        Route::post('notification-settings/test-email', [NotificationSettingController::class, 'testEmail'])->middleware('throttle:10,1');
+        Route::get('notification-logs', [NotificationSettingController::class, 'logs']);
         Route::get('notifications', [NotificationController::class, 'index']);
         Route::post('notifications/read-all', [NotificationController::class, 'markAllRead']);
         Route::post('notifications/{id}/read', [NotificationController::class, 'markRead']);
@@ -201,6 +215,18 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('seo-templates', SeoTemplateController::class);
         Route::get('store-seo', [StoreSeoController::class, 'show']);
         Route::put('store-seo', [StoreSeoController::class, 'update']);
+        // Technical SEO: robots.txt, sitemap, schema, verification, analytics, homepage + blog meta.
+        Route::get('seo/settings', [SeoSettingController::class, 'show']);
+        Route::put('seo/settings', [SeoSettingController::class, 'update']);
+        Route::get('seo/audit', [SeoSettingController::class, 'audit']);
+        Route::post('seo/generate', [SeoSettingController::class, 'generate']);
+        Route::post('seo/analyze', [SeoToolsController::class, 'analyze'])->middleware('throttle:240,1');
+        Route::post('seo/rescore', [SeoToolsController::class, 'rescore']);
+        Route::get('seo/404', [SeoToolsController::class, 'notFoundIndex']);
+        Route::delete('seo/404', [SeoToolsController::class, 'notFoundClear']);
+        Route::delete('seo/404/{log}', [SeoToolsController::class, 'notFoundDestroy']);
+        Route::post('seo/indexnow/key', [SeoToolsController::class, 'indexNowKey']);
+        Route::post('seo/indexnow/submit', [SeoToolsController::class, 'indexNowSubmit']);
 
         // Registered before the apiResource — otherwise its GET
         // homepage-blocks/{homepage_block} route would swallow "preview"
@@ -307,9 +333,12 @@ Route::prefix('v1')->group(function () {
 
         Route::apiResource('coupons', CouponController::class);
 
+        Route::post('couriers/{courier}/test-connection', [CourierController::class, 'testConnection']);
         Route::apiResource('couriers', CourierController::class);
 
         Route::post('orders/{order}/shipments', [ShipmentController::class, 'store']);
+        Route::post('orders/{order}/send-to-courier', [ShipmentController::class, 'sendToCourier']);
+        Route::post('shipments/{shipment}/sync-courier', [ShipmentController::class, 'syncCourier']);
         Route::get('shipments', [ShipmentController::class, 'index']);
         Route::get('shipments/{shipment}', [ShipmentController::class, 'show']);
         Route::post('shipments/{shipment}/picked-up', [ShipmentController::class, 'pickedUp']);

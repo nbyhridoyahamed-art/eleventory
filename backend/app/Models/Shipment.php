@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 #[Fillable([
     'store_id', 'order_id', 'courier_id', 'tracking_number', 'status',
     'delivery_charge_amount', 'cod_amount_collected', 'cod_settled',
-    'delivered_at', 'notes', 'created_by',
+    'delivered_at', 'notes', 'created_by', 'external_id', 'courier_status',
 ])]
 class Shipment extends Model
 {

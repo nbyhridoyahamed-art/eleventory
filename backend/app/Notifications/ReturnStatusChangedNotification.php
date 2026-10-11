@@ -3,7 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\OrderReturn;
-use App\Notifications\Channels\SmsChannel;
+use App\Support\NotificationRouter;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -19,25 +19,42 @@ class ReturnStatusChangedNotification extends Notification
 
     public function __construct(private readonly OrderReturn $orderReturn) {}
 
+    public function eventKey(): string
+    {
+        return 'return_'.$this->orderReturn->status;
+    }
+
     public function via(object $notifiable): array
     {
-        return array_filter([
-            $notifiable->email ? 'mail' : null,
-            SmsChannel::class,
-        ]);
+        return NotificationRouter::channels($notifiable, $this->eventKey());
+    }
+
+    /** @return array<string, string> */
+    private function vars(object $notifiable): array
+    {
+        return [
+            'customer' => (string) $notifiable->name,
+            'return_number' => $this->orderReturn->return_number,
+            'order_number' => (string) ($this->orderReturn->order?->order_number ?? ''),
+            'store' => (string) ($this->orderReturn->order?->store?->name ?? ''),
+            'status' => $this->statusText(),
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->subject("Return Update - {$this->orderReturn->return_number}")
-            ->greeting("Hi {$notifiable->name},")
-            ->line("Your return {$this->orderReturn->return_number} for order {$this->orderReturn->order->order_number} {$this->statusText()}.");
+        return NotificationRouter::mail(
+            $notifiable,
+            $this->eventKey(),
+            $this->vars($notifiable),
+            'Return Update - {return_number}',
+            'Your return {return_number} for order {order_number} {status}.',
+        );
     }
 
     public function toSms(object $notifiable): string
     {
-        return "Return {$this->orderReturn->return_number} {$this->statusText()}.";
+        return NotificationRouter::sms($notifiable, $this->eventKey(), $this->vars($notifiable), 'Return {return_number} {status}.');
     }
 
     private function statusText(): string

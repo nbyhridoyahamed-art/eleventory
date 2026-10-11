@@ -21,6 +21,15 @@
   --color-text-secondary: var(--color-text-secondary);
   --color-text-muted: var(--color-text-muted);
 
+  --color-shop-accent: var(--color-shop-accent);
+  --color-shop-accent-hover: var(--color-shop-accent-hover);
+  --color-shop-on-accent: var(--color-shop-on-accent);
+  --color-shop-ink: var(--color-shop-ink);
+  --color-shop-tint: var(--color-shop-tint);
+  --color-shop-nav: var(--color-shop-nav);
+  --color-shop-on-nav: var(--color-shop-on-nav);
+  --color-shop-on-nav-muted: var(--color-shop-on-nav-muted);
+
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);

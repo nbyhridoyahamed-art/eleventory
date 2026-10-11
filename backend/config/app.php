@@ -55,6 +55,16 @@ return [
     'url' => env('APP_URL', 'http://localhost'),
 
     /*
+    | The public storefront's origin (the Next.js app). The API uses it where it
+    | has to name storefront URLs itself: IndexNow submissions and deciding which
+    | links in content are "internal" for SEO analysis.
+    */
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+
+    // Shared secret the storefront server sends so its page-render API calls skip the per-IP rate limit.
+    'ssr_key' => env('STOREFRONT_SSR_KEY'),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------

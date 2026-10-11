@@ -29,7 +29,7 @@ class ReturnItem extends Model
 
     public function exchangeProduct(): BelongsTo
     {
-        return $this->belongsTo(Product::class, 'exchange_product_id');
+        return $this->belongsTo(Product::class, 'exchange_product_id')->withTrashed();
     }
 
     public function exchangeProductVariant(): BelongsTo

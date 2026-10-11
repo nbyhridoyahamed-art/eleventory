@@ -11,6 +11,7 @@ const TABS = [
   { label: "General", href: "/settings/general", permission: "settings.manage" },
   { label: "Users", href: "/settings/users", permission: "users.view" },
   { label: "Roles", href: "/settings/roles", permission: "roles.view" },
+  { label: "Notifications", href: "/settings/notifications", permission: "settings.manage" },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

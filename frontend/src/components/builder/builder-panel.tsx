@@ -40,8 +40,8 @@ export function BuilderPanel({ block, storeId, activeBreakpoint, onBreakpointCha
   const ContentPanel = CONTENT_PANELS[block.type];
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
         <div>
           <p className="text-sm font-semibold text-text-primary">{HOMEPAGE_BLOCK_LABELS[block.type]}</p>
           <SaveStatusLabel status={editable.status} />
@@ -67,14 +67,16 @@ export function BuilderPanel({ block, storeId, activeBreakpoint, onBreakpointCha
         onRestored={editable.syncFrom}
       />
 
-      <div className="flex gap-1 overflow-x-auto border-b border-border px-2 py-2">
+      {/* Six tabs never fit one row in the 320px panel (they measured ~490px
+          and forced a horizontal scrollbar), so they wrap into two rows. */}
+      <div className="grid shrink-0 grid-cols-3 gap-1 border-b border-border px-2 py-2">
         {TABS.map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
             className={cn(
-              "shrink-0 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              "rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
               tab === t ? "bg-primary/8 text-primary" : "text-text-secondary hover:bg-border/30",
             )}
           >
@@ -83,7 +85,7 @@ export function BuilderPanel({ block, storeId, activeBreakpoint, onBreakpointCha
         ))}
       </div>
 
-      <fieldset disabled={!canEdit} className="flex-1 overflow-y-auto p-4">
+      <fieldset disabled={!canEdit} className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain p-4">
         {tab === "Content" ? (
           ContentPanel ? (
             <ContentPanel value={editable.draft.settings} onChange={editable.setSettings} storeId={storeId} />

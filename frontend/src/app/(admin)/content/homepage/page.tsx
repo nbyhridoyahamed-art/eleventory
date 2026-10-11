@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Monitor, Rocket, Smartphone, Tablet } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { can } from "@/lib/permissions";
 import { HOMEPAGE_BLOCK_DEFAULTS } from "@/lib/homepage-block-defaults";
 import { useCurrentUser } from "@/hooks/use-auth";
@@ -37,6 +38,14 @@ import type { Breakpoint, HomepageBlockType } from "@/types/homepage-block";
 
 const DEVICE_ICONS: Record<Breakpoint, typeof Monitor> = { desktop: Monitor, tablet: Tablet, mobile: Smartphone };
 
+/**
+ * Fills whatever the viewport has left below the app top bar, page padding,
+ * "Content" heading and tab nav (~14.3rem in total), so the page itself never
+ * scrolls behind the builder's three independently-scrolling panes. The min
+ * keeps the panes usable on very short windows, where the page scroll takes over.
+ */
+const BUILDER_HEIGHT = "h-[calc(100vh-15rem)] min-h-[24rem]";
+
 export default function HomepageBuilderPage() {
   const { data: currentUser } = useCurrentUser();
   const storeId = currentUser?.current_store_id;
@@ -64,7 +73,7 @@ export default function HomepageBuilderPage() {
   const canPublish = can(currentUser, "builder.publish");
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-[75vh] w-full" />;
+    return <Skeleton className={cn(BUILDER_HEIGHT, "w-full")} />;
   }
 
   const list = blocks ?? [];
@@ -85,7 +94,7 @@ export default function HomepageBuilderPage() {
   }
 
   return (
-    <div className="flex h-[75vh] flex-col overflow-hidden rounded-lg border border-border">
+    <div className={cn(BUILDER_HEIGHT, "flex flex-col overflow-hidden rounded-lg border border-border")}>
       <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-2.5">
         <p className="text-sm font-semibold text-text-primary">Homepage</p>
 
@@ -123,7 +132,11 @@ export default function HomepageBuilderPage() {
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[240px_1fr_320px]">
+      {/* The explicit minmax(0,1fr) row is what makes each column's own
+          overflow-y-auto work — with the default implicit `auto` row the grid
+          grows to its tallest column (the canvas) and this wrapper's
+          overflow-hidden just clips the sidebar, canvas and settings panel. */}
+      <div className="grid min-h-0 flex-1 grid-cols-[240px_minmax(0,1fr)_320px] grid-rows-[minmax(0,1fr)]">
         <BuilderSidebar
           blocks={list}
           selectedId={selectedId}
@@ -151,7 +164,7 @@ export default function HomepageBuilderPage() {
           canPublish={canPublish}
         />
 
-        <div className="border-l border-border">
+        <div className="min-h-0 overflow-hidden border-l border-border">
           {selected ? (
             <BuilderPanel
               key={selected.id}

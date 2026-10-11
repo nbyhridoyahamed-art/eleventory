@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { CourierFormValues } from "@/hooks/use-couriers";
+import { useTestCourierConnection, type CourierFormValues } from "@/hooks/use-couriers";
 import type { Courier } from "@/types/courier";
 
 const courierSchema = z.object({
@@ -19,6 +19,9 @@ const courierSchema = z.object({
   phone: z.string(),
   tracking_url_template: z.string(),
   status: z.enum(["active", "inactive"]),
+  provider: z.enum(["manual", "steadfast"]),
+  api_key: z.string(),
+  api_secret: z.string(),
 });
 
 type FormValues = z.infer<typeof courierSchema>;
@@ -50,10 +53,16 @@ export function CourierForm({ storeId, defaultValues, onSubmit, isPending, serve
       phone: defaultValues?.phone ?? "",
       tracking_url_template: defaultValues?.tracking_url_template ?? "",
       status: defaultValues?.status ?? "active",
+      provider: defaultValues?.provider ?? "manual",
+      api_key: "",
+      api_secret: "",
     },
   });
 
   const status = useWatch({ control, name: "status" });
+  const provider = useWatch({ control, name: "provider" });
+  const testConnection = useTestCourierConnection(defaultValues?.id ?? 0);
+  const hasStoredKeys = Boolean(defaultValues?.has_credentials);
 
   const submit = handleSubmit((values) => {
     onSubmit({
@@ -64,6 +73,9 @@ export function CourierForm({ storeId, defaultValues, onSubmit, isPending, serve
       phone: values.phone || null,
       tracking_url_template: values.tracking_url_template || null,
       status: values.status,
+      provider: values.provider,
+      api_key: values.provider === "steadfast" ? values.api_key || null : null,
+      api_secret: values.provider === "steadfast" ? values.api_secret || null : null,
     });
   });
 
@@ -109,6 +121,58 @@ export function CourierForm({ storeId, defaultValues, onSubmit, isPending, serve
         <p className="text-xs text-text-muted">
           {"{tracking_number}"} is replaced with the shipment&apos;s tracking number.
         </p>
+      </div>
+
+      <div className="space-y-3 rounded-md border border-border p-4">
+        <div className="max-w-64 space-y-1.5">
+          <Label htmlFor="courier-form-provider">Booking method</Label>
+          <Select
+            value={provider}
+            onValueChange={(value) => setValue("provider", value as "manual" | "steadfast", { shouldDirty: true })}
+          >
+            <SelectTrigger id="courier-form-provider">
+              <SelectValue>{provider === "steadfast" ? "Steadfast (API)" : "Manual"}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="manual">Manual — type the tracking number</SelectItem>
+              <SelectItem value="steadfast">Steadfast (API) — book parcels automatically</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {provider === "steadfast" ? (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="api_key">API key</Label>
+                <Input
+                  id="api_key"
+                  autoComplete="off"
+                  placeholder={hasStoredKeys ? "•••••• saved — leave blank to keep" : ""}
+                  {...register("api_key")}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="api_secret">Secret key</Label>
+                <Input
+                  id="api_secret"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder={hasStoredKeys ? "•••••• saved — leave blank to keep" : ""}
+                  {...register("api_secret")}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-text-muted">
+              Find both in your Steadfast merchant panel under API settings. They are stored encrypted and never shown again.
+            </p>
+            {defaultValues && hasStoredKeys ? (
+              <Button type="button" variant="outline" size="sm" loading={testConnection.isPending} onClick={() => testConnection.mutate()}>
+                Test connection
+              </Button>
+            ) : null}
+          </>
+        ) : null}
       </div>
 
       <div className="max-w-48 space-y-1.5">

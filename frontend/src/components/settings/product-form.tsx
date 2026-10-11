@@ -139,6 +139,10 @@ export function ProductForm({
   const weightUnit = useWatch({ control, name: "weight_unit" });
   const trackStock = useWatch({ control, name: "track_stock" });
   const featured = useWatch({ control, name: "featured" });
+  const watchedName = useWatch({ control, name: "name" });
+  const watchedSlug = useWatch({ control, name: "slug" });
+  const watchedDescription = useWatch({ control, name: "description" });
+  const watchedShort = useWatch({ control, name: "short_description" });
 
   const slugTouched = useRef(Boolean(defaultValues?.slug));
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -489,7 +493,19 @@ export function ProductForm({
       </div>
 
       <div className={tab === "SEO" ? "space-y-4" : "hidden"}>
-        <SeoFields value={seo} onChange={setSeo} titlePlaceholder={defaultValues?.name} descriptionPlaceholder={defaultValues?.short_description ?? undefined} />
+        <SeoFields
+          value={seo}
+          onChange={setSeo}
+          titlePlaceholder={watchedName || defaultValues?.name}
+          descriptionPlaceholder={watchedShort || defaultValues?.short_description || undefined}
+          analysis={{
+            kind: "product",
+            slug: watchedSlug,
+            content: [watchedShort, watchedDescription].filter(Boolean).join(" "),
+            entityId: defaultValues?.id,
+            images: defaultValues?.images?.map((image) => image.alt_text ?? ""),
+          }}
+        />
       </div>
 
       <div className="flex justify-end border-t border-border pt-4">

@@ -1,31 +1,37 @@
 import Link from "next/link";
 import { Package } from "lucide-react";
 
+import { SectionHeading } from "@/components/homepage-blocks/section-heading";
 import type { AutoManualCategorySettings } from "@/types/homepage-block";
 import type { StorefrontCategory } from "@/types/storefront";
 
+/** Featured categories as a compact tile grid: a small picture over the name. Columns follow the block's own width. */
 export function CategoryGridBlock({ settings, categories }: { settings: AutoManualCategorySettings; categories: StorefrontCategory[] }) {
   if (categories.length === 0) return null;
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-section font-semibold text-text-primary">{settings.heading}</h2>
-      <div className="grid grid-cols-2 gap-4 tablet:grid-cols-3 desktop:grid-cols-6">
+    <section className="@container space-y-4">
+      <SectionHeading title={settings.heading} />
+      <div className="grid grid-cols-3 border-l border-t border-border bg-surface @xl:grid-cols-4 @4xl:grid-cols-8">
         {categories.map((category) => (
           <Link
             key={category.id}
             href={`/category/${category.slug}`}
-            className="flex flex-col items-center gap-2 rounded-lg border border-border bg-surface p-4 text-center transition-shadow hover:shadow-md"
+            className="group flex flex-col items-center gap-3 border-b border-r border-border px-2 py-5 text-center transition-colors hover:bg-shop-tint"
           >
-            <div className="flex size-14 items-center justify-center overflow-hidden rounded-full bg-border/20">
+            <span className="flex size-16 items-center justify-center overflow-hidden rounded-full bg-white p-1.5 ring-1 ring-border">
               {category.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element -- remote storage URL, not a static asset
-                <img src={category.image_url} alt={category.name} className="size-full object-cover" />
+                <img
+                  src={category.image_url}
+                  alt=""
+                  className="max-h-full max-w-full object-contain transition-transform group-hover:scale-110"
+                />
               ) : (
                 <Package className="size-6 text-text-muted" />
               )}
-            </div>
-            <span className="text-sm font-medium text-text-primary">{category.name}</span>
+            </span>
+            <span className="line-clamp-2 text-xs font-medium leading-snug text-text-primary">{category.name}</span>
           </Link>
         ))}
       </div>

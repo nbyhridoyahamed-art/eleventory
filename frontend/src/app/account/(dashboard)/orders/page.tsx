@@ -2,14 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Package } from "lucide-react";
+import { ChevronRight, Package } from "lucide-react";
 
 import { formatMoney } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Panel } from "@/components/storefront/panel";
 import { StorefrontPagination } from "@/components/storefront/storefront-pagination";
 import { useAccountOrders } from "@/hooks/use-account";
 
@@ -27,53 +25,56 @@ export default function AccountOrdersPage() {
   const orders = data?.data ?? [];
 
   return (
-    <Card>
-      <CardContent className="p-4">
-        {isLoading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
-        ) : orders.length === 0 ? (
-          <EmptyState
-            icon={<Package />}
-            title="No orders yet"
-            description="Your orders will show up here once you place one."
-            action={
-              <Button asChild>
-                <Link href="/products">Start shopping</Link>
-              </Button>
-            }
-          />
-        ) : (
-          <>
-            <div className="divide-y divide-border">
-              {orders.map((order) => (
+    <Panel title="My orders" bodyClassName="p-0">
+      {isLoading ? (
+        <div className="space-y-2 p-5">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      ) : orders.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 px-5 py-14 text-center">
+          <span className="flex size-14 items-center justify-center rounded-full bg-shop-tint text-shop-ink">
+            <Package className="size-6" />
+          </span>
+          <p className="font-semibold text-text-primary">No orders yet</p>
+          <p className="text-sm text-text-secondary">Your orders will show up here once you place one.</p>
+          <Link
+            href="/products"
+            className="bg-shop-accent px-6 py-2.5 text-xs font-semibold uppercase tracking-wide text-shop-on-accent hover:bg-shop-accent-hover"
+          >
+            Start shopping
+          </Link>
+        </div>
+      ) : (
+        <>
+          <ul className="divide-y divide-border">
+            {orders.map((order) => (
+              <li key={order.uuid}>
                 <Link
-                  key={order.uuid}
                   href={`/account/orders/${order.uuid}`}
-                  className="flex items-center justify-between py-3 hover:bg-border/20"
+                  className="flex items-center justify-between gap-3 px-5 py-4 transition-colors hover:bg-shop-tint"
                 >
-                  <div>
-                    <p className="text-sm font-medium text-text-primary">{order.order_number}</p>
-                    <p className="text-xs text-text-muted">{new Date(order.created_at).toLocaleDateString()}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-text-primary">
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-shop-ink">{order.order_number}</span>
+                    <span className="block text-xs text-text-muted">{new Date(order.created_at).toLocaleDateString()}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-3">
+                    <span className="text-sm font-medium text-text-primary">
                       {formatMoney(order.total_amount, order.currency_code)}
                     </span>
                     <Badge variant={STATUS_VARIANT[order.status]}>{order.status}</Badge>
-                  </div>
+                    <ChevronRight className="size-4 text-text-muted" />
+                  </span>
                 </Link>
-              ))}
-            </div>
-            <div className="mt-4">
-              <StorefrontPagination meta={data?.meta} onPageChange={setPage} />
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+              </li>
+            ))}
+          </ul>
+          <div className="px-5 pb-5">
+            <StorefrontPagination meta={data?.meta} itemLabel="orders" onPageChange={setPage} />
+          </div>
+        </>
+      )}
+    </Panel>
   );
 }

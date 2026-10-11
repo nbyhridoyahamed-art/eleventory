@@ -9,6 +9,7 @@ export const HOMEPAGE_BLOCK_TYPES = [
   "category_carousel",
   "brand_carousel",
   "product_carousel",
+  "product_tabs",
   "flash_sale",
   "countdown",
   "promo_banner",
@@ -44,6 +45,7 @@ export const HOMEPAGE_BLOCK_LABELS: Record<HomepageBlockType, string> = {
   category_carousel: "Category Carousel",
   brand_carousel: "Brand Carousel",
   product_carousel: "Product Carousel",
+  product_tabs: "Product Tabs",
   flash_sale: "Flash Sale",
   countdown: "Countdown",
   promo_banner: "Promo Banner",
@@ -69,7 +71,7 @@ export const HOMEPAGE_BLOCK_LABELS: Record<HomepageBlockType, string> = {
 /** Groups the palette shown in the builder's block picker (spec section 58's LEFT panel). */
 export const HOMEPAGE_BLOCK_CATEGORIES: { label: string; types: HomepageBlockType[] }[] = [
   { label: "Hero & Banners", types: ["hero", "hero_slider", "announcement_bar", "promo_banner", "two_column_banner", "three_column_banner", "cta", "countdown", "flash_sale"] },
-  { label: "Catalog", types: ["featured_products", "latest_products", "best_sellers", "category_grid", "category_carousel", "brand_carousel", "product_carousel"] },
+  { label: "Catalog", types: ["featured_products", "latest_products", "best_sellers", "category_grid", "category_carousel", "brand_carousel", "product_carousel", "product_tabs"] },
   { label: "Content", types: ["image_text", "rich_text", "gallery", "video", "faq", "blog_posts"] },
   { label: "Trust & Social Proof", types: ["testimonials", "reviews", "trust_badges", "statistics"] },
   { label: "Engagement", types: ["newsletter"] },
@@ -104,6 +106,8 @@ export interface HeroSliderSettings {
   slides: HeroSlide[];
   autoplay: boolean;
   interval_seconds: number;
+  /** Up to two promo tiles shown stacked beside the slider. */
+  side_banners?: BannerItem[];
 }
 
 export interface AnnouncementBarSettings {
@@ -145,6 +149,21 @@ export interface ProductCarouselSettings {
   limit: number;
   product_ids: number[];
   category_id: number | null;
+}
+
+export interface ProductTab {
+  label: string;
+  source: "newest" | "sale" | "featured" | "category" | "brand";
+  category_slug: string | null;
+  brand_slug: string | null;
+}
+
+/** A product row with filter tabs; each tab fetches the public product list with its own filter. */
+export interface ProductTabsSettings {
+  heading: string;
+  view_all_url: string | null;
+  limit: number;
+  tabs: ProductTab[];
 }
 
 export interface FlashSaleItem {
@@ -281,6 +300,7 @@ export interface HomepageBlockSettingsMap {
   category_carousel: AutoManualCategorySettings;
   brand_carousel: AutoManualBrandSettings;
   product_carousel: ProductCarouselSettings;
+  product_tabs: ProductTabsSettings;
   flash_sale: FlashSaleSettings;
   countdown: CountdownSettings;
   promo_banner: PromoBannerSettings;

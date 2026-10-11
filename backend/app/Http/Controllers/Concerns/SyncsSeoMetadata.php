@@ -25,5 +25,10 @@ trait SyncsSeoMetadata
             'store_id' => $entity instanceof Store ? $entity->id : $entity->store_id,
             ...$request->input('seo'),
         ]);
+
+        // Keep the stored 0–100 on-page score current (the Store itself has no page content to score).
+        if (! $entity instanceof Store) {
+            \App\Support\SeoAnalyzer::persist($entity);
+        }
     }
 }

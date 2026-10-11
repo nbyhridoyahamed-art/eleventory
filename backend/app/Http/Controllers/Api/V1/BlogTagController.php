@@ -21,6 +21,7 @@ class BlogTagController extends Controller
 
         $tags = BlogTag::query()
             ->when($request->filled('store_id'), fn ($query) => $query->where('store_id', $request->integer('store_id')))
+            ->with('seoMetadata')
             ->withCount('posts')
             ->orderBy('name')
             ->get();

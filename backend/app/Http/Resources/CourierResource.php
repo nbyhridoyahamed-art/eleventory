@@ -19,6 +19,8 @@ class CourierResource extends JsonResource
             'phone' => $this->phone,
             'tracking_url_template' => $this->tracking_url_template,
             'status' => $this->status,
+            'provider' => $this->provider,
+            'has_credentials' => filled($this->api_key) && filled($this->api_secret),
             'shipments_count' => $this->whenCounted('shipments'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

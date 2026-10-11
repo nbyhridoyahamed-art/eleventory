@@ -17,6 +17,8 @@ class ShipmentResource extends JsonResource
             'uuid' => $this->uuid,
             'tracking_number' => $this->tracking_number,
             'status' => $this->status,
+            'external_id' => $this->external_id,
+            'courier_status' => $this->courier_status,
             'delivery_charge' => (new Money($this->delivery_charge_amount, $currencyCode))->toDecimal(),
             'cod_amount_collected' => $this->cod_amount_collected === null
                 ? null
@@ -37,6 +39,7 @@ class ShipmentResource extends JsonResource
             'courier' => $this->whenLoaded('courier', fn () => [
                 'id' => $this->courier->id,
                 'name' => $this->courier->name,
+                'provider' => $this->courier->provider,
             ]),
             'tracking_url' => $this->when(
                 $this->relationLoaded('courier') && $this->courier?->tracking_url_template,

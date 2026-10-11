@@ -34,6 +34,8 @@ final class HomepageBlockTypes
 
     public const PRODUCT_CAROUSEL = 'product_carousel';
 
+    public const PRODUCT_TABS = 'product_tabs';
+
     public const FLASH_SALE = 'flash_sale';
 
     public const COUNTDOWN = 'countdown';
@@ -79,7 +81,7 @@ final class HomepageBlockTypes
         self::HERO, self::HERO_SLIDER, self::ANNOUNCEMENT_BAR,
         self::FEATURED_PRODUCTS, self::LATEST_PRODUCTS, self::BEST_SELLERS,
         self::CATEGORY_GRID, self::CATEGORY_CAROUSEL, self::BRAND_CAROUSEL,
-        self::PRODUCT_CAROUSEL, self::FLASH_SALE, self::COUNTDOWN,
+        self::PRODUCT_CAROUSEL, self::PRODUCT_TABS, self::FLASH_SALE, self::COUNTDOWN,
         self::PROMO_BANNER, self::TWO_COLUMN_BANNER, self::THREE_COLUMN_BANNER,
         self::VIDEO, self::IMAGE_TEXT, self::RICH_TEXT,
         self::TESTIMONIALS, self::REVIEWS, self::FAQ, self::NEWSLETTER,
@@ -134,6 +136,11 @@ final class HomepageBlockTypes
                 'settings.slides.*.cta_url' => ['nullable', 'string', 'max:2048'],
                 'settings.autoplay' => ['nullable', 'boolean'],
                 'settings.interval_seconds' => ['nullable', 'integer', 'min:2', 'max:15'],
+                // Optional promo tiles shown beside the slider (at most two, stacked).
+                'settings.side_banners' => ['nullable', 'array', 'max:2'],
+                'settings.side_banners.*.image_url' => ['nullable', 'string', 'max:2048'],
+                'settings.side_banners.*.link_url' => ['nullable', 'string', 'max:2048'],
+                'settings.side_banners.*.alt_text' => ['nullable', 'string', 'max:255'],
             ],
             self::ANNOUNCEMENT_BAR => [
                 'settings.text' => ['required', 'string', 'max:255'],
@@ -152,6 +159,17 @@ final class HomepageBlockTypes
                 'settings.product_ids' => ['required_if:settings.mode,manual', 'array'],
                 'settings.product_ids.*' => ['integer', Rule::exists('products', 'id')->where('store_id', $storeId)],
                 'settings.category_id' => ['required_if:settings.mode,category', 'nullable', 'integer', Rule::exists('categories', 'id')->where('store_id', $storeId)],
+            ],
+            self::PRODUCT_TABS => [
+                'settings.heading' => ['required', 'string', 'max:255'],
+                'settings.view_all_url' => ['nullable', 'string', 'max:2048'],
+                'settings.limit' => ['required', 'integer', 'min:1', 'max:24'],
+                'settings.tabs' => ['required', 'array', 'min:1', 'max:10'],
+                'settings.tabs.*.label' => ['required', 'string', 'max:60'],
+                'settings.tabs.*.source' => ['required', Rule::in(['newest', 'sale', 'featured', 'category', 'brand'])],
+                // Slugs, not ids: the storefront filters the public product list by slug.
+                'settings.tabs.*.category_slug' => ['nullable', 'string', 'max:255'],
+                'settings.tabs.*.brand_slug' => ['nullable', 'string', 'max:255'],
             ],
             self::FLASH_SALE => [
                 'settings.heading' => ['required', 'string', 'max:255'],
@@ -339,7 +357,7 @@ final class HomepageBlockTypes
     {
         return match ($type) {
             self::HERO => ['heading' => 'Welcome to our store', 'subheading' => null, 'image_url' => null, 'cta_label' => 'Shop All Products', 'cta_url' => '/products', 'secondary_cta_label' => null, 'secondary_cta_url' => null],
-            self::HERO_SLIDER => ['slides' => [['heading' => 'New Arrivals', 'subheading' => null, 'image_url' => null, 'cta_label' => 'Shop Now', 'cta_url' => '/products']], 'autoplay' => true, 'interval_seconds' => 5],
+            self::HERO_SLIDER => ['slides' => [['heading' => 'New Arrivals', 'subheading' => null, 'image_url' => null, 'cta_label' => 'Shop Now', 'cta_url' => '/products']], 'autoplay' => true, 'interval_seconds' => 5, 'side_banners' => []],
             self::ANNOUNCEMENT_BAR => ['text' => 'Free delivery on orders over ৳1,000', 'link_url' => null, 'link_label' => null, 'dismissible' => true],
             self::FEATURED_PRODUCTS => ['heading' => 'Featured Products', 'mode' => 'auto', 'limit' => 5, 'product_ids' => []],
             self::LATEST_PRODUCTS => ['heading' => 'Latest Arrivals', 'limit' => 8],
@@ -348,6 +366,7 @@ final class HomepageBlockTypes
             self::CATEGORY_CAROUSEL => ['heading' => 'Browse Categories', 'mode' => 'auto', 'limit' => 8, 'category_ids' => []],
             self::BRAND_CAROUSEL => ['heading' => 'Shop by Brand', 'mode' => 'auto', 'limit' => 8, 'brand_ids' => []],
             self::PRODUCT_CAROUSEL => ['heading' => 'You Might Also Like', 'mode' => 'auto', 'limit' => 10, 'product_ids' => [], 'category_id' => null],
+            self::PRODUCT_TABS => ['heading' => 'Featured Products', 'view_all_url' => '/products', 'limit' => 10, 'tabs' => [['label' => 'New Arrivals', 'source' => 'newest', 'category_slug' => null, 'brand_slug' => null], ['label' => 'On Sale', 'source' => 'sale', 'category_slug' => null, 'brand_slug' => null]]],
             self::FLASH_SALE => ['heading' => 'Flash Sale', 'ends_at' => now()->addDay()->toIso8601String(), 'items' => []],
             self::COUNTDOWN => ['heading' => 'Limited Time Offer', 'subheading' => null, 'ends_at' => now()->addDay()->toIso8601String(), 'cta_label' => null, 'cta_url' => null],
             self::PROMO_BANNER => ['image_url' => null, 'link_url' => '/products', 'alt_text' => null],

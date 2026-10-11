@@ -6,6 +6,7 @@ import {
   FileText,
   LayoutDashboard,
   Package,
+  SearchCheck,
   Settings,
   ShoppingCart,
   TrendingUp,
@@ -73,7 +74,13 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Content",
     href: "/content/pages",
     icon: FileText,
-    anyPermission: ["pages.manage", "builder.view", "blog.manage", "seo.manage"],
+    anyPermission: ["pages.manage", "builder.view", "blog.manage"],
+  },
+  {
+    label: "SEO",
+    href: "/seo/overview",
+    icon: SearchCheck,
+    anyPermission: ["seo.manage"],
   },
   {
     label: "Settings",

@@ -11,6 +11,8 @@ import { PermissionDenied } from "@/components/permission-denied";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
+import { SeoScoreBadge } from "@/components/shared/seo-score-badge";
+import { ViewOnSiteLink } from "@/components/shared/view-on-site-link";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +40,24 @@ export default function PagesPage() {
 
   const columns: DataTableColumn<Page>[] = [
     { id: "title", header: "Title", cell: (page) => <span className="font-medium">{page.title}</span> },
+    {
+      id: "seo",
+      header: "SEO",
+      cell: (page) => <SeoScoreBadge seo={page.seo} />,
+    },
     { id: "slug", header: "Slug", cell: (page) => `/pages/${page.slug}` },
+    {
+      id: "view",
+      header: "View",
+      cell: (page) => (
+        <ViewOnSiteLink
+          href={`/pages/${page.slug}`}
+          visible={page.status === "published"}
+          label={page.title}
+          hiddenReason="This page is a draft, so it isn't on the storefront"
+        />
+      ),
+    },
     {
       id: "status",
       header: "Status",

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import { ShoppingCart } from "lucide-react";
+import { Check, Lock, Package, ShoppingCart } from "lucide-react";
 import { z } from "zod";
 
 import { trackEvent } from "@/lib/analytics";
@@ -13,7 +13,7 @@ import { formatMoney } from "@/lib/money";
 import { ApiError } from "@/types/api";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
+import { PageBanner } from "@/components/storefront/page-banner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,6 +42,21 @@ const checkoutSchema = z.object({
 });
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
+
+/** A numbered form card: a tinted title strip over the fields. */
+function Section({ step, title, children }: { step: number; title: string; children: React.ReactNode }) {
+  return (
+    <section className="border border-border bg-surface">
+      <h2 className="flex items-center gap-3 border-b border-border bg-shop-tint px-5 py-3 text-sm font-semibold uppercase tracking-wide text-text-primary">
+        <span className="flex size-6 items-center justify-center rounded-full bg-shop-accent text-xs font-bold text-shop-on-accent">
+          {step}
+        </span>
+        {title}
+      </h2>
+      <div className="space-y-4 p-5">{children}</div>
+    </section>
+  );
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -129,17 +144,21 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-[1400px] px-4 py-16">
-        <EmptyState
-          icon={<ShoppingCart />}
-          title="Your cart is empty"
-          description="Add something to your cart before checking out."
-          action={
-            <Button asChild>
-              <Link href="/products">Browse products</Link>
-            </Button>
-          }
-        />
+      <div>
+        <PageBanner title="Checkout" crumbs={[{ label: "Home", href: "/" }, { label: "Cart", href: "/cart" }, { label: "Checkout" }]} />
+        <div className="mx-auto flex max-w-[1400px] flex-col items-center gap-4 px-4 py-20 text-center">
+          <span className="flex size-20 items-center justify-center rounded-full bg-shop-tint text-shop-ink">
+            <ShoppingCart className="size-9" />
+          </span>
+          <h2 className="text-section font-semibold text-text-primary">Your cart is empty</h2>
+          <p className="text-sm text-text-secondary">Add something to your cart before checking out.</p>
+          <Link
+            href="/products"
+            className="bg-shop-accent px-8 py-3 text-xs font-semibold uppercase tracking-wide text-shop-on-accent hover:bg-shop-accent-hover"
+          >
+            Browse products
+          </Link>
+        </div>
       </div>
     );
   }
@@ -147,19 +166,19 @@ export default function CheckoutPage() {
   const serverError = checkout.error instanceof ApiError ? checkout.error.message : null;
 
   return (
-    <div className="mx-auto max-w-[1400px] px-4 py-8">
-      <h1 className="mb-6 text-page-title font-semibold text-text-primary">Checkout</h1>
+    <div>
+      <PageBanner title="Checkout" crumbs={[{ label: "Home", href: "/" }, { label: "Cart", href: "/cart" }, { label: "Checkout" }]} />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="grid gap-8 desktop:grid-cols-3">
-        <div className="space-y-6 desktop:col-span-2">
+      <div className="mx-auto max-w-[1400px] px-4 py-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="grid gap-8 desktop:grid-cols-[minmax(0,1fr)_400px]">
+        <div className="space-y-6">
           {serverError ? (
             <Alert variant="danger">
               <AlertDescription>{serverError}</AlertDescription>
             </Alert>
           ) : null}
 
-          <div className="space-y-4 rounded-lg border border-border p-4">
-            <h2 className="font-semibold text-text-primary">Contact Information</h2>
+          <Section step={1} title="Contact information">
             <div className="grid gap-4 tablet:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="customer_name">Full name</Label>
@@ -184,10 +203,9 @@ export default function CheckoutPage() {
               />
               {errors.customer_email ? <p className="text-xs text-danger">{errors.customer_email.message}</p> : null}
             </div>
-          </div>
+          </Section>
 
-          <div className="space-y-4 rounded-lg border border-border p-4">
-            <h2 className="font-semibold text-text-primary">Shipping Address</h2>
+          <Section step={2} title="Shipping address">
             <div className="grid gap-4 tablet:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="shipping_recipient_name">Recipient name</Label>
@@ -220,7 +238,7 @@ export default function CheckoutPage() {
                 <p className="text-xs text-danger">{errors.shipping_address_line.message}</p>
               ) : null}
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid gap-3 tablet:grid-cols-3">
               <div className="space-y-1.5">
                 <Label htmlFor="checkout-shipping-division">Division</Label>
                 <Select
@@ -292,50 +310,99 @@ export default function CheckoutPage() {
               <Label htmlFor="notes">Order notes (optional)</Label>
               <Textarea id="notes" rows={2} {...register("notes")} />
             </div>
-          </div>
+          </Section>
 
-          <div className="rounded-lg border border-border p-4">
-            <h2 className="font-semibold text-text-primary">Payment Method</h2>
-            <p className="mt-2 text-sm text-text-secondary">Cash on Delivery — pay when your order arrives.</p>
-          </div>
+          <Section step={3} title="Payment method">
+            <div className="flex items-center gap-3 border-2 border-shop-accent bg-shop-tint p-4">
+              <span className="flex size-5 items-center justify-center rounded-full bg-shop-accent text-shop-on-accent">
+                <Check className="size-3.5" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-text-primary">Cash on Delivery</p>
+                <p className="text-xs text-text-secondary">Pay in cash when your order arrives. Check your parcel before paying.</p>
+              </div>
+            </div>
+          </Section>
         </div>
 
-        <div className="space-y-4">
-          <div className="space-y-3 rounded-lg border border-border p-4">
-            <h2 className="font-semibold text-text-primary">Order Summary</h2>
-            <div className="space-y-2">
+        <aside className="space-y-4 self-start desktop:sticky desktop:top-32">
+          <div className="border border-border bg-surface">
+            <h2 className="flex items-center justify-between border-b border-border bg-shop-tint px-5 py-3 text-sm font-semibold uppercase tracking-wide text-text-primary">
+              Your order
+              <Link href="/cart" className="text-xs font-medium normal-case tracking-normal text-shop-ink hover:underline">
+                Edit cart
+              </Link>
+            </h2>
+
+            <ul className="max-h-80 divide-y divide-border overflow-y-auto">
               {items.map((item) => (
-                <div key={`${item.productId}:${item.variantId ?? "0"}`} className="flex justify-between text-sm">
-                  <span className="text-text-secondary">
-                    {item.name}
-                    {item.variantLabel ? ` (${item.variantLabel})` : ""} &times; {item.quantity}
+                <li key={`${item.productId}:${item.variantId ?? "0"}`} className="flex items-center gap-3 px-5 py-3">
+                  <span className="relative flex size-14 shrink-0 items-center justify-center border border-border bg-white p-1">
+                    {item.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- remote storage URL, not a static asset
+                      <img src={item.imageUrl} alt="" className="max-h-full max-w-full object-contain" />
+                    ) : (
+                      <Package className="size-5 text-text-muted" />
+                    )}
+                    <span className="absolute -right-2 -top-2 flex size-5 items-center justify-center rounded-full bg-shop-nav text-[11px] font-semibold text-shop-on-nav">
+                      {item.quantity}
+                    </span>
                   </span>
-                  <span className="text-text-primary">
+                  <span className="min-w-0 flex-1">
+                    <span className="line-clamp-2 block text-sm text-text-primary">{item.name}</span>
+                    {item.variantLabel ? <span className="block text-xs text-text-muted">{item.variantLabel}</span> : null}
+                  </span>
+                  <span className="shrink-0 text-sm font-medium text-text-primary">
                     {formatMoney(item.unitPrice * item.quantity, item.currencyCode)}
                   </span>
-                </div>
+                </li>
               ))}
-            </div>
-            <div className="flex justify-between border-t border-border pt-2 text-sm text-text-secondary">
-              <span>Shipping</span>
-              <span>
-                {!divisionId ? "Enter your address" : isQuotingShipping ? "Calculating…" : formatMoney(shippingAmount, currencyCode)}
-              </span>
-            </div>
-            <div className="flex justify-between font-semibold text-text-primary">
-              <span>Total</span>
-              <span>{formatMoney(subtotal + shippingAmount, currencyCode)}</span>
+            </ul>
+
+            <div className="space-y-3 border-t border-border p-5">
+              <div className="space-y-1.5">
+                <Label htmlFor="coupon_code">Have a coupon?</Label>
+                <Input id="coupon_code" placeholder="Enter code" {...register("coupon_code")} />
+              </div>
+
+              <dl className="space-y-2 border-t border-border pt-3 text-sm">
+                <div className="flex justify-between text-text-secondary">
+                  <dt>Subtotal</dt>
+                  <dd>{formatMoney(subtotal, currencyCode)}</dd>
+                </div>
+                <div className="flex justify-between text-text-secondary">
+                  <dt>Shipping</dt>
+                  <dd>
+                    {!divisionId
+                      ? "Enter your address"
+                      : isQuotingShipping
+                        ? "Calculating…"
+                        : formatMoney(shippingAmount, currencyCode)}
+                  </dd>
+                </div>
+                <div className="flex justify-between border-t border-border pt-3 text-base font-semibold text-text-primary">
+                  <dt>Total</dt>
+                  <dd className="text-shop-ink">{formatMoney(subtotal + shippingAmount, currencyCode)}</dd>
+                </div>
+              </dl>
+
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full rounded-none bg-shop-accent text-xs font-semibold uppercase tracking-wide text-shop-on-accent hover:bg-shop-accent-hover"
+                loading={checkout.isPending}
+              >
+                Place order
+              </Button>
+              <p className="flex items-center justify-center gap-1.5 text-xs text-text-muted">
+                <Lock className="size-3.5" />
+                Cash on Delivery. You only pay when your order arrives.
+              </p>
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="coupon_code">Have a coupon?</Label>
-            <Input id="coupon_code" placeholder="Enter code" {...register("coupon_code")} />
-          </div>
-          <Button type="submit" size="lg" className="w-full" loading={checkout.isPending}>
-            Place Order
-          </Button>
-        </div>
+        </aside>
       </form>
+      </div>
     </div>
   );
 }

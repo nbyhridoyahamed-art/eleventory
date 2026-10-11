@@ -38,6 +38,18 @@
      against both (4.98:1 on background, 5.21:1 on white). */
   --color-text-muted: #5f6d88;
 
+  /* Shop listing accent (orange) + ink (navy). Text on the accent is dark,
+     not white: white on this orange is ~2:1, which fails WCAG AA. */
+  --color-shop-accent: #ffa800;
+  --color-shop-accent-hover: #e89900;
+  --color-shop-on-accent: #0f172a;
+  --color-shop-ink: #0b3d91;
+  --color-shop-tint: #f5f8ff;
+  /* Storefront header / footer bands (navy) and the text on them. */
+  --color-shop-nav: #0b3f91;
+  --color-shop-on-nav: #ffffff;
+  --color-shop-on-nav-muted: #c9d8f3;
+
   /* Radius */
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -83,6 +95,9 @@
     --color-text-primary: #f8fafc;
     --color-text-secondary: #94a3b8;
     --color-text-muted: #7c8aa5;
+
+    --color-shop-ink: #8ab4ff;
+    --color-shop-tint: #131c2e;
   }
 }
 
@@ -100,4 +115,7 @@
   --color-text-primary: #f8fafc;
   --color-text-secondary: #94a3b8;
   --color-text-muted: #7c8aa5;
+
+  --color-shop-ink: #8ab4ff;
+  --color-shop-tint: #131c2e;
 }

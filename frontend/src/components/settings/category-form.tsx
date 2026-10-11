@@ -74,6 +74,9 @@ export function CategoryForm({
 
   const parentId = useWatch({ control, name: "parent_id" });
   const status = useWatch({ control, name: "status" });
+  const watchedName = useWatch({ control, name: "name" });
+  const watchedSlug = useWatch({ control, name: "slug" });
+  const watchedDescription = useWatch({ control, name: "description" });
   const selectedParent = parentOptions.find((c) => String(c.id) === parentId);
 
   const slugTouched = useRef(Boolean(defaultValues?.slug));
@@ -196,8 +199,9 @@ export function CategoryForm({
         <SeoFields
           value={seo}
           onChange={setSeo}
-          titlePlaceholder={defaultValues?.name}
-          descriptionPlaceholder={defaultValues?.description ?? undefined}
+          titlePlaceholder={watchedName || defaultValues?.name}
+          descriptionPlaceholder={watchedDescription || defaultValues?.description || undefined}
+          analysis={{ kind: "category", slug: watchedSlug, content: watchedDescription, entityId: defaultValues?.id }}
         />
       </div>
 

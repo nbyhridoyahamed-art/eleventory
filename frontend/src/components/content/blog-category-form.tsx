@@ -49,6 +49,7 @@ export function BlogCategoryForm({
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -126,8 +127,9 @@ export function BlogCategoryForm({
         <SeoFields
           value={seo}
           onChange={setSeo}
-          titlePlaceholder={defaultValues?.name}
-          descriptionPlaceholder={defaultValues?.description ?? undefined}
+          titlePlaceholder={watch("name") || defaultValues?.name}
+          descriptionPlaceholder={watch("description") || defaultValues?.description || undefined}
+          analysis={{ kind: "blog_category", slug: watch("slug"), content: watch("description"), entityId: defaultValues?.id }}
         />
       </div>
 

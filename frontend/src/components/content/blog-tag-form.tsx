@@ -40,6 +40,7 @@ export function BlogTagForm({ storeId, defaultValues, onSubmit, isPending, serve
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -100,7 +101,12 @@ export function BlogTagForm({ storeId, defaultValues, onSubmit, isPending, serve
 
       <div className="space-y-4 border-t border-border pt-4">
         <p className="text-sm font-medium text-text-primary">SEO</p>
-        <SeoFields value={seo} onChange={setSeo} titlePlaceholder={defaultValues?.name} />
+        <SeoFields
+          value={seo}
+          onChange={setSeo}
+          titlePlaceholder={watch("name") || defaultValues?.name}
+          analysis={{ kind: "blog_tag", slug: watch("slug"), content: "", entityId: defaultValues?.id }}
+        />
       </div>
 
       <div className="flex justify-end">

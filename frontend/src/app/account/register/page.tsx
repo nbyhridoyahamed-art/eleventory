@@ -10,6 +10,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageBanner } from "@/components/storefront/page-banner";
+import { Panel, SHOP_BUTTON_PRIMARY } from "@/components/storefront/panel";
 import { useCustomerRegister } from "@/hooks/use-customer-auth";
 
 const registerSchema = z
@@ -45,15 +47,16 @@ export default function AccountRegisterPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center px-4 py-12">
-      <div className="space-y-1 text-center">
-        <h1 className="text-page-title font-semibold text-text-primary">Create an account</h1>
-        <p className="text-sm text-text-secondary">
+    <div>
+      <PageBanner title="Create an account" crumbs={[{ label: "Home", href: "/" }, { label: "Create account" }]}>
+        <p className="max-w-md text-sm text-text-secondary">
           Already ordered as a guest? Use the same phone number to link your past orders automatically.
         </p>
-      </div>
+      </PageBanner>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+      <div className="mx-auto max-w-md px-4 py-10">
+      <Panel title="New customer">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {serverError ? (
           <Alert variant="danger">
             <AlertDescription>{serverError}</AlertDescription>
@@ -111,17 +114,19 @@ export default function AccountRegisterPage() {
           ) : null}
         </div>
 
-        <Button type="submit" className="w-full" loading={register_.isPending}>
+        <Button type="submit" size="lg" className={`w-full ${SHOP_BUTTON_PRIMARY}`} loading={register_.isPending}>
           Create account
         </Button>
       </form>
+      </Panel>
 
       <p className="mt-6 text-center text-sm text-text-secondary">
         Already have an account?{" "}
-        <Link href="/account/login" className="font-medium text-primary hover:underline">
+        <Link href="/account/login" className="font-semibold text-shop-ink hover:underline">
           Sign in
         </Link>
       </p>
+      </div>
     </div>
   );
 }

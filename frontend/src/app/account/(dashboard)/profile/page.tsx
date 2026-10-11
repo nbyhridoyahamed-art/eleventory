@@ -9,10 +9,10 @@ import { useCurrentCustomer } from "@/hooks/use-customer-auth";
 import { useUpdateAccountProfile } from "@/hooks/use-account";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Panel, SHOP_BUTTON_PRIMARY } from "@/components/storefront/panel";
 import { ApiError } from "@/types/api";
 
 const profileSchema = z.object({
@@ -44,12 +44,12 @@ export default function AccountProfilePage() {
 
   if (isLoading || !customer) {
     return (
-      <Card className="max-w-lg">
-        <CardContent className="space-y-3 p-4">
+      <Panel title="Profile" className="max-w-xl">
+        <div className="space-y-3">
           <Skeleton className="h-9 w-full" />
           <Skeleton className="h-9 w-full" />
-        </CardContent>
-      </Card>
+        </div>
+      </Panel>
     );
   }
 
@@ -60,11 +60,8 @@ export default function AccountProfilePage() {
   };
 
   return (
-    <Card className="max-w-lg">
-      <CardHeader>
-        <CardTitle>Profile</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Panel title="Profile" className="max-w-xl">
+      <div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {serverError ? (
             <Alert variant="danger">
@@ -91,12 +88,17 @@ export default function AccountProfilePage() {
           </div>
 
           <div className="flex justify-end">
-            <Button type="submit" loading={updateProfile.isPending} disabled={!isDirty}>
+            <Button
+              type="submit"
+              className={SHOP_BUTTON_PRIMARY}
+              loading={updateProfile.isPending}
+              disabled={!isDirty}
+            >
               Save changes
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </Panel>
   );
 }

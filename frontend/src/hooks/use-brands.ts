@@ -14,7 +14,7 @@ export interface BrandFormValues {
   description?: string | null;
   logo_path?: string | null;
   status?: "active" | "inactive";
-  seo?: Record<string, string | null>;
+  seo?: Record<string, string | Record<string, unknown> | null>;
 }
 
 export function useBrands(storeId: number | null | undefined, page: number, search: string) {

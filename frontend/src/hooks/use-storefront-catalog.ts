@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { api } from "@/lib/api";
 import type {
@@ -28,6 +28,12 @@ export interface StorefrontProductFilters {
   category?: string;
   brand?: string;
   featured?: boolean;
+  onSale?: boolean;
+  inStock?: boolean;
+  perPage?: number;
+  /** Major units (e.g. taka), against the sale price when there is one. */
+  minPrice?: number;
+  maxPrice?: number;
   sort?: "price_asc" | "price_desc" | "newest";
 }
 
@@ -37,9 +43,13 @@ function buildProductFilterParams(filters: StorefrontProductFilters) {
   if (filters.category) params.set("category", filters.category);
   if (filters.brand) params.set("brand", filters.brand);
   if (filters.featured) params.set("featured", "1");
+  if (filters.onSale) params.set("on_sale", "1");
+  if (filters.inStock) params.set("in_stock", "1");
+  if (filters.minPrice !== undefined) params.set("min_price", String(filters.minPrice));
+  if (filters.maxPrice !== undefined) params.set("max_price", String(filters.maxPrice));
   if (filters.sort) params.set("sort", filters.sort);
   params.set("page", String(filters.page ?? 1));
-  params.set("per_page", "20");
+  params.set("per_page", String(filters.perPage ?? 20));
   return params;
 }
 
@@ -51,6 +61,60 @@ export function useStorefrontProducts(filters: StorefrontProductFilters) {
   });
 }
 
+/** Accumulating pages for the shop's "Load more" button. */
+export function useInfiniteStorefrontProducts(filters: Omit<StorefrontProductFilters, "page">) {
+  return useInfiniteQuery({
+    queryKey: ["storefront", "products", "infinite", filters],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      api.getWithMeta<StorefrontProduct[]>(
+        `/storefront/products?${buildProductFilterParams({ ...filters, page: pageParam }).toString()}`,
+      ),
+    getNextPageParam: (last) =>
+      last.meta && last.meta.current_page < last.meta.last_page ? last.meta.current_page + 1 : undefined,
+  });
+}
+
+export interface StorefrontFacets {
+  categories: Record<string, number>;
+  brands: Record<string, number>;
+  price_range: { min: number; max: number };
+}
+
+export function useStorefrontFacets() {
+  return useQuery({
+    queryKey: ["storefront", "products", "facets"],
+    queryFn: () => api.get<StorefrontFacets>("/storefront/products/facets"),
+    staleTime: 60_000,
+  });
+}
+
+export interface SearchSuggestionProduct {
+  name: string;
+  slug: string;
+  price: number;
+  sale_price: number | null;
+  currency_code: string;
+  image_url: string | null;
+}
+
+export interface SearchSuggestions {
+  keywords: string[];
+  categories: { name: string; slug: string }[];
+  brands: { name: string; slug: string }[];
+  products: SearchSuggestionProduct[];
+}
+
+/** Search-as-you-type suggestions; only queries once at least two characters are typed. */
+export function useSearchSuggestions(term: string) {
+  return useQuery({
+    queryKey: ["storefront", "search-suggestions", term],
+    queryFn: () => api.get<SearchSuggestions>(`/storefront/search/suggestions?q=${encodeURIComponent(term)}`),
+    enabled: term.length >= 2,
+    staleTime: 30_000,
+    placeholderData: keepPreviousData,
+  });
+}
 export function useStorefrontProduct(slug: string | null | undefined) {
   return useQuery({
     queryKey: ["storefront", "products", "detail", slug],

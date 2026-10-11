@@ -7,7 +7,7 @@ import type { HomepageBlockSettingsMap, HomepageBlockType } from "@/types/homepa
  */
 export const HOMEPAGE_BLOCK_DEFAULTS: { [K in HomepageBlockType]: HomepageBlockSettingsMap[K] } = {
   hero: { heading: "Welcome to our store", subheading: null, image_url: null, cta_label: "Shop All Products", cta_url: "/products", secondary_cta_label: null, secondary_cta_url: null },
-  hero_slider: { slides: [{ heading: "New Arrivals", subheading: null, image_url: null, cta_label: "Shop Now", cta_url: "/products" }], autoplay: true, interval_seconds: 5 },
+  hero_slider: { slides: [{ heading: "New Arrivals", subheading: null, image_url: null, cta_label: "Shop Now", cta_url: "/products" }], autoplay: true, interval_seconds: 5, side_banners: [] },
   announcement_bar: { text: "Free delivery on orders over ৳1,000", link_url: null, link_label: null, dismissible: true },
   featured_products: { heading: "Featured Products", mode: "auto", limit: 5, product_ids: [] },
   latest_products: { heading: "Latest Arrivals", limit: 8 },
@@ -16,6 +16,7 @@ export const HOMEPAGE_BLOCK_DEFAULTS: { [K in HomepageBlockType]: HomepageBlockS
   category_carousel: { heading: "Browse Categories", mode: "auto", limit: 8, category_ids: [] },
   brand_carousel: { heading: "Shop by Brand", mode: "auto", limit: 8, brand_ids: [] },
   product_carousel: { heading: "You Might Also Like", mode: "auto", limit: 10, product_ids: [], category_id: null },
+  product_tabs: { heading: "Featured Products", view_all_url: "/products", limit: 10, tabs: [{ label: "New Arrivals", source: "newest", category_slug: null, brand_slug: null }, { label: "On Sale", source: "sale", category_slug: null, brand_slug: null }] },
   flash_sale: { heading: "Flash Sale", ends_at: new Date(Date.now() + 86400000).toISOString(), items: [] },
   countdown: { heading: "Limited Time Offer", subheading: null, ends_at: new Date(Date.now() + 86400000).toISOString(), cta_label: null, cta_url: null },
   promo_banner: { image_url: null, link_url: "/products", alt_text: null },

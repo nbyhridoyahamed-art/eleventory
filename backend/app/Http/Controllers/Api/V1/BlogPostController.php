@@ -31,7 +31,7 @@ class BlogPostController extends Controller
             ->when($request->filled('search'), fn ($query) => $query->where('title', 'like', '%'.$request->string('search').'%'))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when($request->filled('blog_category_id'), fn ($query) => $query->where('blog_category_id', $request->integer('blog_category_id')))
-            ->with(['category', 'tags'])
+            ->with(['category', 'tags', 'seoMetadata'])
             ->orderByDesc('published_at')
             ->get();
 

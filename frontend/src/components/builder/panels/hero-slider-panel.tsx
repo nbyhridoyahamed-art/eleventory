@@ -8,10 +8,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { HeroSlide, HeroSliderSettings } from "@/types/homepage-block";
+import type { BannerItem, HeroSlide, HeroSliderSettings } from "@/types/homepage-block";
 
 const MAX_SLIDES = 8;
 const MIN_SLIDES = 1;
+const MAX_SIDE_BANNERS = 2;
 
 export function HeroSliderPanel({ value, onChange }: ContentPanelProps<HeroSliderSettings>) {
   function addRow() {
@@ -24,6 +25,20 @@ export function HeroSliderPanel({ value, onChange }: ContentPanelProps<HeroSlide
 
   function removeRow(index: number) {
     onChange({ ...value, slides: value.slides.filter((_, i) => i !== index) });
+  }
+
+  const sideBanners = value.side_banners ?? [];
+
+  function updateSideBanner(index: number, patch: Partial<BannerItem>) {
+    onChange({ ...value, side_banners: sideBanners.map((banner, i) => (i === index ? { ...banner, ...patch } : banner)) });
+  }
+
+  function addSideBanner() {
+    onChange({ ...value, side_banners: [...sideBanners, { image_url: null, link_url: null, alt_text: null }] });
+  }
+
+  function removeSideBanner(index: number) {
+    onChange({ ...value, side_banners: sideBanners.filter((_, i) => i !== index) });
   }
 
   return (
@@ -96,6 +111,51 @@ export function HeroSliderPanel({ value, onChange }: ContentPanelProps<HeroSlide
         <Plus />
         Add slide
       </Button>
+
+      <div className="space-y-3 border-t border-border pt-4">
+        <p className="text-sm font-medium text-text-primary">Side banners (beside the slider)</p>
+        {sideBanners.map((banner, index) => (
+          <div key={index} className="space-y-3 rounded-lg border border-border p-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-text-primary">Banner {index + 1}</p>
+              <Button type="button" size="icon" variant="ghost" aria-label="Remove banner" onClick={() => removeSideBanner(index)}>
+                <Trash2 className="text-danger" />
+              </Button>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`hero-slider-banner-image-${index}`}>Image URL</Label>
+              <Input
+                id={`hero-slider-banner-image-${index}`}
+                value={banner.image_url ?? ""}
+                placeholder="https://..."
+                onChange={(event) => updateSideBanner(index, { image_url: event.target.value || null })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor={`hero-slider-banner-link-${index}`}>Link</Label>
+                <Input
+                  id={`hero-slider-banner-link-${index}`}
+                  value={banner.link_url ?? ""}
+                  onChange={(event) => updateSideBanner(index, { link_url: event.target.value || null })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`hero-slider-banner-alt-${index}`}>Alt text</Label>
+                <Input
+                  id={`hero-slider-banner-alt-${index}`}
+                  value={banner.alt_text ?? ""}
+                  onChange={(event) => updateSideBanner(index, { alt_text: event.target.value || null })}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+        <Button type="button" variant="outline" disabled={sideBanners.length >= MAX_SIDE_BANNERS} onClick={addSideBanner}>
+          <Plus />
+          Add side banner
+        </Button>
+      </div>
 
       <div className="space-y-3 border-t border-border pt-4">
         <label className="flex items-center gap-2 text-sm">

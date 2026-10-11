@@ -59,6 +59,9 @@ export function PageForm({ storeId, defaultValues, onSubmit, isPending, serverEr
   });
 
   const status = useWatch({ control, name: "status" });
+  const watchedTitle = useWatch({ control, name: "title" });
+  const watchedSlug = useWatch({ control, name: "slug" });
+  const watchedContent = useWatch({ control, name: "content" });
 
   const slugTouched = useRef(Boolean(defaultValues?.slug));
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,7 +145,12 @@ export function PageForm({ storeId, defaultValues, onSubmit, isPending, serverEr
 
       <div className="space-y-4 rounded-lg border border-border p-4">
         <p className="text-sm font-medium text-text-primary">SEO (optional)</p>
-        <SeoFields value={seo} onChange={setSeo} titlePlaceholder={defaultValues?.title} />
+        <SeoFields
+          value={seo}
+          onChange={setSeo}
+          titlePlaceholder={watchedTitle || defaultValues?.title}
+          analysis={{ kind: "page", slug: watchedSlug, content: watchedContent, entityId: defaultValues?.id }}
+        />
       </div>
 
       <div className="flex justify-end">

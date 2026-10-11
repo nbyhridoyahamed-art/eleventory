@@ -97,6 +97,8 @@ class OrderResource extends JsonResource
                 'tracking_number' => $shipment->tracking_number,
                 'status' => $shipment->status,
                 'courier_name' => $shipment->courier?->name,
+                'courier_status' => $shipment->courier_status,
+                'courier_provider' => $shipment->courier?->provider,
                 'created_at' => $shipment->created_at,
             ])),
             'returns' => $this->whenLoaded('returns', fn () => $this->returns->map(fn ($return) => [

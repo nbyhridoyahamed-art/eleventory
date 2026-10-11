@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { articleJsonLd, breadcrumbJsonLd, JsonLd } from "@/lib/json-ld";
+import { articleJsonLd, breadcrumbJsonLd, FaqJsonLd, disabledSchemas, JsonLd } from "@/lib/json-ld";
 import { storefrontApi } from "@/lib/storefront-api";
 import { buildStorefrontMetadata, resolveRedirectOrNotFound } from "@/lib/storefront-seo";
 import { ApiError } from "@/types/api";
@@ -53,6 +53,7 @@ export default async function BlogPostDetailPage({ params }: PageProps<"/blog/[s
   return (
     <>
       <JsonLd
+        disabled={disabledSchemas(post.seo)}
         data={articleJsonLd({
           headline: post.title,
           description: post.excerpt,
@@ -62,6 +63,7 @@ export default async function BlogPostDetailPage({ params }: PageProps<"/blog/[s
         })}
       />
       <JsonLd
+        disabled={disabledSchemas(post.seo)}
         data={breadcrumbJsonLd([
           { name: "Home", url: SITE_URL },
           ...(post.category
@@ -70,6 +72,7 @@ export default async function BlogPostDetailPage({ params }: PageProps<"/blog/[s
           { name: post.title, url },
         ])}
       />
+      <FaqJsonLd seo={post.seo} />
       <BlogPostClient slug={slug} />
     </>
   );

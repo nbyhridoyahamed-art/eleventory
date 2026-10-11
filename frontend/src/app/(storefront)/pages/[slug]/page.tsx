@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { breadcrumbJsonLd, JsonLd } from "@/lib/json-ld";
+import { breadcrumbJsonLd, FaqJsonLd, disabledSchemas, JsonLd } from "@/lib/json-ld";
 import { storefrontApi } from "@/lib/storefront-api";
 import { buildStorefrontMetadata, resolveRedirectOrNotFound } from "@/lib/storefront-seo";
 import { ApiError } from "@/types/api";
@@ -47,11 +47,13 @@ export default async function StorefrontPageDetail({ params }: PageProps<"/pages
   return (
     <>
       <JsonLd
+        disabled={disabledSchemas(page.seo)}
         data={breadcrumbJsonLd([
           { name: "Home", url: SITE_URL },
           { name: page.title, url },
         ])}
       />
+      <FaqJsonLd seo={page.seo} />
       <StorefrontPageClient slug={slug} />
     </>
   );

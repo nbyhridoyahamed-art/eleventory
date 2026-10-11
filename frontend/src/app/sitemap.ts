@@ -1,10 +1,9 @@
 import type { MetadataRoute } from "next";
 
+import { getPublicSeo } from "@/lib/seo-settings";
 import { storefrontApi } from "@/lib/storefront-api";
 import type { PaginationMeta } from "@/types/api";
 import type { StorefrontBrand, StorefrontCategory, StorefrontPage, StorefrontProduct } from "@/types/storefront";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 // The catalog changes far more often than a deploy — regenerate per-request
 // rather than caching a stale sitemap from build time (see Next's
@@ -13,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 // Bounds worst-case pagination looping well above what this app's catalog
 // needs today, without looping forever if a backend response is malformed.
-const MAX_PAGES = 25;
+const MAX_PAGES = 100;
 
 interface SitemapBlogPost {
   slug: string;
@@ -43,13 +42,23 @@ function flattenCategories(categories: StorefrontCategory[]): StorefrontCategory
   return categories.flatMap((category) => [category, ...flattenCategories(category.children ?? [])]);
 }
 
+/**
+ * The XML sitemap. The SEO section's Technical tab decides whether it exists
+ * at all and which content types are listed; the homepage, shop and (when
+ * enabled) blog landing page are always included.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { settings, siteUrl } = await getPublicSeo();
+  const include = settings.sitemap;
+
+  if (!include.enabled) return [];
+
   const [products, categoryTree, brands, pages, posts] = await Promise.all([
-    fetchAllPages<StorefrontProduct>("/storefront/products", 60).catch(() => []),
-    storefrontApi.get<StorefrontCategory[]>("/storefront/categories").catch(() => []),
-    storefrontApi.get<StorefrontBrand[]>("/storefront/brands").catch(() => []),
-    storefrontApi.get<StorefrontPage[]>("/storefront/pages").catch(() => []),
-    fetchAllPages<SitemapBlogPost>("/storefront/blog", 60).catch(() => []),
+    include.products ? fetchAllPages<StorefrontProduct>("/storefront/products", 60).catch(() => []) : [],
+    include.categories ? storefrontApi.get<StorefrontCategory[]>("/storefront/categories").catch(() => []) : [],
+    include.brands ? storefrontApi.get<StorefrontBrand[]>("/storefront/brands").catch(() => []) : [],
+    include.pages ? storefrontApi.get<StorefrontPage[]>("/storefront/pages").catch(() => []) : [],
+    include.blog ? fetchAllPages<SitemapBlogPost>("/storefront/blog", 60).catch(() => []) : [],
   ]);
 
   const categories = flattenCategories(categoryTree);
@@ -59,43 +68,43 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const blogTagSlugs = new Set(posts.flatMap((post) => post.tags.map((tag) => tag.slug)));
 
   return [
-    { url: SITE_URL, changeFrequency: "daily", priority: 1 },
-    { url: `${SITE_URL}/products`, changeFrequency: "daily", priority: 0.8 },
-    { url: `${SITE_URL}/brands`, changeFrequency: "weekly", priority: 0.5 },
-    { url: `${SITE_URL}/blog`, changeFrequency: "daily", priority: 0.6 },
+    { url: siteUrl, changeFrequency: "daily", priority: 1 },
+    { url: `${siteUrl}/products`, changeFrequency: "daily", priority: 0.8 },
+    ...(include.brands ? [{ url: `${siteUrl}/brands`, changeFrequency: "weekly" as const, priority: 0.5 }] : []),
+    ...(include.blog ? [{ url: `${siteUrl}/blog`, changeFrequency: "daily" as const, priority: 0.6 }] : []),
     ...products.map((product) => ({
-      url: `${SITE_URL}/products/${product.slug}`,
+      url: `${siteUrl}/products/${product.slug}`,
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),
     ...categories.map((category) => ({
-      url: `${SITE_URL}/category/${category.slug}`,
+      url: `${siteUrl}/category/${category.slug}`,
       changeFrequency: "weekly" as const,
       priority: 0.6,
     })),
     ...brands.map((brand) => ({
-      url: `${SITE_URL}/brand/${brand.slug}`,
+      url: `${siteUrl}/brand/${brand.slug}`,
       changeFrequency: "weekly" as const,
       priority: 0.5,
     })),
     ...pages.map((page) => ({
-      url: `${SITE_URL}/pages/${page.slug}`,
+      url: `${siteUrl}/pages/${page.slug}`,
       changeFrequency: "monthly" as const,
       priority: 0.4,
     })),
     ...posts.map((post) => ({
-      url: `${SITE_URL}/blog/${post.slug}`,
+      url: `${siteUrl}/blog/${post.slug}`,
       lastModified: post.published_at ?? undefined,
       changeFrequency: "monthly" as const,
       priority: 0.5,
     })),
     ...[...blogCategorySlugs].map((slug) => ({
-      url: `${SITE_URL}/blog/category/${slug}`,
+      url: `${siteUrl}/blog/category/${slug}`,
       changeFrequency: "weekly" as const,
       priority: 0.4,
     })),
     ...[...blogTagSlugs].map((slug) => ({
-      url: `${SITE_URL}/blog/tag/${slug}`,
+      url: `${siteUrl}/blog/tag/${slug}`,
       changeFrequency: "weekly" as const,
       priority: 0.3,
     })),

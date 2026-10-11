@@ -22,6 +22,10 @@ class CourierRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
             'tracking_url_template' => ['nullable', 'string', 'max:500'],
             'status' => ['nullable', Rule::in(['active', 'inactive'])],
+            'provider' => ['nullable', Rule::in(['manual', 'steadfast'])],
+            // Blank on edit keeps the stored secret; required when first connecting.
+            'api_key' => [$this->route('courier') ? 'nullable' : 'required_if:provider,steadfast', 'nullable', 'string', 'max:255'],
+            'api_secret' => [$this->route('courier') ? 'nullable' : 'required_if:provider,steadfast', 'nullable', 'string', 'max:255'],
         ];
     }
 }

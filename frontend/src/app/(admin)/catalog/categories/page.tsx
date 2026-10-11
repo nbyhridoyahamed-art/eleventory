@@ -11,6 +11,8 @@ import { PermissionDenied } from "@/components/permission-denied";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
+import { SeoScoreBadge } from "@/components/shared/seo-score-badge";
+import { ViewOnSiteLink } from "@/components/shared/view-on-site-link";
 import {
   Dialog,
   DialogContent,
@@ -50,7 +52,24 @@ export default function CategoriesPage() {
         </div>
       ),
     },
+    {
+      id: "seo",
+      header: "SEO",
+      cell: (category) => <SeoScoreBadge seo={category.seo} />,
+    },
     { id: "slug", header: "Slug", cell: (category) => category.slug },
+    {
+      id: "view",
+      header: "View",
+      cell: (category) => (
+        <ViewOnSiteLink
+          href={`/category/${category.slug}`}
+          visible={category.status === "active"}
+          label={category.name}
+          hiddenReason="This category is inactive, so it isn't on the storefront"
+        />
+      ),
+    },
     { id: "products", header: "Products", cell: (category) => category.products_count ?? 0 },
     {
       id: "status",

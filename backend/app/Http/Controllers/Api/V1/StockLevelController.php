@@ -43,23 +43,24 @@ class StockLevelController extends Controller
         $perPage = min((int) $request->integer('per_page', 20), 100);
         $lowStockOnly = $request->boolean('low_stock');
 
+        // Per-product sums at this warehouse as correlated subqueries rather than
+        // a left join + GROUP BY: `select products.*` with a bare GROUP BY
+        // products.id is rejected by MySQL/MariaDB under ONLY_FULL_GROUP_BY
+        // (every other products column "isn't in GROUP BY"), while SQLite — which
+        // the test suite runs on — silently allows it.
+        $quantitySql = '(select COALESCE(SUM(sl.quantity), 0) from stock_levels sl where sl.product_id = products.id and sl.warehouse_id = ?)';
+        $reservedSql = '(select COALESCE(SUM(sl.quantity_reserved), 0) from stock_levels sl where sl.product_id = products.id and sl.warehouse_id = ?)';
+
         $products = Product::query()
-            ->leftJoin('stock_levels', function ($join) use ($warehouseId) {
-                $join->on('stock_levels.product_id', '=', 'products.id')
-                    ->where('stock_levels.warehouse_id', '=', $warehouseId);
-            })
             ->where('products.store_id', $storeId)
             // A bundle never has its own stock_levels row (see BundleExpander)
-            // — left-joined, it would otherwise show up here as a misleading
-            // "0 on hand" rather than being left off a list about real
-            // per-warehouse physical stock.
+            // — it would otherwise show up here as a misleading "0 on hand"
+            // rather than being left off a list about real per-warehouse
+            // physical stock.
             ->where('products.type', '!=', 'bundle')
-            ->select(
-                'products.*',
-                DB::raw('COALESCE(SUM(stock_levels.quantity), 0) as warehouse_quantity'),
-                DB::raw('COALESCE(SUM(stock_levels.quantity_reserved), 0) as warehouse_reserved'),
-            )
-            ->groupBy('products.id')
+            ->select('products.*')
+            ->selectRaw("{$quantitySql} as warehouse_quantity", [$warehouseId])
+            ->selectRaw("{$reservedSql} as warehouse_reserved", [$warehouseId])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $term = '%'.$request->string('search').'%';
                 $query->where(function ($q) use ($term) {
@@ -69,7 +70,7 @@ class StockLevelController extends Controller
             ->when($lowStockOnly, fn ($query) => $query
                 ->where('products.track_stock', true)
                 ->whereNotNull('products.low_stock_threshold')
-                ->havingRaw('(COALESCE(SUM(stock_levels.quantity), 0) - COALESCE(SUM(stock_levels.quantity_reserved), 0)) <= products.low_stock_threshold'))
+                ->whereRaw("({$quantitySql} - {$reservedSql}) <= products.low_stock_threshold", [$warehouseId, $warehouseId]))
             ->orderBy('products.name')
             ->paginate($perPage);
 

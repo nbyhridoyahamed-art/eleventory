@@ -21,7 +21,7 @@ use App\Support\StoreCreditResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
+use App\Support\SafeNotification;
 use Illuminate\Support\Str;
 
 class ReturnController extends Controller
@@ -239,7 +239,7 @@ class ReturnController extends Controller
             return ApiResponse::error($exception->getMessage(), [], 422);
         }
 
-        Notification::send($orderReturn->order->customer, new ReturnStatusChangedNotification($orderReturn));
+        SafeNotification::send($orderReturn->order->customer, new ReturnStatusChangedNotification($orderReturn));
 
         return ApiResponse::success(new ReturnResource($orderReturn->load(self::RELATIONS)), 'Return marked received.');
     }
@@ -340,7 +340,7 @@ class ReturnController extends Controller
             }
         });
 
-        Notification::send($orderReturn->order->customer, new ReturnStatusChangedNotification($orderReturn));
+        SafeNotification::send($orderReturn->order->customer, new ReturnStatusChangedNotification($orderReturn));
 
         return ApiResponse::success(new ReturnResource($orderReturn->load(self::RELATIONS)), 'Return refunded.');
     }
@@ -359,7 +359,7 @@ class ReturnController extends Controller
             ]);
         });
 
-        Notification::send($orderReturn->order->customer, new ReturnStatusChangedNotification($orderReturn));
+        SafeNotification::send($orderReturn->order->customer, new ReturnStatusChangedNotification($orderReturn));
     }
 
     private function suggestedRefundAmount(OrderReturn $orderReturn): int

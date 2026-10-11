@@ -1,48 +1,38 @@
 import type { Metadata } from "next";
 
 import { JsonLd, organizationAndWebsiteJsonLd } from "@/lib/json-ld";
-import { storefrontApi } from "@/lib/storefront-api";
-import { buildStorefrontMetadata } from "@/lib/storefront-seo";
-import type { StorefrontStore } from "@/types/storefront";
+import { getPublicSeo } from "@/lib/seo-settings";
 import { StorefrontHomeClient } from "./home-client";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
 /**
- * The homepage has no single SEO-bearing entity — it's site-wide. Unlike
- * every other storefront page.tsx, there's no 404/redirect concern here (a
- * homepage can't 404), so a failed store fetch falls back to generic
- * metadata instead of ever failing the whole page.
+ * The homepage has no entity of its own to carry SEO, so its title,
+ * description, social image and structured data come from the SEO section
+ * (Site & Homepage tab). Blank fields fall back to the store name so the
+ * title is never empty.
  */
-async function getStore(): Promise<StorefrontStore | null> {
-  try {
-    return await storefrontApi.get<StorefrontStore>("/storefront/store");
-  } catch {
-    return null;
-  }
-}
-
 export async function generateMetadata(): Promise<Metadata> {
-  const store = await getStore();
+  const { settings, storeName, siteUrl } = await getPublicSeo();
+  const home = settings.homepage;
 
-  if (!store) {
-    return { title: "Home" };
-  }
+  const title = home.title || storeName;
+  const description = home.description || undefined;
+  const image = home.og_image || settings.site.default_og_image || undefined;
 
-  return buildStorefrontMetadata({
-    seo: null,
-    fallbackTitle: store.name,
-    fallbackDescription: undefined,
-    path: "/",
-  });
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: siteUrl },
+    openGraph: { title, description, url: siteUrl, type: "website", images: image ? [image] : undefined },
+    twitter: { card: "summary_large_image", title, description, images: image ? [image] : undefined },
+  };
 }
 
 export default async function StorefrontHomePage() {
-  const store = await getStore();
+  const { settings, storeName, siteUrl } = await getPublicSeo();
 
   return (
     <>
-      {store ? <JsonLd data={organizationAndWebsiteJsonLd({ name: store.name, url: SITE_URL })} /> : null}
+      <JsonLd data={organizationAndWebsiteJsonLd({ name: storeName, url: siteUrl }, settings.schema)} />
       <StorefrontHomeClient />
     </>
   );

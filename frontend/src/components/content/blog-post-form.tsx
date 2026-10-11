@@ -90,6 +90,9 @@ export function BlogPostForm({
   const status = useWatch({ control, name: "status" });
   const body = useWatch({ control, name: "body" });
   const categoryId = useWatch({ control, name: "blog_category_id" });
+  const watchedTitle = useWatch({ control, name: "title" });
+  const watchedSlug = useWatch({ control, name: "slug" });
+  const watchedExcerpt = useWatch({ control, name: "excerpt" });
 
   const slugTouched = useRef(Boolean(defaultValues?.slug));
   const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -244,8 +247,9 @@ export function BlogPostForm({
         <SeoFields
           value={seo}
           onChange={setSeo}
-          titlePlaceholder={defaultValues?.title}
-          descriptionPlaceholder={defaultValues?.excerpt ?? undefined}
+          titlePlaceholder={watchedTitle || defaultValues?.title}
+          descriptionPlaceholder={watchedExcerpt || defaultValues?.excerpt || undefined}
+          analysis={{ kind: "post", slug: watchedSlug, content: body, entityId: defaultValues?.id }}
         />
       </div>
 

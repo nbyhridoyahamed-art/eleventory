@@ -99,3 +99,19 @@ export function useFailedShipment(id: number) {
 export function useReturnedShipment(id: number) {
   return useShipmentAction(id, "returned", "Shipment marked returned to seller.");
 }
+
+/** Pulls the courier's own delivery status (Steadfast) for a shipment. */
+export function useSyncCourierStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (shipmentId: number) => api.post<Shipment>(`/shipments/${shipmentId}/sync-courier`),
+    onSuccess: (shipment) => {
+      invalidateAfterShipmentChange(queryClient, shipment.id);
+      toast.success(`Courier status: ${(shipment.courier_status ?? "unknown").replace(/_/g, " ")}`);
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : "Could not refresh the courier status.");
+    },
+  });
+}

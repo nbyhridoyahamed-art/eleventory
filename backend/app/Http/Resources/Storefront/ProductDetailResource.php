@@ -47,19 +47,7 @@ class ProductDetailResource extends JsonResource
             'in_stock' => (bool) $this->in_stock,
             'reviews_count' => (int) $this->reviews_count,
             'average_rating' => $this->average_rating !== null ? round((float) $this->average_rating, 1) : null,
-            'seo' => $this->whenLoaded('seoMetadata', fn () => $this->seoMetadata ? [
-                'title' => $this->seoMetadata->title,
-                'description' => $this->seoMetadata->description,
-                'canonical_url' => $this->seoMetadata->canonical_url,
-                'robots' => $this->seoMetadata->robots,
-                'og_title' => $this->seoMetadata->og_title,
-                'og_description' => $this->seoMetadata->og_description,
-                'og_image' => $this->seoMetadata->og_image,
-                'twitter_title' => $this->seoMetadata->twitter_title,
-                'twitter_description' => $this->seoMetadata->twitter_description,
-                'twitter_image' => $this->seoMetadata->twitter_image,
-                'schema_json' => $this->seoMetadata->schema_json,
-            ] : null),
+            'seo' => $this->whenLoaded('seoMetadata', fn () => \App\Support\SeoTemplateResolver::payload($this->resource)),
         ];
     }
 }

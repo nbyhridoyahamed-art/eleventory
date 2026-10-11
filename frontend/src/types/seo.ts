@@ -12,4 +12,6 @@ export interface Seo {
   canonical_url: string | null;
   robots: string | null;
   schema_json: Record<string, unknown> | null;
+  /** Stored 0–100 on-page score from the backend analyzer; null until the item has been analysed. */
+  score?: number | null;
 }

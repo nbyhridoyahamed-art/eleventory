@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, ShoppingCart } from "lucide-react";
+import { Plus, ShoppingCart, Truck } from "lucide-react";
 
 import { can } from "@/lib/permissions";
 import { useCurrentUser } from "@/hooks/use-auth";
 import { useAllCustomers } from "@/hooks/use-customers";
 import { useOrders } from "@/hooks/use-orders";
+import { useSyncCourierStatus } from "@/hooks/use-shipments";
 import { formatMoney } from "@/lib/money";
+import { SendToCourierDialog } from "@/components/orders/send-to-courier-dialog";
 import { PermissionDenied } from "@/components/permission-denied";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,8 @@ export default function OrdersPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("all");
   const [customerId, setCustomerId] = useState("all");
+  const [courierOrder, setCourierOrder] = useState<Order | null>(null);
+  const syncCourier = useSyncCourierStatus();
 
   const { data, isLoading } = useOrders(storeId, {
     page,
@@ -56,6 +60,7 @@ export default function OrdersPage() {
   }
 
   const canCreate = can(currentUser, "orders.create");
+  const canShip = can(currentUser, "shipments.create");
 
   const columns: DataTableColumn<Order>[] = [
     {
@@ -84,6 +89,48 @@ export default function OrdersPage() {
       id: "status",
       header: "Status",
       cell: (row) => <Badge variant={STATUS_VARIANTS[row.status]}>{STATUS_LABELS[row.status]}</Badge>,
+    },
+    {
+      id: "courier",
+      header: "Courier",
+      cell: (row) => {
+        const shipment = row.shipments?.[0];
+        const active = shipment && !["failed_delivery", "returned_to_seller"].includes(shipment.status) ? shipment : null;
+
+        if (active) {
+          return (
+            <div className="text-xs leading-snug">
+              <p className="font-medium text-text-primary">{active.courier_name ?? "Courier"}</p>
+              <p className="text-text-muted">{active.tracking_number}</p>
+              {active.courier_status ? (
+                <p className="text-text-muted">
+                  {active.courier_status.replace(/_/g, " ")}
+                  {active.courier_provider === "steadfast" ? (
+                    <button
+                      type="button"
+                      className="ml-1.5 text-primary hover:underline"
+                      onClick={() => syncCourier.mutate(active.id)}
+                    >
+                      Refresh
+                    </button>
+                  ) : null}
+                </p>
+              ) : null}
+            </div>
+          );
+        }
+
+        if (!canShip || row.status === "cancelled" || row.status === "delivered") {
+          return shipment ? <span className="text-xs text-text-muted">Re-dispatch from order</span> : <span className="text-text-muted">—</span>;
+        }
+
+        return (
+          <Button type="button" size="sm" variant="outline" onClick={() => setCourierOrder(row)}>
+            <Truck />
+            Send to courier
+          </Button>
+        );
+      },
     },
     { id: "when", header: "Created", cell: (row) => new Date(row.created_at).toLocaleDateString() },
   ];
@@ -163,6 +210,8 @@ export default function OrdersPage() {
           />
         }
       />
+
+      <SendToCourierDialog order={courierOrder} storeId={storeId} onClose={() => setCourierOrder(null)} />
     </div>
   );
 }

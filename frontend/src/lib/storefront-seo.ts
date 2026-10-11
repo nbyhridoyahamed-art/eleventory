@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { notFound, permanentRedirect, redirect } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -28,6 +29,14 @@ export async function resolveRedirectOrNotFound(path: string): Promise<never> {
       permanentRedirect(match.to_path);
     }
     redirect(match.to_path);
+  }
+
+  // Record the miss for the SEO 404 monitor; never let logging break the 404 itself.
+  try {
+    const referrer = (await headers()).get("referer");
+    await storefrontApi.post("/storefront/seo/not-found", { path, referrer });
+  } catch {
+    // ignore
   }
 
   notFound();

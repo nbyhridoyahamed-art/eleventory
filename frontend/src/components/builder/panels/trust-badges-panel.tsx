@@ -19,6 +19,9 @@ const ICON_OPTIONS: { value: string; label: string }[] = [
   { value: "credit-card", label: "Credit Card" },
   { value: "rotate-ccw", label: "Rotate Ccw" },
   { value: "headset", label: "Headset" },
+  { value: "banknote", label: "Banknote" },
+  { value: "badge-check", label: "Badge Check" },
+  { value: "tag", label: "Tag" },
 ];
 
 export function TrustBadgesPanel({ value, onChange }: ContentPanelProps<TrustBadgesSettings>) {

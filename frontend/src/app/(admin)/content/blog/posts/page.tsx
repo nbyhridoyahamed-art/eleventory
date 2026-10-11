@@ -11,6 +11,8 @@ import { PermissionDenied } from "@/components/permission-denied";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
+import { SeoScoreBadge } from "@/components/shared/seo-score-badge";
+import { ViewOnSiteLink } from "@/components/shared/view-on-site-link";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +38,24 @@ export default function BlogPostsPage() {
 
   const columns: DataTableColumn<BlogPost>[] = [
     { id: "title", header: "Title", cell: (post) => <span className="font-medium">{post.title}</span> },
+    {
+      id: "seo",
+      header: "SEO",
+      cell: (post) => <SeoScoreBadge seo={post.seo} />,
+    },
     { id: "category", header: "Category", cell: (post) => post.category?.name ?? "—" },
+    {
+      id: "view",
+      header: "View",
+      cell: (post) => (
+        <ViewOnSiteLink
+          href={`/blog/${post.slug}`}
+          visible={post.status === "published"}
+          label={post.title}
+          hiddenReason="This post isn't published, so it isn't on the storefront"
+        />
+      ),
+    },
     {
       id: "status",
       header: "Status",

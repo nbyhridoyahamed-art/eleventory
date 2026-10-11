@@ -20,6 +20,7 @@ class PageController extends Controller
         $this->authorize('viewAny', Page::class);
 
         $pages = Page::query()
+            ->with('seoMetadata')
             ->when($request->filled('store_id'), fn ($query) => $query->where('store_id', $request->integer('store_id')))
             ->when($request->filled('search'), fn ($query) => $query->where('title', 'like', '%'.$request->string('search').'%'))
             ->orderBy('title')

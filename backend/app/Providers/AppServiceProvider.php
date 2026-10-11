@@ -5,12 +5,15 @@ namespace App\Providers;
 use App\Contracts\SmsGateway;
 use App\Models\Category;
 use App\Models\HomepageBlock;
+use App\Models\NotificationLog;
 use App\Observers\CategoryObserver;
 use App\Observers\HomepageBlockObserver;
 use App\Policies\RolePolicy;
 use App\Services\Sms\LogSmsGateway;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Events\NotificationSent;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -40,6 +43,24 @@ class AppServiceProvider extends ServiceProvider
         // registered explicitly.
         Gate::policy(Role::class, RolePolicy::class);
 
+        // Email deliveries are written to the notification log here (SMS logs itself in SmsChannel).
+        Event::listen(NotificationSent::class, function (NotificationSent $event) {
+            if ($event->channel !== 'mail') {
+                return;
+            }
+
+            $subject = method_exists($event->notification, 'toMail') ? ($event->notification->toMail($event->notifiable)->subject ?? null) : null;
+
+            NotificationLog::create([
+                'store_id' => $event->notifiable->store_id ?? null,
+                'channel' => 'email',
+                'event' => method_exists($event->notification, 'eventKey') ? $event->notification->eventKey() : null,
+                'recipient' => (string) ($event->notifiable->email ?? ''),
+                'subject' => $subject,
+                'status' => 'sent',
+            ]);
+        });
+
         // Phase 21: the named limiter `throttle:api` (wired globally in
         // bootstrap/app.php via throttleApi()) resolves to. Every route
         // already under a tighter per-route throttle (login, checkout,
@@ -53,6 +74,14 @@ class AppServiceProvider extends ServiceProvider
         // tiny value, which overrides this for that test only.
         RateLimiter::for('api', function (Request $request) {
             if (app()->runningUnitTests()) {
+                return Limit::none();
+            }
+
+            // The storefront server renders every page from one address, so it
+            // authenticates with a shared secret and is exempt from the per-IP limit.
+            $ssrKey = (string) config('app.ssr_key');
+
+            if ($ssrKey !== '' && hash_equals($ssrKey, (string) $request->header('X-Storefront-Key'))) {
                 return Limit::none();
             }
 

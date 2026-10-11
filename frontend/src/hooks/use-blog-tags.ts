@@ -11,7 +11,7 @@ export interface BlogTagFormValues {
   store_id: number;
   name: string;
   slug: string;
-  seo?: Record<string, string | null>;
+  seo?: Record<string, string | Record<string, unknown> | null>;
 }
 
 export function useBlogTags(storeId: number | null | undefined) {

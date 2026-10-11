@@ -12,7 +12,7 @@ import {
 import { CustomerAddressForm } from "@/components/customers/customer-address-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Panel } from "@/components/storefront/panel";
 import {
   Dialog,
   DialogContent,
@@ -39,15 +39,21 @@ export default function AccountAddressesPage() {
   const activeMutation = isEditing ? updateAddress : createAddress;
 
   return (
-    <Card>
-      <CardContent className="space-y-3 p-4">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-text-muted">Saved shipping addresses for faster checkout.</p>
-          <Button size="sm" variant="outline" onClick={() => setFormAddress("new")}>
-            <Plus />
-            Add address
-          </Button>
-        </div>
+    <Panel
+      title="Saved addresses"
+      action={
+        <button
+          type="button"
+          onClick={() => setFormAddress("new")}
+          className="flex items-center gap-1.5 bg-shop-accent px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-shop-on-accent hover:bg-shop-accent-hover"
+        >
+          <Plus className="size-3.5" />
+          Add address
+        </button>
+      }
+    >
+      <div className="space-y-3">
+        <p className="text-sm text-text-muted">Saved shipping addresses for faster checkout.</p>
 
         {isLoading ? (
           <div className="space-y-2">
@@ -65,7 +71,7 @@ export default function AccountAddressesPage() {
             {addresses.map((address) => (
               <div
                 key={address.id}
-                className="flex items-start justify-between gap-3 rounded-lg border border-border p-3"
+                className="flex items-start justify-between gap-3 border border-border bg-surface p-4"
               >
                 <div className="text-sm">
                   <div className="flex items-center gap-2">
@@ -138,7 +144,7 @@ export default function AccountAddressesPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </CardContent>
-    </Card>
+      </div>
+    </Panel>
   );
 }

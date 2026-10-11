@@ -19,7 +19,8 @@ class PurchaseOrderItem extends Model
 
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        // Historical lines keep resolving a product that has since been (soft) deleted.
+        return $this->belongsTo(Product::class)->withTrashed();
     }
 
     public function productVariant(): BelongsTo

@@ -62,6 +62,9 @@ export function BrandForm({ storeId, defaultValues, onSubmit, isPending, serverE
   });
 
   const status = useWatch({ control, name: "status" });
+  const watchedName = useWatch({ control, name: "name" });
+  const watchedSlug = useWatch({ control, name: "slug" });
+  const watchedDescription = useWatch({ control, name: "description" });
 
   const slugTouched = useRef(Boolean(defaultValues?.slug));
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,8 +160,9 @@ export function BrandForm({ storeId, defaultValues, onSubmit, isPending, serverE
         <SeoFields
           value={seo}
           onChange={setSeo}
-          titlePlaceholder={defaultValues?.name}
-          descriptionPlaceholder={defaultValues?.description ?? undefined}
+          titlePlaceholder={watchedName || defaultValues?.name}
+          descriptionPlaceholder={watchedDescription || defaultValues?.description || undefined}
+          analysis={{ kind: "brand", slug: watchedSlug, content: watchedDescription, entityId: defaultValues?.id }}
         />
       </div>
 

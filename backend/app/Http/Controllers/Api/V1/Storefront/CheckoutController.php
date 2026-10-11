@@ -24,7 +24,7 @@ use App\Support\Money;
 use App\Support\OrderPlacement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
+use App\Support\SafeNotification;
 use Illuminate\Support\Str;
 
 class CheckoutController extends StorefrontController
@@ -140,8 +140,8 @@ class CheckoutController extends StorefrontController
             return ApiResponse::error($exception->getMessage(), [], 422);
         }
 
-        Notification::send($order->customer, new OrderPlacedNotification($order));
-        Notification::send($this->staffToNotify($store), new NewOrderPlacedNotification($order));
+        SafeNotification::send($order->customer, new OrderPlacedNotification($order));
+        SafeNotification::send($this->staffToNotify($store), new NewOrderPlacedNotification($order));
 
         return ApiResponse::success(
             new OrderResource($order->load(self::RELATIONS)),
