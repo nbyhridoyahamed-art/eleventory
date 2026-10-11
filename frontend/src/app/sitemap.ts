@@ -47,7 +47,7 @@ function flattenCategories(categories: StorefrontCategory[]): StorefrontCategory
  * at all and which content types are listed; the homepage, shop and (when
  * enabled) blog landing page are always included.
  */
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
   const { settings, siteUrl } = await getPublicSeo();
   const include = settings.sitemap;
 
@@ -109,4 +109,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.3,
     })),
   ];
+}
+
+// Building the sitemap pages through the whole catalog (dozens of API calls), so
+// keep the result in memory for a while rather than rebuilding it on every crawl.
+const SITEMAP_TTL_MS = 60 * 60 * 1000;
+let cached: { at: number; entries: MetadataRoute.Sitemap } | null = null;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (cached && Date.now() - cached.at < SITEMAP_TTL_MS) return cached.entries;
+
+  const entries = await buildSitemap();
+  cached = { at: Date.now(), entries };
+
+  return entries;
 }
