@@ -27,16 +27,24 @@ trap 'rm -rf "$TMP"' EXIT
 
 (cd "$ROOT/backend" && tar \
   --exclude=./vendor --exclude=./.env --exclude=./.env.* --exclude=./tests \
-  --exclude=./storage/logs --exclude=./storage/framework/cache --exclude=./storage/framework/sessions \
+  --exclude=./public/storage --exclude=./storage/app/public --exclude=./storage/logs --exclude=./storage/framework/cache --exclude=./storage/framework/sessions \
   --exclude=./storage/framework/views --exclude=./node_modules --exclude=./.git --exclude=./database/*.sqlite \
   -cf - .) | tar -xf - -C "$TMP"
 
 mkdir -p "$TMP/storage/logs" "$TMP/storage/framework/cache/data" "$TMP/storage/framework/sessions" "$TMP/storage/framework/views" "$TMP/bootstrap/cache"
 (cd "$TMP" && "$PHP_BIN" "$COMPOSER_PHAR" install --no-dev --optimize-autoloader --no-interaction --prefer-dist)
 tar -czf "$DIST/backend.tar.gz" -C "$TMP" .
+# Uploaded images (products, banners) are shipped separately: large, and rarely change.
+if [ -d "$ROOT/backend/storage/app/public" ]; then tar -czf "$DIST/media.tar.gz" -C "$ROOT/backend/storage/app/public" .; fi
 
 echo "==> Frontend: production build"
-(cd "$ROOT/frontend" && npm ci && npm run build)
+# .env.local outranks .env.production in Next's env loading; hide it so the build
+# bakes in the production URLs, and put it back afterwards.
+if [ -f "$ROOT/frontend/.env.local" ]; then
+  mv "$ROOT/frontend/.env.local" "$ROOT/frontend/.env.local.release-bak"
+  trap 'mv "$ROOT/frontend/.env.local.release-bak" "$ROOT/frontend/.env.local" 2>/dev/null; rm -rf "$TMP"' EXIT
+fi
+(cd "$ROOT/frontend" && if [ "${SKIP_NPM_CI:-0}" != "1" ]; then npm ci; fi && npm run build)
 
 STANDALONE="$ROOT/frontend/.next/standalone"
 if [ ! -f "$STANDALONE/server.js" ]; then
