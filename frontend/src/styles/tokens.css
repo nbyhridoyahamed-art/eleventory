@@ -80,27 +80,7 @@
    introduced) needs a second, separate "accent" token, not a same-token
    override — left for a dedicated pass instead of a partial fix that
    would trade one failure for the other. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-success: #16a34a;
-    --color-warning: #f59e0b;
-    --color-danger: #dc2626;
-    --color-info: #0ea5e9;
-
-    --color-background: #0b1120;
-    --color-surface: #111827;
-    --color-surface-elevated: #172033;
-    --color-border: #243044;
-
-    --color-text-primary: #f8fafc;
-    --color-text-secondary: #94a3b8;
-    --color-text-muted: #7c8aa5;
-
-    --color-shop-ink: #8ab4ff;
-    --color-shop-tint: #131c2e;
-  }
-}
-
+/* Light is the default; dark applies only when chosen (the theme toggle sets data-theme). */
 :root[data-theme="dark"] {
   --color-success: #16a34a;
   --color-warning: #f59e0b;

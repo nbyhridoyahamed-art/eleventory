@@ -18,7 +18,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
+      <ThemeProvider attribute="data-theme" defaultTheme="light" enableSystem={false} storageKey="eleventory-theme">
         {children}
         <Toaster position="top-right" />
       </ThemeProvider>

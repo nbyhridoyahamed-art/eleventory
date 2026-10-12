@@ -102,7 +102,7 @@ export function ShopProductCard({
         </span>
       ) : null}
       {!product.in_stock ? (
-        <span className="absolute right-2 top-2 border border-border bg-white px-1.5 py-0.5 text-[11px] font-medium text-text-secondary">
+        <span className="absolute right-2 top-2 border border-slate-300 bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
           Out of stock
         </span>
       ) : null}
