@@ -45,7 +45,7 @@ export default function StockTransferShowPage({ params }: PageProps<"/inventory/
   }
 
   if (isLoading) {
-    return <Skeleton className="h-96 w-full max-w-3xl" />;
+    return <Skeleton className="h-96 w-full" />;
   }
 
   if (isError || !transfer) {
@@ -59,7 +59,7 @@ export default function StockTransferShowPage({ params }: PageProps<"/inventory/
   const canUpdate = can(currentUser, "inventory.transfer");
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="space-y-4">
       <Button variant="ghost" size="sm" asChild>
         <Link href="/inventory/transfers">
           <ArrowLeft />

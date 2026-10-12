@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { ImagePlus, Sparkles, X } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -20,9 +21,10 @@ import { SeoFields, seoFieldsToPayload, seoToFieldsValue } from "@/components/sh
 import { ProductImageGallery } from "@/components/settings/product-image-gallery";
 import { ComponentsManager } from "@/components/catalog/components-manager";
 import { VariantsManager } from "@/components/catalog/variants-manager";
+import { useAllWarehouses } from "@/hooks/use-warehouses";
 import type { ProductFormValues } from "@/hooks/use-products";
 import type { Brand } from "@/types/brand";
-import type { Category } from "@/types/category";
+import { buildCategoryTree, flattenCategoryTree, type Category } from "@/types/category";
 import type { Product } from "@/types/product";
 
 const moneyField = z
@@ -109,6 +111,14 @@ export function ProductForm({
   const [files, setFiles] = useState<File[]>([]);
   const [invalid, setInvalid] = useState(false);
   const [skuLoading, setSkuLoading] = useState(false);
+  const { data: warehousesData } = useAllWarehouses(storeId);
+  const warehouses = (warehousesData?.data ?? []).filter((warehouse) => warehouse.status === "active");
+  const existingLevels = defaultValues?.stock?.levels ?? [];
+  const [stockWarehouse, setStockWarehouse] = useState<string>(existingLevels[0] ? String(existingLevels[0].warehouse_id) : "");
+  const [stockEdits, setStockEdits] = useState<Record<string, string>>({});
+
+  // Categories as an indented tree: sub-categories sit under their parent.
+  const categoryOptions = useMemo(() => flattenCategoryTree(buildCategoryTree(categories)), [categories]);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const {
@@ -169,6 +179,17 @@ export function ProductForm({
   const nameField = register("name");
   const slugField = register("slug");
 
+  function categoryPath(id: string): string {
+    const byId = new Map(categories.map((c) => [String(c.id), c]));
+    const names: string[] = [];
+    let current = byId.get(id);
+    while (current) {
+      names.unshift(current.name);
+      current = current.parent_id ? byId.get(String(current.parent_id)) : undefined;
+    }
+    return names.join(" › ");
+  }
+
   async function generateSku() {
     setSkuLoading(true);
     try {
@@ -181,6 +202,10 @@ export function ProductForm({
       setSkuLoading(false);
     }
   }
+
+  const effectiveWarehouse = stockWarehouse || (warehouses[0] ? String(warehouses[0].id) : "");
+  const currentAtWarehouse = existingLevels.find((level) => String(level.warehouse_id) === effectiveWarehouse)?.quantity;
+  const stockValue = stockEdits[effectiveWarehouse] ?? (currentAtWarehouse !== undefined ? String(currentAtWarehouse) : "");
 
   const submit = handleSubmit(
     (values) => {
@@ -208,6 +233,10 @@ export function ProductForm({
           low_stock_threshold: values.low_stock_threshold ? Number(values.low_stock_threshold) : null,
           status: values.status,
           featured: values.featured,
+          stock:
+            values.type === "simple" && effectiveWarehouse && stockValue !== ""
+              ? { warehouse_id: Number(effectiveWarehouse), quantity: Math.max(0, Math.floor(Number(stockValue))) }
+              : null,
           seo: seoFieldsToPayload(seo),
         },
         files,
@@ -333,6 +362,62 @@ export function ProductForm({
                 <Input id="barcode" {...register("barcode")} />
               </div>
             </div>
+
+            {type === "simple" ? (
+              <div className="space-y-3 rounded-md border border-border bg-shop-tint p-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="stock_warehouse">Warehouse</Label>
+                    <Select value={effectiveWarehouse} onValueChange={setStockWarehouse}>
+                      <SelectTrigger id="stock_warehouse">
+                        <SelectValue placeholder={warehouses.length === 0 ? "No warehouses yet" : "Choose warehouse"}>
+                          {warehouses.find((w) => String(w.id) === effectiveWarehouse)?.name}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {warehouses.map((warehouse) => (
+                          <SelectItem key={warehouse.id} value={String(warehouse.id)}>
+                            {warehouse.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="stock_quantity">Stock quantity</Label>
+                    <Input
+                      id="stock_quantity"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={stockValue}
+                      onChange={(event) =>
+                        setStockEdits((current) => ({ ...current, [effectiveWarehouse]: event.target.value.replace(/[^\d]/g, "") }))
+                      }
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-text-muted">
+                  Saved straight into Inventory as a stock adjustment, so Stock levels and Stock movements always match
+                  this page.
+                  {defaultValues?.stock && defaultValues.stock.levels.length > 0 ? (
+                    <>
+                      {" "}
+                      Currently {defaultValues.stock.total} on hand
+                      {defaultValues.stock.reserved > 0 ? ` (${defaultValues.stock.reserved} reserved for orders)` : ""}
+                      {defaultValues.stock.levels.length > 1
+                        ? ": " + defaultValues.stock.levels.map((l) => `${l.warehouse_name ?? "Warehouse"} ${l.quantity}`).join(", ")
+                        : ""}
+                      .{" "}
+                      <Link href="/inventory/stock-levels" className="text-primary hover:underline">
+                        Open inventory
+                      </Link>
+                    </>
+                  ) : null}
+                </p>
+              </div>
+            ) : type === "variable" ? (
+              <p className="text-xs text-text-muted">Stock for a variable product is managed per variant in the Variants section below.</p>
+            ) : null}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
@@ -481,7 +566,7 @@ export function ProductForm({
         </div>
 
         {/* Sidebar */}
-        <aside className="space-y-5 xl:sticky xl:top-4">
+        <aside className="space-y-5 xl:sticky xl:top-20">
           <Section title="Publish">
             <div className="space-y-1.5">
               <Label htmlFor="product-form-status">Status</Label>
@@ -520,14 +605,17 @@ export function ProductForm({
               >
                 <SelectTrigger id="product-form-category">
                   <SelectValue placeholder="None">
-                    {categoryId ? categories.find((c) => String(c.id) === categoryId)?.name : "None"}
+                    {categoryId ? categoryPath(categoryId) : "None"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
-                  {categories.map((c) => (
+                  {categoryOptions.map((c) => (
                     <SelectItem key={c.id} value={String(c.id)}>
-                      {c.name}
+                      <span style={{ paddingLeft: `${c.depth * 14}px` }}>
+                        {c.depth > 0 ? "↳ " : ""}
+                        {c.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>

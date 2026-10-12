@@ -28,7 +28,7 @@ export default function EditBlogTagPage({ params }: PageProps<"/content/blog/tag
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !tag) {
@@ -40,7 +40,7 @@ export default function EditBlogTagPage({ params }: PageProps<"/content/blog/tag
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Edit {tag.name}</CardTitle>
       </CardHeader>

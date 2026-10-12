@@ -25,7 +25,7 @@ export default function NewWarehousePage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Add warehouse</CardTitle>
       </CardHeader>

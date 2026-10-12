@@ -83,7 +83,7 @@ export function AdminTopbar({ user }: { user?: User }) {
   const unreadCount = notifications?.meta?.unread_count ?? 0;
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-surface px-4">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-surface px-4">
       <div className="flex items-center gap-3">
         <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
           <SheetTrigger asChild>

@@ -47,7 +47,7 @@ export default function PurchaseReturnShowPage({ params }: PageProps<"/purchasin
   }
 
   if (isLoading) {
-    return <Skeleton className="h-96 w-full max-w-3xl" />;
+    return <Skeleton className="h-96 w-full" />;
   }
 
   if (isError || !purchaseReturn) {
@@ -61,7 +61,7 @@ export default function PurchaseReturnShowPage({ params }: PageProps<"/purchasin
   const canUpdate = can(currentUser, "purchase_returns.update");
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="space-y-4">
       <Button variant="ghost" size="sm" asChild>
         <Link href="/purchasing/purchase-returns">
           <ArrowLeft />

@@ -48,7 +48,7 @@ export default function ShipmentShowPage({ params }: PageProps<"/delivery/shipme
   }
 
   if (isLoading) {
-    return <Skeleton className="h-96 w-full max-w-3xl" />;
+    return <Skeleton className="h-96 w-full" />;
   }
 
   if (isError || !shipment) {
@@ -62,7 +62,7 @@ export default function ShipmentShowPage({ params }: PageProps<"/delivery/shipme
   const canUpdate = can(currentUser, "shipments.update");
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="space-y-4">
       <Button variant="ghost" size="sm" asChild>
         <Link href="/delivery/shipments">
           <ArrowLeft />

@@ -53,6 +53,22 @@ class ProductResource extends JsonResource
             'track_stock' => $this->track_stock,
             'low_stock_threshold' => $this->low_stock_threshold,
 
+            // On-hand quantity of the product itself (variants carry their own), per warehouse.
+            'stock' => $this->whenLoaded('stockLevels', function () {
+                $levels = $this->stockLevels->whereNull('product_variant_id');
+
+                return [
+                    'total' => (int) $levels->sum('quantity'),
+                    'reserved' => (int) $levels->sum('quantity_reserved'),
+                    'levels' => $levels->map(fn ($level) => [
+                        'warehouse_id' => $level->warehouse_id,
+                        'warehouse_name' => $level->warehouse?->name,
+                        'quantity' => (int) $level->quantity,
+                        'reserved' => (int) $level->quantity_reserved,
+                    ])->values()->all(),
+                ];
+            }),
+
             'status' => $this->status,
             'featured' => $this->featured,
 

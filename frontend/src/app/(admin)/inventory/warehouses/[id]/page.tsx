@@ -28,7 +28,7 @@ export default function EditWarehousePage({ params }: PageProps<"/inventory/ware
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !warehouse) {
@@ -40,7 +40,7 @@ export default function EditWarehousePage({ params }: PageProps<"/inventory/ware
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Edit {warehouse.name}</CardTitle>
       </CardHeader>

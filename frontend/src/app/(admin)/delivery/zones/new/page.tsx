@@ -25,7 +25,7 @@ export default function NewDeliveryZonePage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Add delivery zone</CardTitle>
       </CardHeader>

@@ -268,7 +268,7 @@ export default function OrderShowPage({ params }: PageProps<"/orders/orders/[id]
   }
 
   if (isLoading) {
-    return <Skeleton className="h-96 w-full max-w-3xl" />;
+    return <Skeleton className="h-96 w-full" />;
   }
 
   if (isError || !order) {
@@ -288,7 +288,7 @@ export default function OrderShowPage({ params }: PageProps<"/orders/orders/[id]
     .join(", ");
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="space-y-4">
       <Button variant="ghost" size="sm" asChild>
         <Link href="/orders/orders">
           <ArrowLeft />

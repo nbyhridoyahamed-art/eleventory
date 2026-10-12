@@ -28,7 +28,7 @@ export default function EditBrandPage({ params }: PageProps<"/catalog/brands/[id
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !brand) {
@@ -40,7 +40,7 @@ export default function EditBrandPage({ params }: PageProps<"/catalog/brands/[id
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Edit {brand.name}</CardTitle>
       </CardHeader>

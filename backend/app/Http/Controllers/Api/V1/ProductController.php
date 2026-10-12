@@ -9,14 +9,19 @@ use App\Http\Resources\ProductResource;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\StockLevel;
+use App\Models\Warehouse;
 use App\Support\ApiResponse;
 use App\Support\HtmlSanitizer;
+use App\Support\InsufficientStockException;
 use App\Support\Money;
 use App\Support\ProductCsv;
 use App\Support\SkuGenerator;
+use App\Support\StockAdjuster;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProductController extends Controller
@@ -25,6 +30,7 @@ class ProductController extends Controller
 
     private const RELATIONS = [
         'category', 'brand', 'images', 'seoMetadata', 'variants.attributeValues.attribute', 'variants.stockLevels.warehouse',
+        'stockLevels.warehouse',
         'bundleItems.componentProduct', 'bundleItems.componentVariant',
     ];
 
@@ -137,8 +143,17 @@ class ProductController extends Controller
             $this->clearOwnStockFields($data);
         }
 
-        $product = Product::create($data);
-        $this->syncSeoMetadata($product, $request);
+        try {
+            $product = DB::transaction(function () use ($data, $request) {
+                $product = Product::create($data);
+                $this->syncSeoMetadata($product, $request);
+                $this->applyStock($product, $request);
+
+                return $product;
+            });
+        } catch (InsufficientStockException $exception) {
+            return ApiResponse::error($exception->getMessage(), [], 422);
+        }
 
         return ApiResponse::success(new ProductResource($product->load(self::RELATIONS)), 'Product created successfully.', status: 201);
     }
@@ -179,8 +194,15 @@ class ProductController extends Controller
             $this->clearOwnStockFields($data);
         }
 
-        $product->update($data);
-        $this->syncSeoMetadata($product, $request);
+        try {
+            DB::transaction(function () use ($product, $data, $request) {
+                $product->update($data);
+                $this->syncSeoMetadata($product, $request);
+                $this->applyStock($product, $request);
+            });
+        } catch (InsufficientStockException $exception) {
+            return ApiResponse::error($exception->getMessage(), [], 422);
+        }
 
         return ApiResponse::success(new ProductResource($product->load(self::RELATIONS)), 'Product updated successfully.');
     }
@@ -199,6 +221,44 @@ class ProductController extends Controller
      * the model actually stores, and drops the decimal-named keys so they
      * never reach a mass-assignment call.
      */
+    /**
+     * Sets the on-hand quantity at the chosen warehouse by writing the
+     * difference through the inventory ledger, so Inventory -> Stock levels
+     * and Stock movements always agree with the product page.
+     */
+    private function applyStock(Product $product, ProductRequest $request): void
+    {
+        $stock = $request->input('stock');
+
+        if (! is_array($stock) || $product->type !== 'simple' || ! $request->user()->can('inventory.adjust')) {
+            return;
+        }
+
+        $warehouse = Warehouse::query()->where('store_id', $product->store_id)->findOrFail($stock['warehouse_id']);
+        $level = StockLevel::query()
+            ->where('product_id', $product->id)
+            ->whereNull('product_variant_id')
+            ->where('warehouse_id', $warehouse->id)
+            ->first();
+
+        $current = (int) ($level?->quantity ?? 0);
+        $target = (int) $stock['quantity'];
+
+        if ($target === $current) {
+            return;
+        }
+
+        StockAdjuster::apply(
+            product: $product,
+            productVariantId: null,
+            warehouse: $warehouse,
+            direction: $target > $current ? 'increase' : 'decrease',
+            quantity: abs($target - $current),
+            reason: $level === null ? 'Opening stock (product page)' : 'Stock set from product page',
+            userId: $request->user()->id,
+        );
+    }
+
     private function preparePayload(ProductRequest $request): array
     {
         $data = $request->validated();
@@ -210,7 +270,7 @@ class ProductController extends Controller
         $data['cost_price_amount'] = Money::fromDecimal($data['cost_price'] ?? null, $currency)?->amountMinor;
         $data['compare_at_price_amount'] = Money::fromDecimal($data['compare_at_price'] ?? null, $currency)?->amountMinor;
 
-        unset($data['price'], $data['sale_price'], $data['cost_price'], $data['compare_at_price'], $data['seo']);
+        unset($data['price'], $data['sale_price'], $data['cost_price'], $data['compare_at_price'], $data['seo'], $data['stock']);
 
         // The editor sends HTML; keep only formatting, never scripts or event handlers.
         $data['description'] = HtmlSanitizer::clean($data['description'] ?? null);

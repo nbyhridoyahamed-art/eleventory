@@ -25,7 +25,7 @@ export default function NewCouponPage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Add coupon</CardTitle>
       </CardHeader>

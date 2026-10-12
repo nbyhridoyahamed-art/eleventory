@@ -155,7 +155,7 @@ export default function SupplierDetailPage({ params }: PageProps<"/purchasing/su
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !supplier) {
@@ -170,7 +170,7 @@ export default function SupplierDetailPage({ params }: PageProps<"/purchasing/su
   const canPay = can(currentUser, "suppliers.pay");
 
   return (
-    <div className="max-w-2xl space-y-4">
+    <div className="space-y-4">
       {canUpdate ? (
         <Card>
           <CardHeader>

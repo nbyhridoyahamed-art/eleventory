@@ -364,6 +364,7 @@ Route::prefix('v1')->group(function () {
         Route::post('returns/{orderReturn}/refund', [ReturnController::class, 'refund']);
 
         Route::get('dashboard/sales-trend', [DashboardController::class, 'salesTrend']);
+        Route::get('dashboard/insights', [DashboardController::class, 'insights']);
         Route::get('dashboard/order-status-breakdown', [DashboardController::class, 'orderStatusBreakdown']);
 
         Route::get('reports/sales', [ReportController::class, 'salesReport']);

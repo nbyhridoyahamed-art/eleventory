@@ -20,7 +20,7 @@ export default function NewUserPage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Add user</CardTitle>
       </CardHeader>

@@ -46,7 +46,7 @@ export default function NewOrderPage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>New order</CardTitle>
       </CardHeader>

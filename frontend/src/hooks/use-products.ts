@@ -28,6 +28,8 @@ export interface ProductFormValues {
   low_stock_threshold?: number | null;
   status?: "draft" | "active" | "archived";
   featured?: boolean;
+  /** Sets on-hand stock at a warehouse (simple products); written through the inventory ledger. */
+  stock?: { warehouse_id: number; quantity: number } | null;
   seo?: Record<string, string | Record<string, unknown> | null>;
 }
 

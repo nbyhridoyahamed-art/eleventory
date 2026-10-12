@@ -26,7 +26,7 @@ export default function CodSettlementShowPage({ params }: PageProps<"/delivery/c
   }
 
   if (isLoading) {
-    return <Skeleton className="h-96 w-full max-w-2xl" />;
+    return <Skeleton className="h-96 w-full" />;
   }
 
   if (isError || !settlement) {
@@ -40,7 +40,7 @@ export default function CodSettlementShowPage({ params }: PageProps<"/delivery/c
   const discrepancy = settlement.amount_received - settlement.amount_expected;
 
   return (
-    <div className="max-w-2xl space-y-4">
+    <div className="space-y-4">
       <Button variant="ghost" size="sm" asChild>
         <Link href="/delivery/cod-settlements">
           <ArrowLeft />

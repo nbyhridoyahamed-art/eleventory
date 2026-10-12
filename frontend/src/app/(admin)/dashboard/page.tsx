@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -21,6 +22,7 @@ import { useCurrentUser } from "@/hooks/use-auth";
 import { useOrderStatusBreakdown, useSalesTrend } from "@/hooks/use-dashboard";
 import { useOrders } from "@/hooks/use-orders";
 import { formatMoney } from "@/lib/money";
+import { DashboardInsightsPanel } from "@/components/dashboard/insights";
 import { OrderStatusChart } from "@/components/charts/order-status-chart";
 import { SalesTrendChart } from "@/components/charts/sales-trend-chart";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -124,6 +126,7 @@ export default function DashboardPage() {
   const recentOrders = useOrders(storeId, { page: 1 });
 
   const canViewOrders = can(user, "orders.view");
+  const [days, setDays] = useState(30);
 
   // Each card names the permission that backs its number — a user who
   // lacks it never sees a card showing a misleading 0 for data it can't
@@ -192,6 +195,32 @@ export default function DashboardPage() {
             />
             <OrderStatusChart data={orderStatusBreakdown.data} isLoading={orderStatusBreakdown.isLoading} />
           </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <div>
+              <h2 className="text-lg font-semibold text-text-primary">Insights</h2>
+              <p className="text-sm text-text-secondary">How the store is performing, compared with the period before.</p>
+            </div>
+            <div className="inline-flex rounded-md border border-border bg-surface p-0.5" role="group" aria-label="Insight period">
+              {[7, 30, 90].map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  aria-pressed={days === option}
+                  onClick={() => setDays(option)}
+                  className={
+                    days === option
+                      ? "rounded px-3 py-1 text-sm font-medium bg-primary text-white"
+                      : "rounded px-3 py-1 text-sm font-medium text-text-secondary hover:text-text-primary"
+                  }
+                >
+                  {option} days
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <DashboardInsightsPanel storeId={storeId} days={days} />
 
           <Card>
             <CardHeader>

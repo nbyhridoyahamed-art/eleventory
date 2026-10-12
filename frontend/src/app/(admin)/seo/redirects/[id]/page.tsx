@@ -28,7 +28,7 @@ export default function EditRedirectPage({ params }: PageProps<"/seo/redirects/[
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !redirect) {
@@ -40,7 +40,7 @@ export default function EditRedirectPage({ params }: PageProps<"/seo/redirects/[
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Edit {redirect.from_path}</CardTitle>
       </CardHeader>

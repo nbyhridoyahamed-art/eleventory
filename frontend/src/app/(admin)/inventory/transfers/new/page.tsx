@@ -41,7 +41,7 @@ export default function NewStockTransferPage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>New stock transfer</CardTitle>
       </CardHeader>

@@ -25,7 +25,7 @@ export default function NewCourierPage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Add courier</CardTitle>
       </CardHeader>

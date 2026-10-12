@@ -93,7 +93,7 @@ export default function GeneralSettingsPage() {
 
   if (isLoading || !currentUser) {
     return (
-      <div className="max-w-2xl space-y-3">
+      <div className="space-y-3">
         <Skeleton className="h-9 w-full" />
         <Skeleton className="h-9 w-full" />
         <Skeleton className="h-9 w-full" />
@@ -125,7 +125,7 @@ export default function GeneralSettingsPage() {
   const serverError = updateStore.error instanceof ApiError ? updateStore.error.message : null;
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Store details</CardTitle>
       </CardHeader>

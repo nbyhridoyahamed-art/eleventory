@@ -34,7 +34,7 @@ export default function NewStockAdjustmentSessionPage() {
   }
 
   return (
-    <Card className="max-w-3xl">
+    <Card>
       <CardHeader>
         <CardTitle>New stocktake</CardTitle>
       </CardHeader>

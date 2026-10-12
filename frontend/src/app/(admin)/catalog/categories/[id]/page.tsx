@@ -29,7 +29,7 @@ export default function EditCategoryPage({ params }: PageProps<"/catalog/categor
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !category) {
@@ -41,7 +41,7 @@ export default function EditCategoryPage({ params }: PageProps<"/catalog/categor
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Edit {category.name}</CardTitle>
       </CardHeader>

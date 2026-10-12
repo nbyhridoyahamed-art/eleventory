@@ -28,7 +28,7 @@ export default function EditPagePage({ params }: PageProps<"/content/pages/[id]"
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !page) {
@@ -40,7 +40,7 @@ export default function EditPagePage({ params }: PageProps<"/content/pages/[id]"
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Edit {page.title}</CardTitle>
       </CardHeader>

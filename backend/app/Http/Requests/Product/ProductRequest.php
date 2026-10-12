@@ -54,6 +54,11 @@ class ProductRequest extends FormRequest
             'status' => ['nullable', Rule::in(['draft', 'active', 'archived'])],
             'featured' => ['nullable', 'boolean'],
 
+            // Opening/current on-hand quantity for a simple product at one warehouse.
+            'stock' => ['nullable', 'array'],
+            'stock.warehouse_id' => ['required_with:stock', Rule::exists('warehouses', 'id')->where('store_id', $storeId)],
+            'stock.quantity' => ['required_with:stock', 'integer', 'min:0', 'max:10000000'],
+
             'seo' => ['nullable', 'array'],
             'seo.title' => ['nullable', 'string', 'max:255'],
             'seo.description' => ['nullable', 'string', 'max:500'],

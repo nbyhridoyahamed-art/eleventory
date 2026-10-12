@@ -28,7 +28,7 @@ export default function EditDeliveryZonePage({ params }: PageProps<"/delivery/zo
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !zone) {
@@ -40,7 +40,7 @@ export default function EditDeliveryZonePage({ params }: PageProps<"/delivery/zo
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Edit {zone.name}</CardTitle>
       </CardHeader>

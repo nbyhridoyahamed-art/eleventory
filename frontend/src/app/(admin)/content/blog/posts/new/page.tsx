@@ -22,11 +22,11 @@ export default function NewBlogPostPage() {
   }
 
   if (!storeId) {
-    return <Skeleton className="h-64 w-full max-w-3xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   return (
-    <Card className="max-w-3xl">
+    <Card>
       <CardHeader>
         <CardTitle>Add post</CardTitle>
       </CardHeader>

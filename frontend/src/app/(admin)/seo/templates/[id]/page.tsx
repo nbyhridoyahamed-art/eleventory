@@ -29,7 +29,7 @@ export default function EditSeoTemplatePage({ params }: PageProps<"/seo/template
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !template) {
@@ -41,7 +41,7 @@ export default function EditSeoTemplatePage({ params }: PageProps<"/seo/template
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Edit {ENTITY_TYPE_LABELS[template.entity_type] ?? template.entity_type}</CardTitle>
       </CardHeader>

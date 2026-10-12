@@ -44,7 +44,7 @@ export default function NewPurchaseOrderPage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>New purchase order</CardTitle>
       </CardHeader>

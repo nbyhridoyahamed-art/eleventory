@@ -33,7 +33,7 @@ export default function EditCustomerPage({ params }: PageProps<"/orders/customer
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !customer) {
@@ -45,7 +45,7 @@ export default function EditCustomerPage({ params }: PageProps<"/orders/customer
   }
 
   return (
-    <div className="max-w-2xl space-y-4">
+    <div className="space-y-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Edit {customer.name}</CardTitle>

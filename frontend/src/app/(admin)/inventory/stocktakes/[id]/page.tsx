@@ -27,7 +27,7 @@ export default function StockAdjustmentSessionShowPage({ params }: PageProps<"/i
   }
 
   if (isLoading) {
-    return <Skeleton className="h-64 w-full max-w-3xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !session) {
@@ -39,7 +39,7 @@ export default function StockAdjustmentSessionShowPage({ params }: PageProps<"/i
   }
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="space-y-4">
       <Button variant="ghost" size="sm" asChild>
         <Link href="/inventory/stocktakes">
           <ArrowLeft />

@@ -28,7 +28,7 @@ export default function EditUserPage({ params }: PageProps<"/settings/users/[id]
 
   if (isLoading) {
     return (
-      <div className="max-w-2xl space-y-3">
+      <div className="space-y-3">
         <Skeleton className="h-9 w-full" />
         <Skeleton className="h-9 w-full" />
         <Skeleton className="h-24 w-full" />
@@ -45,7 +45,7 @@ export default function EditUserPage({ params }: PageProps<"/settings/users/[id]
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Edit {user.name}</CardTitle>
       </CardHeader>

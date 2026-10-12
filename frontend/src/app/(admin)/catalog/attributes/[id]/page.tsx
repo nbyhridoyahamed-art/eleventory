@@ -30,7 +30,7 @@ export default function EditAttributePage({ params }: PageProps<"/catalog/attrib
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !attribute) {
@@ -42,7 +42,7 @@ export default function EditAttributePage({ params }: PageProps<"/catalog/attrib
   }
 
   return (
-    <div className="max-w-2xl space-y-4">
+    <div className="space-y-4">
       <Button variant="ghost" size="sm" asChild>
         <Link href="/catalog/attributes">
           <ArrowLeft />

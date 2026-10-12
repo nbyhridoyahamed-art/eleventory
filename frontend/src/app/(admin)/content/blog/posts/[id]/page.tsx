@@ -32,7 +32,7 @@ export default function EditBlogPostPage({ params }: PageProps<"/content/blog/po
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-3xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !post) {
@@ -44,7 +44,7 @@ export default function EditBlogPostPage({ params }: PageProps<"/content/blog/po
   }
 
   return (
-    <Card className="max-w-3xl">
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Edit {post.title}</CardTitle>
         <Button type="button" variant="outline" size="sm" onClick={() => setHistoryOpen(true)}>

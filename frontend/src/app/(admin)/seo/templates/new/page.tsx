@@ -22,11 +22,11 @@ export default function NewSeoTemplatePage() {
   }
 
   if (!storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Add SEO template</CardTitle>
       </CardHeader>

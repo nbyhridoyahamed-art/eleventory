@@ -38,6 +38,12 @@ export interface Product {
 
   track_stock: boolean;
   low_stock_threshold: number | null;
+  /** On-hand quantity of the product itself (variants carry their own), by warehouse. */
+  stock?: {
+    total: number;
+    reserved: number;
+    levels: { warehouse_id: number; warehouse_name: string | null; quantity: number; reserved: number }[];
+  };
 
   status: "draft" | "active" | "archived";
   featured: boolean;

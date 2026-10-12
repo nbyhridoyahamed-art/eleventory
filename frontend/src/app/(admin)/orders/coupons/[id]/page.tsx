@@ -28,7 +28,7 @@ export default function EditCouponPage({ params }: PageProps<"/orders/coupons/[i
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !coupon) {
@@ -40,7 +40,7 @@ export default function EditCouponPage({ params }: PageProps<"/orders/coupons/[i
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>
           Edit {coupon.code}

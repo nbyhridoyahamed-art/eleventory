@@ -94,7 +94,7 @@ export default function PurchaseOrderShowPage({ params }: PageProps<"/purchasing
   }
 
   if (isLoading) {
-    return <Skeleton className="h-96 w-full max-w-3xl" />;
+    return <Skeleton className="h-96 w-full" />;
   }
 
   if (isError || !order) {
@@ -115,7 +115,7 @@ export default function PurchaseOrderShowPage({ params }: PageProps<"/purchasing
   const returnableItems = order.items.filter((item) => item.quantity_received > 0);
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="space-y-4">
       <Button variant="ghost" size="sm" asChild>
         <Link href="/purchasing/purchase-orders">
           <ArrowLeft />

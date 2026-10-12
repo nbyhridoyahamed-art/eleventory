@@ -25,7 +25,7 @@ export default function NewAttributePage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Add attribute</CardTitle>
       </CardHeader>

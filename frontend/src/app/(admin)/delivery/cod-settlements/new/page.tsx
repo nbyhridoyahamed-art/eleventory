@@ -25,7 +25,7 @@ export default function NewCodSettlementPage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Record COD settlement</CardTitle>
       </CardHeader>

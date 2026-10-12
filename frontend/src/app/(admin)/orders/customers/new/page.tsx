@@ -25,7 +25,7 @@ export default function NewCustomerPage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Add customer</CardTitle>
       </CardHeader>

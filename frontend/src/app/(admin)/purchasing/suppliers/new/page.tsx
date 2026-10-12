@@ -25,7 +25,7 @@ export default function NewSupplierPage() {
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Add supplier</CardTitle>
       </CardHeader>

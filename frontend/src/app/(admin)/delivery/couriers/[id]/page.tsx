@@ -28,7 +28,7 @@ export default function EditCourierPage({ params }: PageProps<"/delivery/courier
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-64 w-full max-w-2xl" />;
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (isError || !courier) {
@@ -40,7 +40,7 @@ export default function EditCourierPage({ params }: PageProps<"/delivery/courier
   }
 
   return (
-    <Card className="max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle>Edit {courier.name}</CardTitle>
       </CardHeader>
