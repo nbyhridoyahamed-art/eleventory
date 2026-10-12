@@ -22,7 +22,9 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    // Comma-separated list in CORS_ALLOWED_ORIGINS (e.g. https://elevendollar.store).
+    // Unset keeps the open default used for local development.
+    'allowed_origins' => array_values(array_filter(array_map('trim', explode(',', (string) env('CORS_ALLOWED_ORIGINS', '*'))))),
 
     'allowed_origins_patterns' => [],
 
