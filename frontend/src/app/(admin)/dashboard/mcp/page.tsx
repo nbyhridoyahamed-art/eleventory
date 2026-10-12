@@ -25,7 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
-type ClientTab = "claude-code" | "claude-desktop" | "other";
+type ClientTab = "connector" | "claude-code" | "claude-desktop" | "other";
 
 const TOOL_GROUPS = [
   { title: "Catalog", items: "Search, create and edit products, categories and brands; preview SKUs" },
@@ -77,7 +77,7 @@ export default function McpPage() {
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"read_only" | "full">("read_only");
   const [fresh, setFresh] = useState<CreatedMcpConnection | null>(null);
-  const [tab, setTab] = useState<ClientTab>("claude-code");
+  const [tab, setTab] = useState<ClientTab>("connector");
 
   if (currentUser && !can(currentUser, "settings.manage")) {
     return <PermissionDenied />;
@@ -85,6 +85,16 @@ export default function McpPage() {
 
   const token = fresh?.token ?? "<paste-your-token>";
 
+
+  // Remote (HTTPS) connector: Claude's "Add custom connector" has no token field, so the token is part of the URL.
+  const origin = (() => {
+    try {
+      return new URL(API_URL).origin;
+    } catch {
+      return API_URL;
+    }
+  })();
+  const connectorUrl = `${origin}/mcp/${fresh ? encodeURIComponent(fresh.token) : "<your-token>"}`;
 
   const claudeCode = `claude mcp add eleventory --scope user \\
   -e ELEVENTORY_API_URL=${API_URL} \\
@@ -270,6 +280,7 @@ Environment:
           <CardTitle>Connect your AI client</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {tab !== "connector" ? (
           <div className="space-y-2 rounded-md bg-shop-tint p-4 text-sm text-text-secondary">
             <p className="font-medium text-text-primary">One-time install on the computer that runs your AI client</p>
             <Code>{`cd mcp-server\nnpm install\nnpm link`}</Code>
@@ -278,10 +289,12 @@ Environment:
               Eleventory project.
             </p>
           </div>
+          ) : null}
 
           <div className="flex gap-1 border-b border-border" role="tablist" aria-label="AI client">
             {(
               [
+                ["connector", "Claude connector (web & desktop)"],
                 ["claude-code", "Claude Code"],
                 ["claude-desktop", "Claude Desktop"],
                 ["other", "Other MCP client"],
@@ -302,6 +315,37 @@ Environment:
               </button>
             ))}
           </div>
+
+          {tab === "connector" ? (
+            <div className="space-y-4">
+              <p className="text-sm text-text-secondary">
+                The easiest way: add Eleventory as a <strong>custom connector</strong> in Claude (claude.ai or the desktop app). Nothing needs to
+                be installed.
+              </p>
+              <ol className="list-decimal space-y-2 pl-5 text-sm text-text-secondary">
+                <li>
+                  In Claude open <strong>Settings → Connectors → Add custom connector</strong>.
+                </li>
+                <li>
+                  Name: <code className="rounded bg-shop-tint px-1.5 py-0.5 text-xs">elevendollar</code> (anything you like).
+                </li>
+                <li>Paste the connector URL below as the server URL, leave the sign-in settings empty, and press Continue.</li>
+              </ol>
+              <Code>{connectorUrl}</Code>
+              <div className="flex flex-wrap items-center gap-2">
+                <CopyButton text={connectorUrl} label="Copy connector URL" />
+                {!fresh ? (
+                  <span className="text-xs text-text-muted">Create a connection above to get your URL — it includes the token.</span>
+                ) : null}
+              </div>
+              <Alert variant="warning">
+                <AlertDescription>
+                  Treat this URL like a password: anyone who has it can use the connection&apos;s access. If it leaks, revoke
+                  the connection above and create a new one.
+                </AlertDescription>
+              </Alert>
+            </div>
+          ) : null}
 
           {tab === "claude-code" ? (
             <div className="space-y-2">

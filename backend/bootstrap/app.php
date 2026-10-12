@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\McpController;
 use App\Http\Middleware\EnsureCustomerUser;
 use App\Http\Middleware\EnsureStaffUser;
 use App\Http\Middleware\SecurityHeaders;
@@ -11,6 +12,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -21,6 +23,14 @@ return Application::configure(basePath: dirname(__DIR__))
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function () {
+            // Remote MCP endpoint (Claude "custom connector"). No session/CSRF
+            // middleware: it is a token-authenticated JSON-RPC API, and the token
+            // may be part of the URL because connector forms have no auth field.
+            Route::post('mcp/{token}', McpController::class)->where('token', '[0-9]+(\||%7C)[A-Za-z0-9]+');
+            Route::post('mcp', McpController::class);
+            Route::match(['GET', 'PUT', 'PATCH', 'DELETE'], 'mcp/{token?}', [McpController::class, 'unsupported']);
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([

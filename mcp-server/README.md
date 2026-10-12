@@ -7,7 +7,23 @@ couriers, read analytics and reports, and tune SEO — in plain language.
 It runs on your machine over stdio and talks to the store's admin REST API, so
 it works against the local project **and** the live site (`https://api.elevendollar.store/api/v1`).
 
-## Install (global command)
+## Option A - Claude connector (nothing to install)
+
+The store API itself speaks MCP over HTTPS, so Claude (claude.ai or the desktop app) can connect directly:
+
+1. Admin → **AI Assistant** → create a connection (read-only or full access).
+2. Copy the **connector URL** shown there (`https://api.<your-domain>/mcp/<token>`).
+3. In Claude: **Settings → Connectors → Add custom connector**, give it a name, paste the URL, leave sign-in empty, Continue.
+
+The token is part of the URL because Claude's connector form has no token field - treat the URL like a password and
+revoke the connection on the AI Assistant page if it leaks. Clients that can send headers may instead POST to
+`/mcp` with `Authorization: Bearer <token>`.
+
+Check a connector URL from a terminal: `ELEVENTORY_CONNECTOR_URL=... node test/remote.mjs`
+
+## Option B - local command (Claude Code, other stdio clients)
+
+### Install (global command)
 
 ```bash
 cd mcp-server
