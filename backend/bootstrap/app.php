@@ -30,7 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             // may be part of the URL because connector forms have no auth field.
             Route::middleware(McpCors::class)->group(function () {
                 Route::options('mcp/{token?}', fn () => response('', 204));
-                Route::post('mcp/{token}', McpController::class)->where('token', '[0-9]+(\||%7C)[A-Za-z0-9]+');
+                Route::post('mcp/{token}', McpController::class)->where('token', '[0-9]+(\||%7C|-)[A-Za-z0-9]+');
                 Route::post('mcp', McpController::class);
                 Route::match(['GET', 'PUT', 'PATCH', 'DELETE'], 'mcp/{token?}', [McpController::class, 'unsupported']);
             });

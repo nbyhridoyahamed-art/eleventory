@@ -29,6 +29,12 @@ class McpController extends Controller
     public function __invoke(Request $request, ?string $token = null): JsonResponse|Response
     {
         $plain = $token ?? $request->bearerToken();
+
+        // Connector URLs carry the token as "<id>-<secret>" (no pipe, which some clients mangle).
+        if ($plain && preg_match('/^([0-9]+)-([A-Za-z0-9]+)$/', $plain, $m)) {
+            $plain = $m[1].'|'.$m[2];
+        }
+
         $access = $plain ? PersonalAccessToken::findToken($plain) : null;
         $user = $access?->tokenable;
 

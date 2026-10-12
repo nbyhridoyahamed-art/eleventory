@@ -161,6 +161,16 @@ class RemoteMcpTest extends TestCase
             ->assertHeader('Access-Control-Allow-Origin', '*');
     }
 
+    public function test_the_url_safe_token_form_with_a_hyphen_works(): void
+    {
+        [$user] = $this->adminWithStore();
+        $plain = $user->createToken('mcp:Claude', ['*'])->plainTextToken;
+        $safe = str_replace('|', '-', $plain);
+
+        $this->rpc('/mcp/'.$safe, 'ping')->assertOk()->assertJsonPath('id', 1);
+        $this->rpc('/mcp/'.$safe, 'tools/list')->assertOk();
+    }
+
     public function test_get_is_not_supported(): void
     {
         $this->get('/mcp/1%7Cabc')->assertStatus(405);

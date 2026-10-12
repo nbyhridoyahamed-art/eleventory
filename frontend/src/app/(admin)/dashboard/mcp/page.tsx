@@ -94,7 +94,7 @@ export default function McpPage() {
       return API_URL;
     }
   })();
-  const connectorUrl = `${origin}/mcp/${fresh ? encodeURIComponent(fresh.token) : "<your-token>"}`;
+  const connectorUrl = `${origin}/mcp/${fresh ? fresh.token.replace("|", "-") : "<your-token>"}`;
 
   const claudeCode = `claude mcp add eleventory --scope user \\
   -e ELEVENTORY_API_URL=${API_URL} \\
