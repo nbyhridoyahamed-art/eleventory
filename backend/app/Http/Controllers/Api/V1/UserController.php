@@ -49,6 +49,9 @@ class UserController extends Controller
         $data['status'] ??= 'active';
         $data['locale'] ??= 'en';
         $data['timezone'] ??= 'Asia/Dhaka';
+        // Admin screens are scoped to the user's current store; a new staff
+        // member works in the same store as whoever is adding them.
+        $data['current_store_id'] ??= $request->user()->current_store_id;
 
         $user = User::create([
             ...collect($data)->except(['password', 'roles'])->all(),

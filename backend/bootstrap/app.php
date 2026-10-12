@@ -3,6 +3,7 @@
 use App\Http\Controllers\McpController;
 use App\Http\Middleware\EnsureCustomerUser;
 use App\Http\Middleware\EnsureStaffUser;
+use App\Http\Middleware\McpCors;
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\ApiResponse;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -27,9 +28,12 @@ return Application::configure(basePath: dirname(__DIR__))
             // Remote MCP endpoint (Claude "custom connector"). No session/CSRF
             // middleware: it is a token-authenticated JSON-RPC API, and the token
             // may be part of the URL because connector forms have no auth field.
-            Route::post('mcp/{token}', McpController::class)->where('token', '[0-9]+(\||%7C)[A-Za-z0-9]+');
-            Route::post('mcp', McpController::class);
-            Route::match(['GET', 'PUT', 'PATCH', 'DELETE'], 'mcp/{token?}', [McpController::class, 'unsupported']);
+            Route::middleware(McpCors::class)->group(function () {
+                Route::options('mcp/{token?}', fn () => response('', 204));
+                Route::post('mcp/{token}', McpController::class)->where('token', '[0-9]+(\||%7C)[A-Za-z0-9]+');
+                Route::post('mcp', McpController::class);
+                Route::match(['GET', 'PUT', 'PATCH', 'DELETE'], 'mcp/{token?}', [McpController::class, 'unsupported']);
+            });
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {

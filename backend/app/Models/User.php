@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -36,6 +37,27 @@ class User extends Authenticatable
 
         static::creating(function (User $user) {
             $user->uuid ??= (string) Str::uuid();
+        });
+    }
+
+    /**
+     * Every admin screen is scoped to the user's current store. A staff user
+     * created without one (the Users form has no store field) would see
+     * empty screens, so fall back to a store they belong to, else the first.
+     */
+    protected function currentStoreId(): Attribute
+    {
+        return Attribute::get(function (mixed $value) {
+            if ($value !== null) {
+                return (int) $value;
+            }
+
+            if (! $this->exists) {
+                return null;
+            }
+
+            return $this->stores()->orderBy('stores.id')->value('stores.id')
+                ?? Store::query()->orderBy('id')->value('id');
         });
     }
 

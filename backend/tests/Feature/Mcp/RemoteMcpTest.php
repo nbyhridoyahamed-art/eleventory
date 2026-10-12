@@ -136,6 +136,31 @@ class RemoteMcpTest extends TestCase
         $this->postJson('/mcp', ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'ping'])->assertStatus(401);
     }
 
+    public function test_browser_based_clients_can_preflight_and_read_the_response(): void
+    {
+        [$user] = $this->adminWithStore();
+        $url = '/mcp/'.rawurlencode($user->createToken('mcp:Claude', ['*'])->plainTextToken);
+
+        $preflight = $this->call('OPTIONS', $url, [], [], [], [
+            'HTTP_ORIGIN' => 'https://claude.ai',
+            'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'POST',
+            'HTTP_ACCESS_CONTROL_REQUEST_HEADERS' => 'content-type,mcp-protocol-version',
+        ]);
+        $preflight->assertStatus(204);
+        $this->assertSame('*', $preflight->headers->get('Access-Control-Allow-Origin'));
+        $this->assertStringContainsString('Mcp-Protocol-Version', (string) $preflight->headers->get('Access-Control-Allow-Headers'));
+
+        $reply = $this->withHeaders(['Origin' => 'https://claude.ai'])
+            ->postJson($url, ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'ping']);
+        $reply->assertOk();
+        $this->assertSame('*', $reply->headers->get('Access-Control-Allow-Origin'));
+
+        // Errors are readable cross-origin too (a 401 would otherwise look like a network failure).
+        $this->postJson('/mcp/1%7Cnope', ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'ping'])
+            ->assertStatus(401)
+            ->assertHeader('Access-Control-Allow-Origin', '*');
+    }
+
     public function test_get_is_not_supported(): void
     {
         $this->get('/mcp/1%7Cabc')->assertStatus(405);
