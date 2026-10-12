@@ -5,8 +5,17 @@
 # Usage (Git Bash, from the repo root):
 #   bash deploy/upload-ftp.sh                 # API + media + frontend
 #   ONLY=frontend bash deploy/upload-ftp.sh   # frontend archive only
-#   SKIP_MEDIA=1 bash deploy/upload-ftp.sh    # API code + frontend (typical release; images unchanged)
+#   bash deploy/upload-ftp.sh --no-media       # API code + frontend (typical release; images unchanged)
+#   bash deploy/upload-ftp.sh --frontend-only  # frontend archive only
 set -euo pipefail
+
+# Plain arguments work from PowerShell, where VAR=1 prefixes (and WSL) do not.
+for arg in "$@"; do
+  case "$arg" in
+    --no-media) SKIP_MEDIA=1 ;;
+    --frontend-only) ONLY=frontend ;;
+  esac
+done
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DIST="$ROOT/dist"
