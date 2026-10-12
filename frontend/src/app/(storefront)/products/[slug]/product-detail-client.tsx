@@ -494,7 +494,12 @@ export function ProductDetailClient({ slug }: { slug: string }) {
               product.description ? (
                 <div className="space-y-3">
                   <h2 className="text-section font-semibold text-text-primary">About this item</h2>
-                  <p className="whitespace-pre-line text-sm leading-relaxed text-text-secondary">{product.description}</p>
+                  {/<[a-z][\s\S]*>/i.test(product.description) ? (
+                    // Written in the admin's rich-text editor and sanitised by the API on save.
+                    <div className="rich-text-content text-sm" dangerouslySetInnerHTML={{ __html: product.description }} />
+                  ) : (
+                    <p className="whitespace-pre-line text-sm leading-relaxed text-text-secondary">{product.description}</p>
+                  )}
                 </div>
               ) : (
                 <p className="text-sm text-text-secondary">No description has been added for this product yet.</p>

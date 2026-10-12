@@ -27,8 +27,9 @@ class ProductRequest extends FormRequest
                 'required', 'string', 'max:255',
                 Rule::unique('products', 'slug')->where('store_id', $storeId)->ignore($productId),
             ],
+            // Blank means "generate one" (create) or "keep the current one" (update).
             'sku' => [
-                'required', 'string', 'max:100',
+                'nullable', 'string', 'max:100',
                 Rule::unique('products', 'sku')->where('store_id', $storeId)->ignore($productId),
             ],
             'barcode' => ['nullable', 'string', 'max:100'],

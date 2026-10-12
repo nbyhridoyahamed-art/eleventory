@@ -6,10 +6,14 @@ use App\Http\Controllers\Concerns\SyncsSeoMetadata;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Product\ProductRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\Brand;
+use App\Models\Category;
 use App\Models\Product;
 use App\Support\ApiResponse;
+use App\Support\HtmlSanitizer;
 use App\Support\Money;
 use App\Support\ProductCsv;
+use App\Support\SkuGenerator;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -121,6 +125,11 @@ class ProductController extends Controller
         $data['featured'] ??= false;
         $data['created_by'] = $request->user()->id;
         $data['updated_by'] = $request->user()->id;
+        $data['sku'] ??= SkuGenerator::generate(
+            (int) $data['store_id'],
+            isset($data['brand_id']) ? Brand::query()->whereKey($data['brand_id'])->value('name') : null,
+            isset($data['category_id']) ? Category::query()->whereKey($data['category_id'])->value('name') : null,
+        );
         if ($data['status'] === 'active') {
             $data['published_at'] = now();
         }
@@ -132,6 +141,22 @@ class ProductController extends Controller
         $this->syncSeoMetadata($product, $request);
 
         return ApiResponse::success(new ProductResource($product->load(self::RELATIONS)), 'Product created successfully.', status: 201);
+    }
+
+    /** The SKU a new product would receive, so the form can show it before saving. */
+    public function nextSku(Request $request): JsonResponse
+    {
+        $this->authorize('create', Product::class);
+
+        $storeId = $request->integer('store_id');
+
+        return ApiResponse::success([
+            'sku' => SkuGenerator::generate(
+                $storeId,
+                $request->filled('brand_id') ? Brand::query()->where('store_id', $storeId)->whereKey($request->integer('brand_id'))->value('name') : null,
+                $request->filled('category_id') ? Category::query()->where('store_id', $storeId)->whereKey($request->integer('category_id'))->value('name') : null,
+            ),
+        ], 'Next SKU generated successfully.');
     }
 
     public function show(Product $product): JsonResponse
@@ -186,6 +211,13 @@ class ProductController extends Controller
         $data['compare_at_price_amount'] = Money::fromDecimal($data['compare_at_price'] ?? null, $currency)?->amountMinor;
 
         unset($data['price'], $data['sale_price'], $data['cost_price'], $data['compare_at_price'], $data['seo']);
+
+        // The editor sends HTML; keep only formatting, never scripts or event handlers.
+        $data['description'] = HtmlSanitizer::clean($data['description'] ?? null);
+
+        if (blank($data['sku'] ?? null)) {
+            unset($data['sku']);
+        }
 
         return $data;
     }

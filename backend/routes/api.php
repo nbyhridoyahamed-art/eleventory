@@ -264,6 +264,7 @@ Route::prefix('v1')->group(function () {
         // GET products/{product} route would swallow "export" as a
         // product route-key first.
         Route::get('products/export', [ProductController::class, 'export']);
+        Route::get('products/next-sku', [ProductController::class, 'nextSku']);
         Route::post('products/import', [ProductImportController::class, 'store']);
         Route::apiResource('products', ProductController::class);
 

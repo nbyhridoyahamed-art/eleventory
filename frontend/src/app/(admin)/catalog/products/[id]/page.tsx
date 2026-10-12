@@ -10,7 +10,6 @@ import { useProduct, useUpdateProduct } from "@/hooks/use-products";
 import { PermissionDenied } from "@/components/permission-denied";
 import { ProductForm } from "@/components/settings/product-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiError } from "@/types/api";
 
@@ -30,7 +29,7 @@ export default function EditProductPage({ params }: PageProps<"/catalog/products
   }
 
   if (isLoading || !storeId) {
-    return <Skeleton className="h-96 w-full max-w-3xl" />;
+    return <Skeleton className="h-96 w-full" />;
   }
 
   if (isError || !product) {
@@ -42,23 +41,24 @@ export default function EditProductPage({ params }: PageProps<"/catalog/products
   }
 
   return (
-    <Card className="max-w-3xl">
-      <CardHeader>
-        <CardTitle>Edit {product.name}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ProductForm
-          storeId={storeId}
-          productId={productId}
-          categories={categories ?? []}
-          brands={brandsData?.data ?? []}
-          defaultValues={product}
-          isPending={updateProduct.isPending}
-          submitLabel="Save changes"
-          serverError={updateProduct.error instanceof ApiError ? updateProduct.error.message : null}
-          onSubmit={(values) => updateProduct.mutate(values)}
-        />
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-xl font-semibold text-text-primary">Edit {product.name}</h1>
+        <p className="text-sm text-text-secondary">SKU {product.sku}</p>
+      </div>
+
+      <ProductForm
+        key={product.updated_at ?? product.id}
+        storeId={storeId}
+        productId={productId}
+        categories={categories ?? []}
+        brands={brandsData?.data ?? []}
+        defaultValues={product}
+        isPending={updateProduct.isPending}
+        submitLabel="Save changes"
+        serverError={updateProduct.error instanceof ApiError ? updateProduct.error.message : null}
+        onSubmit={(values) => updateProduct.mutate(values)}
+      />
+    </div>
   );
 }
