@@ -24,6 +24,14 @@ class EnsureStaffUser
             return ApiResponse::error('Unauthenticated.', [], 401);
         }
 
+        // A token issued for read-only use (e.g. an AI assistant in view-only
+        // mode) may look but never change anything.
+        $token = $request->user()->currentAccessToken();
+
+        if ($token && method_exists($token, 'can') && ! $token->can('write') && ! in_array($request->method(), ['GET', 'HEAD', 'OPTIONS'], true)) {
+            return ApiResponse::error('This connection is read-only.', [], 403);
+        }
+
         return $next($request);
     }
 }

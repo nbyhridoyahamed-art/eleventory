@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
+  Bot,
   Boxes,
   ClipboardList,
   FileText,
@@ -81,6 +82,12 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard/seo/overview",
     icon: SearchCheck,
     anyPermission: ["seo.manage"],
+  },
+  {
+    label: "AI Assistant",
+    href: "/dashboard/mcp",
+    icon: Bot,
+    anyPermission: ["settings.manage"],
   },
   {
     label: "Settings",

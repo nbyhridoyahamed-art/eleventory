@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CodSettlementController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\CourierController;
+use App\Http\Controllers\Api\V1\McpTokenController;
 use App\Http\Controllers\Api\V1\NotificationSettingController;
 use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\CustomerAddressController;
@@ -182,6 +183,9 @@ Route::prefix('v1')->group(function () {
 
         // Always the current staff user's own inbox — no permission to
         // gate beyond being authenticated, same reasoning as auth/me.
+        Route::get('mcp/tokens', [McpTokenController::class, 'index']);
+        Route::post('mcp/tokens', [McpTokenController::class, 'store']);
+        Route::delete('mcp/tokens/{token}', [McpTokenController::class, 'destroy']);
         Route::get('notification-settings', [NotificationSettingController::class, 'show']);
         Route::put('notification-settings', [NotificationSettingController::class, 'update']);
         Route::get('notification-settings/sms-balance', [NotificationSettingController::class, 'smsBalance']);

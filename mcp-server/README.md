@@ -19,6 +19,10 @@ Check it: `eleventory-mcp` should print a line to stderr and then wait for an MC
 
 ## Connect a client
 
+> **Easiest way:** open **AI Assistant** in the admin sidebar (`/dashboard/mcp`). Create a connection
+> (read-only or full access), and copy the ready-made command or config. Connections can be revoked there at any time,
+> and a read-only connection is enforced by the API itself — writes are refused with HTTP 403.
+
 The server reads its settings from environment variables:
 
 | Variable | Meaning |
