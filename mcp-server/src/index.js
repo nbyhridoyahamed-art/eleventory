@@ -24,7 +24,29 @@ const READ_ONLY = ["1", "true", "yes"].includes(String(process.env.ELEVENTORY_RE
 const ALLOW_DESTRUCTIVE = ["1", "true", "yes"].includes(String(process.env.ELEVENTORY_ALLOW_DESTRUCTIVE ?? "").toLowerCase());
 const MAX_CHARS = 24_000;
 
-const server = new McpServer({ name: "eleventory", version: "1.0.0" });
+/** "https://api.elevendollar.store/api/v1" -> "elevendollar.store" (the public site the API belongs to). */
+function siteFromApiUrl(url) {
+  try {
+    return new URL(url).hostname.replace(/^api\./, "");
+  } catch {
+    return null;
+  }
+}
+
+const site = process.env.ELEVENTORY_SITE || siteFromApiUrl(client.baseUrl);
+const storeLabel = process.env.ELEVENTORY_STORE_NAME || site || "this store";
+
+const server = new McpServer(
+  { name: "eleventory", version: "1.0.0" },
+  {
+    instructions: [
+      `This server manages the online store ${storeLabel}${site && site !== storeLabel ? ` (${site})` : ""}, which runs on the Eleventory ecommerce platform.`,
+      `Whenever the user mentions ${site ?? "their store"}, Eleventory, or asks about products, stock, orders, customers, sales, analytics, delivery or SEO for the store, use these tools.`,
+      "Start with store_overview to see who you are connected as and the headline numbers.",
+      READ_ONLY ? "This connection is read-only: you can look things up and report, but not change anything." : "Changes are made as the signed-in staff user; confirm destructive or large changes with the user first.",
+    ].join("\n"),
+  },
+);
 
 // ---------------------------------------------------------------------------
 // helpers
@@ -113,6 +135,8 @@ tool(
     return {
       user: { id: client.user?.id, name: client.user?.name, email: client.user?.email },
       store_id: client.storeId,
+      store: storeLabel,
+      site: site ? `https://${site}` : undefined,
       api: client.baseUrl,
       read_only: READ_ONLY,
       products: products.meta?.total ?? 0,

@@ -31,6 +31,7 @@ The server reads its settings from environment variables:
 | `ELEVENTORY_API_TOKEN` | A staff user's API token **or** |
 | `ELEVENTORY_EMAIL` + `ELEVENTORY_PASSWORD` | A staff login; the token is fetched automatically and renewed when it expires |
 | `ELEVENTORY_STORE_ID` | Optional; defaults to the user's current store |
+| `ELEVENTORY_STORE_NAME` / `ELEVENTORY_SITE` | Optional display name / domain given to the assistant (derived from the API URL by default, e.g. `elevendollar.store`) |
 | `ELEVENTORY_READ_ONLY=1` | Only expose read tools (safe for analysis and reporting) |
 | `ELEVENTORY_ALLOW_DESTRUCTIVE=1` | Also expose delete / cancel tools (each still needs `confirm: true`) |
 
