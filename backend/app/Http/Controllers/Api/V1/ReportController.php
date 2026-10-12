@@ -440,6 +440,172 @@ class ReportController extends Controller
         ];
     }
 
+    /**
+     * Context around the sales report's headline numbers: where revenue
+     * came from (category, customer, weekday), what discounts and shipping
+     * did, how orders ended up, and how many buyers were new. Revenue is
+     * line items on non-cancelled orders, matching salesReport().
+     */
+    public function salesInsights(Request $request): JsonResponse
+    {
+        if (! $request->user()->can('reports.view')) {
+            throw new AuthorizationException;
+        }
+
+        $data = $this->resolveFilters($request);
+        $currency = Store::find($data['store_id'])?->currency?->code ?? 'BDT';
+        $money = fn (int|float $minor) => (new Money((int) round($minor), $currency))->toDecimal();
+
+        $orders = fn () => DB::table('orders')
+            ->where('orders.store_id', $data['store_id'])
+            ->whereBetween('orders.created_at', [$data['date_from'], $data['date_to']])
+            ->when($data['warehouse_id'], fn ($q) => $q->where('orders.warehouse_id', $data['warehouse_id']));
+
+        $items = fn () => $orders()
+            ->join('order_items', 'order_items.order_id', '=', 'orders.id')
+            ->where('orders.status', '!=', 'cancelled');
+
+        $dayRows = $this->dailySalesRows($data);
+        $totals = $this->periodTotals($dayRows);
+        $best = $dayRows->sortByDesc('revenue_minor')->first();
+        $days = max(1, (int) $data['date_from']->diffInDays($data['date_to']) + 1);
+
+        $charges = $orders()->where('status', '!=', 'cancelled')
+            ->selectRaw('COALESCE(SUM(shipping_amount), 0) as shipping, COALESCE(SUM(discount_amount), 0) as discount, COALESCE(SUM(store_credit_amount), 0) as credit')
+            ->first();
+
+        $byCategory = $items()
+            ->join('products', 'products.id', '=', 'order_items.product_id')
+            ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+            ->groupBy('categories.name')
+            ->orderByDesc(DB::raw('SUM(order_items.quantity * order_items.unit_price_amount)'))
+            ->limit(8)
+            ->selectRaw('categories.name as name, SUM(order_items.quantity) as units, SUM(order_items.quantity * order_items.unit_price_amount) as revenue_minor')
+            ->get()
+            ->map(fn ($r) => ['name' => $r->name ?? 'Uncategorised', 'units' => (int) $r->units, 'revenue_amount' => $money($r->revenue_minor)])
+            ->all();
+
+        $topCustomers = $items()
+            ->join('customers', 'customers.id', '=', 'orders.customer_id')
+            ->groupBy('customers.id', 'customers.name')
+            ->orderByDesc(DB::raw('SUM(order_items.quantity * order_items.unit_price_amount)'))
+            ->limit(5)
+            ->selectRaw('customers.id, customers.name, COUNT(DISTINCT orders.id) as orders_count, SUM(order_items.quantity * order_items.unit_price_amount) as revenue_minor')
+            ->get()
+            ->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'orders_count' => (int) $r->orders_count, 'revenue_amount' => $money($r->revenue_minor)])
+            ->all();
+
+        $weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        $byWeekday = array_map(fn ($d) => ['day' => $weekdayNames[$d], 'orders_count' => 0, 'revenue_amount' => 0.0], range(0, 6));
+        $weekdayMinor = array_fill(0, 7, 0);
+        foreach ($dayRows as $row) {
+            $d = Carbon::parse($row->date)->dayOfWeek;
+            $byWeekday[$d]['orders_count'] += (int) $row->orders_count;
+            $weekdayMinor[$d] += (int) $row->revenue_minor;
+        }
+        foreach ($weekdayMinor as $d => $minor) {
+            $byWeekday[$d]['revenue_amount'] = $money($minor);
+        }
+
+        $statusRows = $orders()->selectRaw('status, COUNT(*) as count')->groupBy('status')->pluck('count', 'status');
+        $statusMix = [];
+        foreach (['pending', 'processing', 'shipped', 'delivered', 'cancelled'] as $status) {
+            $statusMix[] = ['status' => $status, 'count' => (int) ($statusRows[$status] ?? 0)];
+        }
+
+        $buyerIds = $orders()->where('status', '!=', 'cancelled')->distinct()->pluck('customer_id');
+        $returning = $buyerIds->isEmpty() ? 0 : DB::table('orders')
+            ->where('store_id', $data['store_id'])
+            ->where('status', '!=', 'cancelled')
+            ->where('created_at', '<', $data['date_from'])
+            ->whereIn('customer_id', $buyerIds->all())
+            ->distinct()
+            ->count('customer_id');
+
+        $cancelled = (int) ($statusRows['cancelled'] ?? 0);
+        $placed = (int) $statusRows->sum();
+
+        return ApiResponse::success([
+            'summary' => [
+                'daily_average_revenue' => $money($totals['revenueMinor'] / $days),
+                'best_day' => $best ? ['date' => Carbon::parse($best->date)->toDateString(), 'revenue_amount' => $money($best->revenue_minor), 'orders_count' => (int) $best->orders_count] : null,
+                'shipping_collected' => $money((int) $charges->shipping),
+                'discounts_given' => $money((int) $charges->discount),
+                'store_credit_used' => $money((int) $charges->credit),
+                'cancellation_rate' => $placed > 0 ? round($cancelled / $placed * 100, 1) : 0.0,
+                'buyers' => $buyerIds->count(),
+                'returning_buyers' => $returning,
+                'new_buyers' => max($buyerIds->count() - $returning, 0),
+            ],
+            'by_category' => $byCategory,
+            'top_customers' => $topCustomers,
+            'by_weekday' => $byWeekday,
+            'status_mix' => $statusMix,
+        ], 'Sales insights fetched successfully.');
+    }
+
+    /**
+     * Health of tracked stock at a glance: how many products are healthy,
+     * low or out, and what the stock on hand is worth at cost and at the
+     * selling price.
+     */
+    public function stockOverview(Request $request): JsonResponse
+    {
+        if (! $request->user()->can('reports.view')) {
+            throw new AuthorizationException;
+        }
+
+        $request->validate(['store_id' => ['required', 'exists:stores,id']]);
+        $storeId = $request->integer('store_id');
+        $currency = Store::find($storeId)?->currency?->code ?? 'BDT';
+
+        $rows = DB::table('products')
+            ->leftJoin('stock_levels', 'stock_levels.product_id', '=', 'products.id')
+            ->where('products.store_id', $storeId)
+            ->where('products.track_stock', true)
+            ->where('products.type', '!=', 'bundle')
+            ->whereNull('products.deleted_at')
+            ->groupBy('products.id', 'products.cost_price_amount', 'products.price_amount', 'products.low_stock_threshold')
+            ->selectRaw('products.id, products.cost_price_amount, products.price_amount, products.low_stock_threshold, COALESCE(SUM(stock_levels.quantity), 0) as qty, COALESCE(SUM(stock_levels.quantity_reserved), 0) as reserved')
+            ->get();
+
+        $out = 0;
+        $low = 0;
+        $healthy = 0;
+        $units = 0;
+        $costValue = 0;
+        $retailValue = 0;
+
+        foreach ($rows as $row) {
+            $qty = (int) $row->qty;
+            $available = $qty - (int) $row->reserved;
+            $units += max($qty, 0);
+            $costValue += max($qty, 0) * (int) ($row->cost_price_amount ?? 0);
+            $retailValue += max($qty, 0) * (int) $row->price_amount;
+
+            if ($qty <= 0) {
+                $out++;
+            } elseif ($row->low_stock_threshold !== null && $available <= (int) $row->low_stock_threshold) {
+                $low++;
+            } else {
+                $healthy++;
+            }
+        }
+
+        $money = fn (int $minor) => (new Money($minor, $currency))->toDecimal();
+
+        return ApiResponse::success([
+            'tracked_products' => $rows->count(),
+            'out_of_stock' => $out,
+            'low_stock' => $low,
+            'healthy' => $healthy,
+            'units_on_hand' => $units,
+            'stock_value_at_cost' => $money($costValue),
+            'stock_value_at_retail' => $money($retailValue),
+            'potential_margin' => $money($retailValue - $costValue),
+        ], 'Stock overview fetched successfully.');
+    }
+
     /** @return Collection<int, object{date: string, orders_count: int, revenue_minor: int}> */
     private function dailySalesRows(array $data): Collection
     {

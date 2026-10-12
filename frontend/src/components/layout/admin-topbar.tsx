@@ -52,10 +52,12 @@ const SEGMENT_LABELS: Record<string, string> = {
 
 function getBreadcrumb(pathname: string): string[] {
   const segments = pathname.split("/").filter(Boolean);
+  // Every admin URL lives under /dashboard (e.g. /dashboard/catalog/products).
+  if (segments[0] === "dashboard") segments.shift();
   if (segments.length === 0) return ["Dashboard"];
 
   const [root, ...rest] = segments;
-  const rootItem = NAV_ITEMS.find((item) => item.href.split("/")[1] === root);
+  const rootItem = NAV_ITEMS.find((item) => item.href.split("/")[2] === root);
   const crumbs = [rootItem?.label ?? root];
 
   for (const segment of rest) {
@@ -158,7 +160,7 @@ export function AdminTopbar({ user }: { user?: User }) {
                     className="flex flex-col items-start gap-0.5 whitespace-normal"
                     onSelect={() => {
                       if (!notification.read_at) markRead.mutate(notification.id);
-                      router.push(`/orders/orders/${notification.data.order_id}`);
+                      router.push(`/dashboard/orders/orders/${notification.data.order_id}`);
                     }}
                   >
                     <div className="flex w-full items-center gap-1.5">

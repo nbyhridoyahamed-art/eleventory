@@ -14,6 +14,20 @@ export interface CustomerAddress {
   is_default: boolean;
 }
 
+export type CustomerSegmentKey = "vip" | "repeat" | "one_time" | "at_risk" | "inactive" | "new";
+
+export interface CustomerSummary {
+  total_customers: number;
+  new_30_days: number;
+  new_previous_30_days: number;
+  with_orders: number;
+  repeat_rate: number;
+  average_lifetime_value: number;
+  total_lifetime_value: number;
+  segments: { key: CustomerSegmentKey; label: string; count: number }[];
+  top_customers: { id: number; name: string; phone: string; orders_count: number; lifetime_spend: number }[];
+}
+
 export interface Customer {
   id: number;
   uuid: string;
@@ -24,6 +38,12 @@ export interface Customer {
   status: "active" | "inactive";
   has_account: boolean;
   orders_count?: number;
+  /** List only: cancelled orders excluded. */
+  active_orders_count?: number;
+  lifetime_spend?: number;
+  average_order_value?: number;
+  last_order_at?: string | null;
+  segment?: CustomerSegmentKey;
   /** Only present when the controller eager-sums it (index/show) — see Customer::storeCreditBalance(). */
   store_credit_balance?: number | null;
   addresses?: CustomerAddress[];

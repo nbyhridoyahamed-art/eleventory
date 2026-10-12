@@ -57,6 +57,119 @@ class AnalyticsController extends Controller
         ], 'Analytics overview fetched successfully.');
     }
 
+    /**
+     * Behaviour detail behind the overview numbers: busiest pages, when
+     * visitors arrive, how engaged they are (bounce rate, pages per
+     * session), new vs returning visitors, where carts and checkouts are
+     * abandoned, and the sales the storefront tracked. Everything is
+     * derived from analytics_events only.
+     */
+    public function overviewInsights(Request $request): JsonResponse
+    {
+        if (! $request->user()->can('analytics.view')) {
+            throw new AuthorizationException;
+        }
+
+        $data = $this->resolveFilters($request);
+
+        $events = DB::table('analytics_events')
+            ->where('store_id', $data['store_id'])
+            ->whereBetween('created_at', [$data['date_from'], $data['date_to']])
+            ->select(['session_id', 'event_type', 'path', 'metadata', 'created_at']);
+
+        $pages = [];
+        $sessions = [];
+        $weekday = array_fill(0, 7, 0);
+        $hour = array_fill(0, 24, 0);
+        $revenue = 0.0;
+        $purchaseCount = 0;
+
+        foreach ($events->cursor() as $event) {
+            $sid = $event->session_id;
+            $sessions[$sid] ??= ['events' => 0, 'page_views' => 0, 'cart' => false, 'checkout' => false, 'purchase' => false];
+            $sessions[$sid]['events']++;
+
+            if ($event->event_type === 'page_view') {
+                $sessions[$sid]['page_views']++;
+                $path = $this->normalisePath((string) $event->path);
+                $pages[$path] = ($pages[$path] ?? 0) + 1;
+
+                $at = Carbon::parse($event->created_at);
+                $weekday[$at->dayOfWeek]++;
+                $hour[$at->hour]++;
+            } elseif ($event->event_type === 'add_to_cart') {
+                $sessions[$sid]['cart'] = true;
+            } elseif ($event->event_type === 'checkout_start') {
+                $sessions[$sid]['checkout'] = true;
+            } elseif ($event->event_type === 'purchase') {
+                $sessions[$sid]['purchase'] = true;
+                $purchaseCount++;
+                $meta = is_string($event->metadata) ? json_decode($event->metadata, true) : null;
+                $revenue += (float) ($meta['total_amount'] ?? 0);
+            }
+        }
+
+        $totalSessions = count($sessions);
+        $bounced = collect($sessions)->filter(fn ($s) => $s['events'] <= 1)->count();
+        $pageViews = array_sum(array_column($sessions, 'page_views'));
+        $withCart = collect($sessions)->filter(fn ($s) => $s['cart'])->count();
+        $cartAbandoned = collect($sessions)->filter(fn ($s) => $s['cart'] && ! $s['purchase'])->count();
+        $withCheckout = collect($sessions)->filter(fn ($s) => $s['checkout'])->count();
+        $checkoutAbandoned = collect($sessions)->filter(fn ($s) => $s['checkout'] && ! $s['purchase'])->count();
+
+        $returning = 0;
+        if ($totalSessions > 0) {
+            $seenBefore = DB::table('analytics_events')
+                ->where('store_id', $data['store_id'])
+                ->where('created_at', '<', $data['date_from'])
+                ->whereIn('session_id', array_slice(array_keys($sessions), 0, 5000))
+                ->distinct()
+                ->count('session_id');
+            $returning = min($seenBefore, $totalSessions);
+        }
+
+        arsort($pages);
+        $topPages = collect($pages)->take(10)->map(fn ($views, $path) => ['path' => $path, 'views' => $views])->values()->all();
+
+        $names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        $percent = fn (int $part, int $whole) => $whole > 0 ? round($part / $whole * 100, 1) : 0.0;
+
+        return ApiResponse::success([
+            'engagement' => [
+                'bounce_rate' => $percent($bounced, $totalSessions),
+                'pages_per_session' => $totalSessions > 0 ? round($pageViews / $totalSessions, 2) : 0.0,
+                'events_per_session' => $totalSessions > 0 ? round(array_sum(array_column($sessions, 'events')) / $totalSessions, 2) : 0.0,
+                'returning_visitor_rate' => $percent($returning, $totalSessions),
+            ],
+            'visitors' => [
+                ['label' => 'New visitors', 'sessions' => max($totalSessions - $returning, 0)],
+                ['label' => 'Returning visitors', 'sessions' => $returning],
+            ],
+            'abandonment' => [
+                'cart_sessions' => $withCart,
+                'cart_abandonment_rate' => $percent($cartAbandoned, $withCart),
+                'checkout_sessions' => $withCheckout,
+                'checkout_abandonment_rate' => $percent($checkoutAbandoned, $withCheckout),
+            ],
+            'sales' => [
+                'purchases' => $purchaseCount,
+                'revenue' => round($revenue, 2),
+                'average_order_value' => $purchaseCount > 0 ? round($revenue / $purchaseCount, 2) : 0.0,
+            ],
+            'top_pages' => $topPages,
+            'by_weekday' => collect($weekday)->map(fn ($v, $d) => ['day' => $names[$d], 'page_views' => $v])->values()->all(),
+            'by_hour' => collect($hour)->map(fn ($v, $h) => ['hour' => sprintf('%02d:00', $h), 'page_views' => $v])->values()->all(),
+        ], 'Analytics insights fetched successfully.');
+    }
+
+    /** Groups /products/some-slug?utm=1 and /products/some-slug/ under one key; keeps the path readable. */
+    private function normalisePath(string $path): string
+    {
+        $path = strtok($path, '?#') ?: '/';
+
+        return '/'.trim($path, '/');
+    }
+
     public function overviewExport(Request $request): StreamedResponse
     {
         if (! $request->user()->can('analytics.view')) {

@@ -408,7 +408,7 @@ export function ProductForm({
                         ? ": " + defaultValues.stock.levels.map((l) => `${l.warehouse_name ?? "Warehouse"} ${l.quantity}`).join(", ")
                         : ""}
                       .{" "}
-                      <Link href="/inventory/stock-levels" className="text-primary hover:underline">
+                      <Link href="/dashboard/inventory/stock-levels" className="text-primary hover:underline">
                         Open inventory
                       </Link>
                     </>

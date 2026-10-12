@@ -18,7 +18,10 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="flex flex-col gap-1 px-3">
       {items.map((item) => {
-        const isActive = pathname.startsWith(item.href.split("/").slice(0, 2).join("/"));
+        const isActive =
+          item.href === "/dashboard"
+            ? pathname === "/dashboard"
+            : pathname.startsWith(item.href.split("/").slice(0, 3).join("/"));
         const Icon = item.icon;
 
         return (

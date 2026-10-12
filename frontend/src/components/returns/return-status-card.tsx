@@ -138,7 +138,7 @@ export function ReturnStatusCard({ orderReturn, currencyCode, canUpdate }: Retur
             <div>
               <p className="text-text-muted">Replacement order</p>
               <Link
-                href={`/orders/orders/${orderReturn.replacement_order.id}`}
+                href={`/dashboard/orders/orders/${orderReturn.replacement_order.id}`}
                 className="font-medium text-primary hover:underline"
               >
                 {orderReturn.replacement_order.order_number}

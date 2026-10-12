@@ -11,16 +11,6 @@ import { getPublicSeo } from "@/lib/seo-settings";
  */
 const DISALLOWED_PATHS = [
   "/dashboard",
-  "/catalog",
-  "/content",
-  "/delivery",
-  "/inventory",
-  "/orders",
-  "/purchasing",
-  "/reports",
-  "/settings",
-  "/analytics",
-  "/seo",
   "/account",
   "/login",
   "/cart",

@@ -81,11 +81,11 @@ class SeoSettingController extends Controller
 
         // Where each type is edited, for the "needs attention" links.
         $editPaths = [
-            'products' => ['/catalog/products/', 'name'],
-            'pages' => ['/content/pages/', 'title'],
-            'categories' => ['/catalog/categories/', 'name'],
-            'brands' => ['/catalog/brands/', 'name'],
-            'blog_posts' => ['/content/blog/posts/', 'title'],
+            'products' => ['/dashboard/catalog/products/', 'name'],
+            'pages' => ['/dashboard/content/pages/', 'title'],
+            'categories' => ['/dashboard/catalog/categories/', 'name'],
+            'brands' => ['/dashboard/catalog/brands/', 'name'],
+            'blog_posts' => ['/dashboard/content/blog/posts/', 'title'],
         ];
 
         foreach (self::ENTITIES as $key => $meta) {
@@ -220,40 +220,40 @@ class SeoSettingController extends Controller
 
         return [
             $check('home-title', 'Homepage', 'Homepage SEO title is 30–60 characters', mb_strlen($title) >= 30 && mb_strlen($title) <= 60,
-                'Write a title that says what the store sells and where, within 30–60 characters.', '/seo/site'),
+                'Write a title that says what the store sells and where, within 30–60 characters.', '/dashboard/seo/site'),
             $check('home-description', 'Homepage', 'Homepage meta description is 120–160 characters', mb_strlen($description) >= 120 && mb_strlen($description) <= 160,
-                'Summarise the store in one or two sentences, 120–160 characters.', '/seo/site'),
+                'Summarise the store in one or two sentences, 120–160 characters.', '/dashboard/seo/site'),
             $check('home-keyword', 'Homepage', 'Homepage has a focus keyword', filled($home['focus_keyword']),
-                'Pick the phrase shoppers would search for to find the store.', '/seo/site'),
+                'Pick the phrase shoppers would search for to find the store.', '/dashboard/seo/site'),
             $check('home-og', 'Homepage', 'Homepage has a social sharing image', filled($home['og_image']) || filled($settings['site']['default_og_image']),
-                'Add an image so links look good when shared on Facebook, WhatsApp and X.', '/seo/site'),
+                'Add an image so links look good when shared on Facebook, WhatsApp and X.', '/dashboard/seo/site'),
             $check('home-hero', 'Homepage', 'Homepage has a hero banner', $blocks->contains(fn ($t) => in_array($t, ['hero', 'hero_slider'], true)),
-                'A hero banner gives visitors and search engines a clear main message.', '/content/homepage'),
+                'A hero banner gives visitors and search engines a clear main message.', '/dashboard/content/homepage'),
             $check('home-products', 'Homepage', 'Homepage links to products or categories', $blocks->contains(fn ($t) => in_array($t, ['product_tabs', 'featured_products', 'latest_products', 'best_sellers', 'category_grid', 'category_carousel', 'product_carousel'], true)),
-                'Product and category rows pass link strength to your catalog pages.', '/content/homepage'),
+                'Product and category rows pass link strength to your catalog pages.', '/dashboard/content/homepage'),
             $check('home-blog', 'Homepage', 'Homepage links to the blog', $blocks->contains('blog_posts'),
-                'Add a "From the Blog" section so the homepage links to the blog.', '/content/homepage'),
+                'Add a "From the Blog" section so the homepage links to the blog.', '/dashboard/content/homepage'),
 
             $check('blog-meta', 'Blog page', 'Blog page has its own title and description', filled($blog['title']) && filled($blog['description']),
-                'Give the blog landing page its own SEO title and description.', '/seo/site'),
+                'Give the blog landing page its own SEO title and description.', '/dashboard/seo/site'),
 
             $check('site-og', 'Site', 'A default social sharing image is set', filled($settings['site']['default_og_image']),
-                'Used whenever a page has no image of its own.', '/seo/site'),
+                'Used whenever a page has no image of its own.', '/dashboard/seo/site'),
             $check('robots-open', 'Technical', 'Search engines are allowed to crawl the site', $settings['robots']['mode'] !== 'block_all',
-                'Robots.txt is currently set to block the whole site.', '/seo/technical'),
+                'Robots.txt is currently set to block the whole site.', '/dashboard/seo/technical'),
             $check('sitemap-on', 'Technical', 'XML sitemap is enabled', (bool) $settings['sitemap']['enabled'],
-                'Sitemaps help search engines discover every product and page.', '/seo/technical'),
+                'Sitemaps help search engines discover every product and page.', '/dashboard/seo/technical'),
             $check('schema-org', 'Technical', 'Organization structured data is on with a logo', (bool) $settings['schema']['organization'] && filled($settings['schema']['org_logo']),
-                'Lets search engines show your logo and business details.', '/seo/technical'),
+                'Lets search engines show your logo and business details.', '/dashboard/seo/technical'),
             $check('schema-product', 'Technical', 'Product structured data is on', (bool) $settings['schema']['product'],
-                'Enables price and availability rich results for products.', '/seo/technical'),
+                'Enables price and availability rich results for products.', '/dashboard/seo/technical'),
 
             $check('verify-google', 'Integrations', 'Google Search Console is verified', filled($settings['verification']['google']),
-                'Add the Google verification token to claim the site in Search Console.', '/seo/integrations'),
+                'Add the Google verification token to claim the site in Search Console.', '/dashboard/seo/integrations'),
             $check('verify-bing', 'Integrations', 'Bing Webmaster Tools is verified', filled($settings['verification']['bing']),
-                'Add the Bing verification token to appear in Bing and Copilot.', '/seo/integrations'),
+                'Add the Bing verification token to appear in Bing and Copilot.', '/dashboard/seo/integrations'),
             $check('analytics', 'Integrations', 'Analytics is connected (GA4 or Tag Manager)', filled($settings['analytics']['ga4_id']) || filled($settings['analytics']['gtm_id']),
-                'Connect Google Analytics 4 or Google Tag Manager to measure traffic.', '/seo/integrations'),
+                'Connect Google Analytics 4 or Google Tag Manager to measure traffic.', '/dashboard/seo/integrations'),
         ];
     }
 

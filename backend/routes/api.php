@@ -319,6 +319,7 @@ Route::prefix('v1')->group(function () {
         Route::post('purchase-returns/{purchaseReturn}/ship-back', [PurchaseReturnController::class, 'shipBack']);
         Route::post('purchase-returns/{purchaseReturn}/credit', [PurchaseReturnController::class, 'credit']);
 
+        Route::get('customers/summary', [CustomerController::class, 'summary']);
         Route::apiResource('customers', CustomerController::class);
         Route::post('customers/{customer}/addresses', [CustomerAddressController::class, 'store']);
         Route::put('customers/{customer}/addresses/{address}', [CustomerAddressController::class, 'update']);
@@ -368,6 +369,8 @@ Route::prefix('v1')->group(function () {
         Route::get('dashboard/order-status-breakdown', [DashboardController::class, 'orderStatusBreakdown']);
 
         Route::get('reports/sales', [ReportController::class, 'salesReport']);
+        Route::get('reports/sales/insights', [ReportController::class, 'salesInsights']);
+        Route::get('reports/stock-overview', [ReportController::class, 'stockOverview']);
         Route::get('reports/sales/export', [ReportController::class, 'salesReportExport']);
         Route::get('reports/sales/export-pdf', [ReportController::class, 'salesReportExportPdf']);
         Route::get('reports/products-performance', [ReportController::class, 'productPerformance']);
@@ -381,6 +384,7 @@ Route::prefix('v1')->group(function () {
         Route::get('reports/reorder-suggestions/export-pdf', [ReportController::class, 'reorderSuggestionsExportPdf']);
 
         Route::get('analytics/overview', [AnalyticsController::class, 'overview']);
+        Route::get('analytics/overview/insights', [AnalyticsController::class, 'overviewInsights']);
         Route::get('analytics/overview/export', [AnalyticsController::class, 'overviewExport']);
         Route::get('analytics/overview/export-pdf', [AnalyticsController::class, 'overviewExportPdf']);
         Route::get('analytics/products', [AnalyticsController::class, 'products']);

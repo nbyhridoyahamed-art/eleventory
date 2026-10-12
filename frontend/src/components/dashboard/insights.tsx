@@ -333,7 +333,7 @@ export function DashboardInsightsPanel({ storeId, days }: { storeId: number | nu
             {data.low_stock.map((product) => (
               <li key={product.id} className="flex items-center gap-3 py-2.5 text-sm">
                 <AlertTriangle className="size-4 shrink-0 text-warning" />
-                <Link href={`/catalog/products/${product.id}`} className="min-w-0 flex-1 truncate font-medium text-primary hover:underline">
+                <Link href={`/dashboard/catalog/products/${product.id}`} className="min-w-0 flex-1 truncate font-medium text-primary hover:underline">
                   {product.name}
                 </Link>
                 <span className="hidden text-xs text-text-muted sm:inline">{product.sku}</span>

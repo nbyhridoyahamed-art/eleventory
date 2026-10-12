@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { api } from "@/lib/api";
 import { ApiError } from "@/types/api";
-import type { Customer, CustomerAddress } from "@/types/customer";
+import type { Customer, CustomerAddress, CustomerSummary } from "@/types/customer";
 
 export interface CustomerFormValues {
   store_id: number;
@@ -26,13 +26,35 @@ export interface CustomerAddressFormValues {
   is_default?: boolean;
 }
 
-export function useCustomers(storeId: number | null | undefined, page: number, search: string) {
+export interface CustomerListOptions {
+  segment?: string;
+  sort?: string;
+  direction?: "asc" | "desc";
+}
+
+export function useCustomers(
+  storeId: number | null | undefined,
+  page: number,
+  search: string,
+  options: CustomerListOptions = {},
+) {
   return useQuery({
-    queryKey: ["customers", storeId, { page, search }],
+    queryKey: ["customers", storeId, { page, search, ...options }],
     queryFn: () =>
       api.getWithMeta<Customer[]>(
-        `/customers?store_id=${storeId}&page=${page}&per_page=20${search ? `&search=${encodeURIComponent(search)}` : ""}`,
+        `/customers?store_id=${storeId}&page=${page}&per_page=20` +
+          (search ? `&search=${encodeURIComponent(search)}` : "") +
+          (options.segment ? `&segment=${options.segment}` : "") +
+          (options.sort ? `&sort=${options.sort}&direction=${options.direction ?? "desc"}` : ""),
       ),
+    enabled: Boolean(storeId),
+  });
+}
+
+export function useCustomerSummary(storeId: number | null | undefined) {
+  return useQuery({
+    queryKey: ["customers", "summary", storeId],
+    queryFn: () => api.get<CustomerSummary>(`/customers/summary?store_id=${storeId}`),
     enabled: Boolean(storeId),
   });
 }

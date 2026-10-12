@@ -236,7 +236,7 @@ export default function DashboardPage() {
                   {(recentOrders.data?.data ?? []).slice(0, 5).map((order) => (
                     <li key={order.id} className="flex items-center justify-between py-2.5 text-sm">
                       <div>
-                        <Link href={`/orders/orders/${order.id}`} className="font-medium text-primary hover:underline">
+                        <Link href={`/dashboard/orders/orders/${order.id}`} className="font-medium text-primary hover:underline">
                           {order.order_number}
                         </Link>
                         <span className="ml-2 text-text-muted">{order.customer.name}</span>
