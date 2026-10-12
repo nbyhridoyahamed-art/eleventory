@@ -84,6 +84,13 @@ class StaffRegistrationTest extends TestCase
         $this->assertNull($user->fresh()->email_verified_at);
     }
 
+    public function test_an_unsigned_link_is_a_403_json_not_a_500_even_with_debug_off(): void
+    {
+        config(['app.debug' => false]);
+
+        $this->getJson('/api/v1/auth/verify-email/1/abc')->assertForbidden();
+    }
+
     public function test_resend_answers_the_same_for_unknown_addresses(): void
     {
         Notification::fake();

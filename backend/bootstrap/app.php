@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -85,6 +86,17 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return ApiResponse::error('The requested resource was not found.', [], 404);
+        });
+
+        // Any other HTTP exception (405, 429, a bad signed URL's 403, ...) keeps
+        // its own status instead of falling into the 500 safety net below.
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) use ($isApi) {
+            if (! $isApi($request)) {
+                return null;
+            }
+
+            return ApiResponse::error($e->getMessage() ?: 'Request could not be completed.', [], $e->getStatusCode())
+                ->withHeaders($e->getHeaders());
         });
 
         // Phase 21: a safety net, not a replacement for the four renderers
