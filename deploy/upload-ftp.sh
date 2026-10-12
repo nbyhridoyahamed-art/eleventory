@@ -2,7 +2,9 @@
 # Uploads the release archives to the cPanel host over FTP (explicit TLS).
 # Passwords are typed at the prompt - never stored, never passed on the command line history.
 #
-# Usage (Git Bash, from the repo root):  bash deploy/upload-ftp.sh
+# Usage (Git Bash, from the repo root):
+#   bash deploy/upload-ftp.sh                 # API + media + frontend
+#   ONLY=frontend bash deploy/upload-ftp.sh   # frontend archive only (typical code update)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -12,7 +14,7 @@ HOST="${FTP_HOST:-jamuna.whitelabelverse.com}"
 API_USER="${API_FTP_USER:-deploy@mobilecover.com.bd}"     # FTP root = /home/mobileco/laravel_app
 WEB_USER="${WEB_FTP_USER:-deploy2@mobilecover.com.bd}"    # FTP root = /home/mobileco/elevendollar.store
 
-for f in backend.tar.gz media.tar.gz frontend.tar.gz; do
+for f in frontend.tar.gz; do
   [ -f "$DIST/$f" ] || { echo "Missing $DIST/$f - run deploy/build-release.sh first." >&2; exit 1; }
 done
 
@@ -22,11 +24,13 @@ upload() { # user password file
     --user "$1:$2" -T "$DIST/$3" "ftp://$HOST/$3"
 }
 
-read -r -s -p "FTP password for $API_USER (laravel_app): " API_PASS; echo
-echo "Uploading API archives..."
-upload "$API_USER" "$API_PASS" backend.tar.gz
-upload "$API_USER" "$API_PASS" media.tar.gz
-unset API_PASS
+if [ "${ONLY:-all}" != "frontend" ]; then
+  read -r -s -p "FTP password for $API_USER (laravel_app): " API_PASS; echo
+  echo "Uploading API archives..."
+  upload "$API_USER" "$API_PASS" backend.tar.gz
+  upload "$API_USER" "$API_PASS" media.tar.gz
+  unset API_PASS
+fi
 
 read -r -s -p "FTP password for $WEB_USER (elevendollar.store): " WEB_PASS; echo
 echo "Uploading frontend archive..."
