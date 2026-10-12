@@ -19,6 +19,7 @@ class UserResource extends JsonResource
             'locale' => $this->locale,
             'timezone' => $this->timezone,
             'status' => $this->status,
+            'email_verified' => $this->email_verified_at !== null,
             'current_store_id' => $this->current_store_id,
             'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),
             'permissions' => $this->when(

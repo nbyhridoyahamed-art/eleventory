@@ -71,7 +71,10 @@ export default function UsersSettingsPage() {
       id: "status",
       header: "Status",
       cell: (user) => (
-        <Badge variant={user.status === "active" ? "success" : "warning"}>{user.status}</Badge>
+        <div className="flex flex-wrap gap-1">
+          <Badge variant={user.status === "active" ? "success" : "warning"}>{user.status}</Badge>
+          {user.email_verified === false ? <Badge variant="warning">Unverified</Badge> : null}
+        </div>
       ),
     },
     {

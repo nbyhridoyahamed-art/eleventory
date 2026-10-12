@@ -23,6 +23,7 @@ const DEFAULT_DISALLOW = [
   "/dashboard",
   "/account",
   "/login",
+  "/register",
   "/cart",
   "/checkout",
   "/order-confirmation",

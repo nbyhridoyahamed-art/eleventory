@@ -8,6 +8,7 @@ export interface User {
   locale: string;
   timezone: string;
   status: "active" | "suspended";
+  email_verified?: boolean;
   current_store_id: number | null;
   roles: string[];
   permissions: string[];

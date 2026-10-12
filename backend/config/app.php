@@ -61,6 +61,9 @@ return [
     */
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
 
+    // Whether anyone may sign up for the admin area (email-verified, no permissions until an admin assigns a role).
+    'staff_registration' => (bool) env('STAFF_REGISTRATION', true),
+
     // Shared secret the storefront server sends so its page-render API calls skip the per-IP rate limit.
     'ssr_key' => env('STOREFRONT_SSR_KEY'),
 

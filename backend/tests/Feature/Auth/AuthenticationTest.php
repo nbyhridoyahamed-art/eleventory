@@ -21,14 +21,14 @@ class AuthenticationTest extends TestCase
             'password_confirmation' => 'password123',
         ]);
 
+        // Sign-up never hands out a token: the address must be verified first.
         $response->assertCreated()
             ->assertJsonPath('success', true)
-            ->assertJsonPath('data.user.email', 'rahim@example.com')
-            ->assertJsonPath('data.user.phone', '01712345678')
-            ->assertJsonPath('data.user.status', 'active')
-            ->assertJsonStructure(['data' => ['user', 'token']]);
+            ->assertJsonPath('data.email', 'rahim@example.com')
+            ->assertJsonMissingPath('data.token');
 
-        $this->assertDatabaseHas('users', ['email' => 'rahim@example.com']);
+        $this->assertDatabaseHas('users', ['email' => 'rahim@example.com', 'phone' => '01712345678', 'status' => 'active']);
+        $this->assertNull(User::where('email', 'rahim@example.com')->first()->email_verified_at);
     }
 
     public function test_registration_normalizes_bd_phone_numbers_to_prevent_duplicates(): void

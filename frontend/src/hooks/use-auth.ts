@@ -47,3 +47,25 @@ export function useLogout() {
     },
   });
 }
+
+export interface StaffRegisterPayload {
+  name: string;
+  email: string;
+  phone?: string;
+  password: string;
+  password_confirmation: string;
+}
+
+/** Open sign-up for the admin area; the account must verify its email and be given a role before it can see anything. */
+export function useRegisterStaff() {
+  return useMutation({
+    mutationFn: (payload: StaffRegisterPayload) =>
+      api.post<{ email: string; verification_sent: boolean }>("/auth/register", payload),
+  });
+}
+
+export function useResendVerification() {
+  return useMutation({
+    mutationFn: (email: string) => api.post<null>("/auth/resend-verification", { email }),
+  });
+}

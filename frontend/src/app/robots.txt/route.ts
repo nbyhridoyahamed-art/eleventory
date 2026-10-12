@@ -13,6 +13,7 @@ const DISALLOWED_PATHS = [
   "/dashboard",
   "/account",
   "/login",
+  "/register",
   "/cart",
   "/checkout",
   "/order-confirmation",

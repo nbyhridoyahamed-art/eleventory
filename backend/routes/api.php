@@ -82,6 +82,10 @@ Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->middleware('throttle:6,1');
         Route::post('login', [AuthController::class, 'login']);
+        Route::get('verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+            ->middleware(['signed', 'throttle:20,1'])
+            ->name('staff.verification.verify');
+        Route::post('resend-verification', [AuthController::class, 'resendVerification'])->middleware('throttle:3,1');
         Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:6,1');
         Route::post('reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:6,1');
 

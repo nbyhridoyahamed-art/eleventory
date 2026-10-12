@@ -52,11 +52,14 @@ class UserController extends Controller
         // Admin screens are scoped to the user's current store; a new staff
         // member works in the same store as whoever is adding them.
         $data['current_store_id'] ??= $request->user()->current_store_id;
+        // Accounts an administrator creates are trusted; only self-registrations need to verify.
+        $verifiedAt = now();
 
         $user = User::create([
             ...collect($data)->except(['password', 'roles'])->all(),
             'password' => Hash::make($data['password']),
         ]);
+        $user->forceFill(['email_verified_at' => $verifiedAt])->save();
 
         if (! empty($data['roles'])) {
             $this->authorize('assignRole', User::class);

@@ -85,6 +85,22 @@ class NotificationRouter
         return $message;
     }
 
+    /** Sends an already-built message through the store's saved SMTP settings when there are any. */
+    public static function withStoreMailer(MailMessage $message, ?int $storeId): MailMessage
+    {
+        $settings = NotificationSetting::forStore($storeId);
+
+        if ($settings !== null && self::registerMailer($settings['email'])) {
+            $message->mailer(self::MAILER);
+
+            if (filled($settings['email']['from_address'])) {
+                $message->from($settings['email']['from_address'], $settings['email']['from_name'] ?: null);
+            }
+        }
+
+        return $message;
+    }
+
     /** Points a dedicated mailer at the store's SMTP server. False when no usable SMTP is saved. */
     public static function registerMailer(array $email): bool
     {
