@@ -4,7 +4,8 @@
 #
 # Usage (Git Bash, from the repo root):
 #   bash deploy/upload-ftp.sh                 # API + media + frontend
-#   ONLY=frontend bash deploy/upload-ftp.sh   # frontend archive only (typical code update)
+#   ONLY=frontend bash deploy/upload-ftp.sh   # frontend archive only
+#   SKIP_MEDIA=1 bash deploy/upload-ftp.sh    # API code + frontend (typical release; images unchanged)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -28,7 +29,7 @@ if [ "${ONLY:-all}" != "frontend" ]; then
   read -r -s -p "FTP password for $API_USER (laravel_app): " API_PASS; echo
   echo "Uploading API archives..."
   upload "$API_USER" "$API_PASS" backend.tar.gz
-  upload "$API_USER" "$API_PASS" media.tar.gz
+  if [ "${SKIP_MEDIA:-0}" != "1" ]; then upload "$API_USER" "$API_PASS" media.tar.gz; fi
   unset API_PASS
 fi
 
