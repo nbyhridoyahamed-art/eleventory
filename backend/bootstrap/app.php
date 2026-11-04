@@ -4,6 +4,7 @@ use App\Http\Controllers\McpController;
 use App\Http\Middleware\EnsureCustomerUser;
 use App\Http\Middleware\EnsureStaffUser;
 use App\Http\Middleware\McpCors;
+use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\SecurityHeaders;
 use App\Support\ApiResponse;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -13,6 +14,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -40,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'staff' => EnsureStaffUser::class,
+            'tenant' => ResolveTenant::class,
             'customer' => EnsureCustomerUser::class,
         ]);
 
@@ -48,6 +51,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // outside the handful with an explicit throttle:N,1 had none at
         // all beyond whatever the deployment's reverse proxy/WAF applied.
         $middleware->throttleApi();
+
+        // Route-model binding must see the tenant scope, so the store is
+        // resolved (and membership checked) before bindings run.
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: ResolveTenant::class);
 
         $middleware->append(SecurityHeaders::class);
     })

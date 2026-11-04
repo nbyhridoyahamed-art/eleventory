@@ -7,6 +7,7 @@ use App\Http\Requests\User\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Support\ApiResponse;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,6 +22,8 @@ class UserController extends Controller
 
         $users = User::query()
             ->with('roles')
+            ->when(config('app.saas_mode') && ! $request->user()->hasRole('Platform Admin'),
+                fn ($query) => $query->whereHas('stores', fn ($stores) => $stores->where('stores.id', app(TenantContext::class)->storeId())))
             ->when($request->filled('search'), fn ($query) => $query->where('name', 'like', '%'.$request->string('search').'%'))
             ->latest()
             ->paginate($perPage);
@@ -60,6 +63,11 @@ class UserController extends Controller
             'password' => Hash::make($data['password']),
         ]);
         $user->forceFill(['email_verified_at' => $verifiedAt])->save();
+
+        // Belonging to the store is what grants access to it (see ResolveTenant).
+        if ($user->getRawOriginal('current_store_id')) {
+            $user->stores()->syncWithoutDetaching([(int) $user->getRawOriginal('current_store_id') => ['status' => 'active']]);
+        }
 
         if (! empty($data['roles'])) {
             $this->authorize('assignRole', User::class);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['store_id', 'name', 'bd_division_id', 'bd_district_id', 'status'])]
 class DeliveryZone extends Model
 {
+    use BelongsToStore;
     use HasFactory;
 
     public function store(): BelongsTo

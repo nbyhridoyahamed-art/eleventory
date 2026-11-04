@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\StockLevel;
 use App\Models\Store;
 use App\Support\BundleExpander;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Collection;
 
 /**
@@ -22,7 +23,11 @@ abstract class StorefrontController extends Controller
 {
     protected function currentStore(): Store
     {
-        return Store::where('status', 'active')->firstOrFail();
+        $store = Store::where('status', 'active')->firstOrFail();
+
+        app(TenantContext::class)->set($store->id);
+
+        return $store;
     }
 
     /**

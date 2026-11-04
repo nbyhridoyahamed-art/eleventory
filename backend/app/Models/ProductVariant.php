@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,7 @@ use Illuminate\Support\Str;
 #[Fillable(['store_id', 'product_id', 'sku', 'barcode', 'price_amount', 'sale_price_amount', 'cost_price_amount', 'status'])]
 class ProductVariant extends Model
 {
+    use BelongsToStore;
     use HasFactory;
 
     protected static function boot(): void

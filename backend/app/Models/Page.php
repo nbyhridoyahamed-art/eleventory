@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,7 @@ use Illuminate\Support\Str;
 #[Fillable(['store_id', 'title', 'slug', 'content', 'status', 'created_by'])]
 class Page extends Model
 {
+    use BelongsToStore;
     use HasFactory, SoftDeletes;
 
     protected static function boot(): void

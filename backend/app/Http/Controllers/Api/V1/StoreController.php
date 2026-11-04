@@ -20,6 +20,8 @@ class StoreController extends Controller
 
         $stores = Store::query()
             ->with('currency')
+            ->when(config('app.saas_mode') && ! $request->user()->hasRole('Platform Admin'),
+                fn ($query) => $query->whereIn('id', $request->user()->stores()->wherePivot('status', 'active')->select('stores.id')))
             ->when($request->filled('search'), fn ($query) => $query->where('name', 'like', '%'.$request->string('search').'%'))
             ->latest()
             ->paginate($perPage);

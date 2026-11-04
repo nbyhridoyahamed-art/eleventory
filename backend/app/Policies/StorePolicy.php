@@ -14,21 +14,28 @@ class StorePolicy
 
     public function view(User $user, Store $store): bool
     {
-        return $user->can('stores.view');
+        return $user->can('stores.view') && $this->reaches($user, $store);
     }
 
     public function create(User $user): bool
     {
-        return $user->can('stores.create');
+        // With several tenants on the platform only platform staff open new stores here.
+        return $user->can('stores.create') && (! config('app.saas_mode') || $user->hasRole('Platform Admin'));
     }
 
     public function update(User $user, Store $store): bool
     {
-        return $user->can('stores.update');
+        return $user->can('stores.update') && $this->reaches($user, $store);
     }
 
     public function delete(User $user, Store $store): bool
     {
-        return $user->can('stores.delete');
+        return $user->can('stores.delete') && $this->reaches($user, $store);
+    }
+
+    /** In multi-tenant mode a store is only reachable by its members. */
+    private function reaches(User $user, Store $store): bool
+    {
+        return ! config('app.saas_mode') || $user->canAccessStore($store->id);
     }
 }

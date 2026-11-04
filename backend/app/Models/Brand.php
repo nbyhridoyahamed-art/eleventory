@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,7 @@ use Illuminate\Support\Str;
 #[Fillable(['store_id', 'name', 'slug', 'description', 'logo_path', 'status'])]
 class Brand extends Model
 {
+    use BelongsToStore;
     use HasFactory, SoftDeletes;
 
     protected static function boot(): void

@@ -66,6 +66,19 @@ class User extends Authenticatable
         return $this->belongsTo(Store::class, 'current_store_id');
     }
 
+    /** Platform staff may act for any store; everyone else only for stores they are an active member of. */
+    public function canAccessStore(int $storeId): bool
+    {
+        if ($this->hasRole('Platform Admin')) {
+            return Store::query()->whereKey($storeId)->exists();
+        }
+
+        return $this->stores()
+            ->where('stores.id', $storeId)
+            ->where('store_user.status', 'active')
+            ->exists();
+    }
+
     public function stores(): BelongsToMany
     {
         return $this->belongsToMany(Store::class, 'store_user')

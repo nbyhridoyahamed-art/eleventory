@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,7 @@ use Illuminate\Support\Str;
 #[Hidden(['api_key', 'api_secret'])]
 class Courier extends Model
 {
+    use BelongsToStore;
     use HasFactory, SoftDeletes;
 
     protected function casts(): array

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,7 @@ use Illuminate\Support\Str;
 #[Fillable(['store_id', 'disk', 'path', 'filename', 'mime_type', 'size', 'alt_text', 'uploaded_by'])]
 class Media extends Model
 {
+    use BelongsToStore;
     use HasFactory;
 
     protected function casts(): array

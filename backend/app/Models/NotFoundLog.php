@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['store_id', 'path', 'path_hash', 'hits', 'last_referrer', 'last_user_agent', 'first_seen_at', 'last_seen_at'])]
 class NotFoundLog extends Model
 {
+    use BelongsToStore;
+
     protected function casts(): array
     {
         return [

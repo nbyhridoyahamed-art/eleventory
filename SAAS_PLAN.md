@@ -167,3 +167,23 @@ Read SAAS_PLAN.md and the codebase areas named above, then give me: (1) a one-pa
 1. Confirm the §5 decisions (especially hosting → VPS and the platform domain).
 2. Start Phase 1 immediately; it is the prerequisite for everything and also hardens the current site.
 3. Stand up a staging VPS in parallel so Phase 3/4 can be tested with real wildcard DNS and TLS.
+
+---
+
+## 8. Progress log
+
+### Phase 1 – tenant isolation (in progress, started 2026-11-05)
+Done (behind `SAAS_MODE`, default off, so the live single-store site is unchanged):
+- [x] `TenantContext` + `BelongsToStore` trait + `TenantScope` on all 46 store-owned models (auto-filter, auto-stamp `store_id` on create)
+- [x] `ResolveTenant` middleware (`tenant`) on every staff route: the store must be one the user is an active member of; naming another store is a 403; runs before route-model binding so foreign ids are 404
+- [x] Store list/show/update/delete limited to member stores; only `Platform Admin` creates stores; user list/show/update/delete limited to the acting store
+- [x] Users created from the Users screen join the creator's store; migration `2026_11_05_100000_backfill_store_user_membership` gives every existing user a membership
+- [x] Storefront and customer requests set the tenant (storefront still resolves "first active store"; host resolution is Phase 3)
+- [x] `TenantIsolationTest`: 12 tests incl. a route sweep that fails if any single-parameter staff route can reach another store's record
+
+Still to do in Phase 1:
+- [ ] Per-store roles/permissions (spatie teams); today roles are global, so a "Super Admin" is the same role in every store
+- [ ] Sweep for nested/multi-parameter routes and non-GET verbs; models without a factory (e.g. purchase returns)
+- [ ] Child models without `store_id` (order items, stock levels, ...) are protected only through their parent; add a test per relation
+- [ ] Customer tokens bound to a store; MCP/Sanctum tokens bound to one store
+- [ ] Before switching `SAAS_MODE=true` on live: run migrations, confirm every staff user has a membership, take a backup

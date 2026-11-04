@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Customer;
 use App\Support\ApiResponse;
+use App\Support\Tenancy\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +21,8 @@ class EnsureCustomerUser
         if (! $request->user() instanceof Customer) {
             return ApiResponse::error('Unauthenticated.', [], 401);
         }
+
+        app(TenantContext::class)->set((int) $request->user()->store_id);
 
         return $next($request);
     }

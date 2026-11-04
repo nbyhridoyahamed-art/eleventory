@@ -15,8 +15,6 @@ use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CodSettlementController;
 use App\Http\Controllers\Api\V1\CouponController;
 use App\Http\Controllers\Api\V1\CourierController;
-use App\Http\Controllers\Api\V1\McpTokenController;
-use App\Http\Controllers\Api\V1\NotificationSettingController;
 use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\CustomerAddressController;
 use App\Http\Controllers\Api\V1\CustomerController;
@@ -25,9 +23,11 @@ use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeliveryZoneController;
 use App\Http\Controllers\Api\V1\HomepageBlockController;
 use App\Http\Controllers\Api\V1\LocationController;
+use App\Http\Controllers\Api\V1\McpTokenController;
 use App\Http\Controllers\Api\V1\MediaController;
 use App\Http\Controllers\Api\V1\NewsletterSubscriberController;
 use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\NotificationSettingController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\OrderPaymentController;
 use App\Http\Controllers\Api\V1\PageController;
@@ -46,7 +46,9 @@ use App\Http\Controllers\Api\V1\ReturnController;
 use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SavedSectionController;
+use App\Http\Controllers\Api\V1\SeoSettingController;
 use App\Http\Controllers\Api\V1\SeoTemplateController;
+use App\Http\Controllers\Api\V1\SeoToolsController;
 use App\Http\Controllers\Api\V1\ShipmentController;
 use App\Http\Controllers\Api\V1\StockAdjustmentController;
 use App\Http\Controllers\Api\V1\StockAdjustmentSessionController;
@@ -63,12 +65,10 @@ use App\Http\Controllers\Api\V1\Storefront\DeliveryZoneController as StorefrontD
 use App\Http\Controllers\Api\V1\Storefront\HomepageController as StorefrontHomepageController;
 use App\Http\Controllers\Api\V1\Storefront\NewsletterController as StorefrontNewsletterController;
 use App\Http\Controllers\Api\V1\Storefront\PageController as StorefrontPageController;
-use App\Http\Controllers\Api\V1\Storefront\SeoSettingController as StorefrontSeoSettingController;
 use App\Http\Controllers\Api\V1\Storefront\ProductController as StorefrontProductController;
 use App\Http\Controllers\Api\V1\Storefront\RedirectController as StorefrontRedirectController;
+use App\Http\Controllers\Api\V1\Storefront\SeoSettingController as StorefrontSeoSettingController;
 use App\Http\Controllers\Api\V1\Storefront\StoreController as StorefrontStoreController;
-use App\Http\Controllers\Api\V1\SeoSettingController;
-use App\Http\Controllers\Api\V1\SeoToolsController;
 use App\Http\Controllers\Api\V1\StoreSeoController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\SupplierPaymentController;
@@ -178,7 +178,7 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-    Route::middleware(['auth:sanctum', 'staff'])->group(function () {
+    Route::middleware(['auth:sanctum', 'staff', 'tenant'])->group(function () {
         Route::apiResource('stores', StoreController::class);
         Route::apiResource('warehouses', WarehouseController::class);
         Route::apiResource('users', UserController::class);

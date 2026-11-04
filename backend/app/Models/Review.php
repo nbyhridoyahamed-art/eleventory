@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,7 @@ use Illuminate\Support\Str;
 #[Fillable(['store_id', 'product_id', 'customer_id', 'order_id', 'rating', 'title', 'body', 'status'])]
 class Review extends Model
 {
+    use BelongsToStore;
     use HasFactory, SoftDeletes;
 
     protected function casts(): array

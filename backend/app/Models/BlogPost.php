@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,7 @@ use Illuminate\Support\Str;
 #[Fillable(['store_id', 'title', 'slug', 'excerpt', 'body', 'featured_image_url', 'blog_category_id', 'created_by', 'status', 'published_at'])]
 class BlogPost extends Model
 {
+    use BelongsToStore;
     use HasFactory, SoftDeletes;
 
     protected function casts(): array

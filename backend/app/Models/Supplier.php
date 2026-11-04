@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,7 @@ use Illuminate\Support\Str;
 #[Fillable(['store_id', 'name', 'contact_name', 'email', 'phone', 'address', 'status', 'payment_terms'])]
 class Supplier extends Model
 {
+    use BelongsToStore;
     use HasFactory, SoftDeletes;
 
     protected static function boot(): void

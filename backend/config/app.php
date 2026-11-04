@@ -62,6 +62,10 @@ return [
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
 
     // Whether anyone may sign up for the admin area (email-verified, no permissions until an admin assigns a role).
+    // Multi-tenant mode: every request is confined to one store the user belongs to.
+    // Off keeps the single-store behaviour; turn on before a second store exists.
+    'saas_mode' => (bool) env('SAAS_MODE', false),
+
     'staff_registration' => (bool) env('STAFF_REGISTRATION', true),
 
     // Shared secret the storefront server sends so its page-render API calls skip the per-IP rate limit.

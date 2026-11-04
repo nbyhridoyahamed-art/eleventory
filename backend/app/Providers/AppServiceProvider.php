@@ -10,6 +10,7 @@ use App\Observers\CategoryObserver;
 use App\Observers\HomepageBlockObserver;
 use App\Policies\RolePolicy;
 use App\Services\Sms\LogSmsGateway;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Events\NotificationSent;
@@ -30,6 +31,9 @@ class AppServiceProvider extends ServiceProvider
         // mock — every caller depends on SmsGateway, never LogSmsGateway
         // directly.
         $this->app->bind(SmsGateway::class, LogSmsGateway::class);
+
+        // One tenant context per request/job (see App\Support\Tenancy\TenantContext).
+        $this->app->scoped(TenantContext::class);
     }
 
     /**

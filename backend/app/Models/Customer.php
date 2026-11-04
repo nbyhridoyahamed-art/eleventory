@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,6 +27,7 @@ use Laravel\Sanctum\HasApiTokens;
 #[Hidden(['password'])]
 class Customer extends Authenticatable
 {
+    use BelongsToStore;
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected function casts(): array

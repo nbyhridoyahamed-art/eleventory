@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToStore;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['store_id', 'data'])]
 class NotificationSetting extends Model
 {
+    use BelongsToStore;
+
     /** Event key => label. Keys are used in templates, switches and the send log. */
     public const EVENTS = [
         'order_placed' => 'Order placed',
