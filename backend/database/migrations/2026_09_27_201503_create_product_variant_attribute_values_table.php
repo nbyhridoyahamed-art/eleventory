@@ -11,10 +11,10 @@ return new class extends Migration
         Schema::create('product_variant_attribute_values', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_variant_id')->constrained('product_variants')->cascadeOnDelete();
-            $table->foreignId('product_attribute_value_id')->constrained('product_attribute_values')->cascadeOnDelete();
+            $table->foreignId('product_attribute_value_id')->constrained('product_attribute_values', indexName: 'pvav_attribute_value_foreign')->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['product_variant_id', 'product_attribute_value_id']);
+            $table->unique(['product_variant_id', 'product_attribute_value_id'], 'pvav_variant_value_unique');
         });
     }
 

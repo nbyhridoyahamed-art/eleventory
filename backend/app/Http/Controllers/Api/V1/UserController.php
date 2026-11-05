@@ -45,6 +45,13 @@ class UserController extends Controller
         $this->authorize('create', User::class);
 
         $data = $request->validated();
+
+        // Refuse a forbidden role before anything is written.
+        if (! empty($data['roles'])) {
+            $this->authorize('assignRole', User::class);
+            $this->guardPlatformRole($data['roles']);
+        }
+
         // Set explicitly rather than leaning on the migration's column
         // default: create() returns the in-memory model, not a fresh
         // SELECT, so a field left for the DB default would come back
@@ -71,6 +78,7 @@ class UserController extends Controller
 
         if (! empty($data['roles'])) {
             $this->authorize('assignRole', User::class);
+            $this->guardPlatformRole($data['roles']);
             $user->syncRoles($data['roles']);
         }
 
@@ -99,6 +107,7 @@ class UserController extends Controller
 
         if (array_key_exists('roles', $data)) {
             $this->authorize('assignRole', User::class);
+            $this->guardPlatformRole($data['roles'] ?? [], $user);
             $user->syncRoles($data['roles'] ?? []);
         }
 
@@ -112,5 +121,17 @@ class UserController extends Controller
         $user->delete();
 
         return ApiResponse::success(message: 'User deleted successfully.');
+    }
+
+    /**
+     * @param  array<int, string>  $roles
+     */
+    private function guardPlatformRole(array $roles, ?User $target = null): void
+    {
+        $touchesPlatform = in_array('Platform Admin', $roles, true) || ($target && $target->hasRole('Platform Admin'));
+
+        if ($touchesPlatform) {
+            $this->authorize('assignPlatformAdmin', User::class);
+        }
     }
 }

@@ -24,6 +24,16 @@ class ApiBridge
      */
     public function call(string $method, string $path, array $query = [], ?array $body = null): array
     {
+        $headers = [
+            'HTTP_ACCEPT' => 'application/json',
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer '.$this->plainToken,
+        ];
+
+        if ($this->storeId) {
+            $headers['HTTP_X_STORE_ID'] = (string) $this->storeId;
+        }
+
         $query = array_filter($query, fn ($v) => $v !== null && $v !== '');
         $uri = '/api/v1'.$path.($query ? '?'.http_build_query($query) : '');
 
@@ -33,11 +43,7 @@ class ApiBridge
             [],
             [],
             [],
-            [
-                'HTTP_ACCEPT' => 'application/json',
-                'CONTENT_TYPE' => 'application/json',
-                'HTTP_AUTHORIZATION' => 'Bearer '.$this->plainToken,
-            ],
+            $headers,
             $body !== null ? json_encode($body) : null,
         );
 

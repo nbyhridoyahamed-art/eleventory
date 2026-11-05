@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('currency_code', 3)->default('BDT');
             $table->timestamps();
 
-            $table->unique(['delivery_zone_id', 'min_order_subtotal_amount']);
+            $table->unique(['delivery_zone_id', 'min_order_subtotal_amount'], 'delivery_zone_rates_tier_unique');
         });
     }
 

@@ -42,10 +42,16 @@ class McpTokenController extends Controller
             'mode' => ['required', Rule::in(['read_only', 'full'])],
         ]);
 
-        $token = $request->user()->createToken(
-            self::PREFIX.$data['name'],
-            $data['mode'] === 'read_only' ? ['read'] : ['*'],
-        );
+        // A connection is pinned to the store it was created in (ability "store:<id>"),
+        // so it cannot follow the user into another store later.
+        $storeId = $request->user()->current_store_id;
+        $abilities = $data['mode'] === 'read_only' ? ['read'] : ['*'];
+
+        if ($storeId) {
+            $abilities[] = 'store:'.$storeId;
+        }
+
+        $token = $request->user()->createToken(self::PREFIX.$data['name'], $abilities);
 
         return ApiResponse::success([
             'token' => $token->plainTextToken,

@@ -15,7 +15,7 @@ return new class extends Migration
             // One shipment per order in Wave 1 — an order that needs re-dispatching
             // after a failed delivery is a Wave 2 problem (multi-shipment orders).
             $table->foreignId('order_id')->unique()->constrained('orders')->cascadeOnDelete();
-            $table->foreignId('courier_id')->constrained('couriers')->nullOnDelete();
+            $table->foreignId('courier_id')->nullable()->constrained('couriers')->nullOnDelete();
             $table->string('tracking_number');
             // pending_pickup -> picked_up -> in_transit -> delivered, or
             // failed_delivery/returned_to_seller from picked_up/in_transit.

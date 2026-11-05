@@ -181,9 +181,17 @@ Done (behind `SAAS_MODE`, default off, so the live single-store site is unchange
 - [x] Storefront and customer requests set the tenant (storefront still resolves "first active store"; host resolution is Phase 3)
 - [x] `TenantIsolationTest`: 12 tests incl. a route sweep that fails if any single-parameter staff route can reach another store's record
 
-Still to do in Phase 1:
-- [ ] Per-store roles/permissions (spatie teams); today roles are global, so a "Super Admin" is the same role in every store
-- [ ] Sweep for nested/multi-parameter routes and non-GET verbs; models without a factory (e.g. purchase returns)
-- [ ] Child models without `store_id` (order items, stock levels, ...) are protected only through their parent; add a test per relation
-- [ ] Customer tokens bound to a store; MCP/Sanctum tokens bound to one store
-- [ ] Before switching `SAAS_MODE=true` on live: run migrations, confirm every staff user has a membership, take a backup
+Also done (second pass):
+- [x] Roles are shared templates: in `SAAS_MODE` only a `Platform Admin` can create/edit/delete roles; store staff can assign roles but cannot see or grant `Platform Admin` (checked before anything is written)
+- [x] MCP connector tokens are pinned to the store they were created in (ability `store:<id>`); the bridge sends `X-Store-Id`, so membership is re-checked on every call and the token cannot follow the user into another store
+- [x] Customer tokens: a customer's requests always run in the customer's own store (`EnsureCustomerUser`)
+- [x] Write/nested sweep (`test_no_write_or_nested_route_can_reach_another_stores_record`): every verb, every parameter position of store-owned models (100 positions) must 404/403 and leave the foreign record intact. Variants and attribute values (no `store_id`) are guarded by their parent's ownership check; models without a factory (purchase returns, 404 logs, newsletter subscribers) are skipped by the sweep but carry the same scope
+
+Deliberately deferred (decision, not an oversight):
+- Per-store roles via spatie teams. It rewrites the live permission tables' primary keys and every role assignment, for little gain while roles are platform-managed templates. Known limit: a person who belongs to two stores has the same roles in both. Revisit if stores need custom roles (Phase 7+).
+
+Before switching `SAAS_MODE=true` on live (checklist):
+- [ ] Take a fresh backup (the Phase 0 backup was skipped)
+- [ ] Deploy this build and run migration `2026_11_05_100000_backfill_store_user_membership`
+- [ ] Confirm every staff user has an active `store_user` row, and the owner has the `Platform Admin` role
+- [ ] Re-create existing MCP connections (old tokens have no store pin; they fall back to the user's current store)

@@ -50,7 +50,7 @@ class McpController extends Controller
 
         $isBatch = array_is_list($payload);
         $messages = $isBatch ? $payload : [$payload];
-        $api = new ApiBridge((string) $plain, $user->current_store_id ? (int) $user->current_store_id : null);
+        $api = new ApiBridge((string) $plain, $this->storeFor($access, $user));
         $readOnly = ! $access->can('write');
 
         $responses = [];
@@ -75,6 +75,18 @@ class McpController extends Controller
         }
 
         return response()->json($isBatch ? $responses : $responses[0]);
+    }
+
+    /** The store a connection works in: the one it was pinned to, else the user's current store. */
+    private function storeFor(PersonalAccessToken $access, User $user): ?int
+    {
+        foreach ($access->abilities ?? [] as $ability) {
+            if (is_string($ability) && preg_match('/^store:(\d+)$/', $ability, $m)) {
+                return (int) $m[1];
+            }
+        }
+
+        return $user->current_store_id ? (int) $user->current_store_id : null;
     }
 
     /** Anything other than POST: this server offers no SSE stream and no sessions. */

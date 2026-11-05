@@ -48,4 +48,10 @@ class UserPolicy
     {
         return $user->can('roles.assign');
     }
+
+    /** Only the platform operator may hand out (or take away) the Platform Admin role in multi-tenant mode. */
+    public function assignPlatformAdmin(User $user): bool
+    {
+        return ! config('app.saas_mode') || $user->hasRole('Platform Admin');
+    }
 }

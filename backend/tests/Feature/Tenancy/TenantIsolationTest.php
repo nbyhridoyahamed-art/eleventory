@@ -218,6 +218,99 @@ class TenantIsolationTest extends TestCase
         fwrite(STDERR, "\n[tenancy sweep] verified {$checked} routes; no factory for: ".implode(', ', $notCovered)."\n");
     }
 
+    /**
+     * The wider sweep: every staff route, whatever its verb, whose first
+     * parameter is a store-owned model must 404 for another store's record
+     * (writes included: update, delete, approve, ship ...), and for nested
+     * routes the same holds when only the second parameter is foreign.
+     */
+    public function test_no_write_or_nested_route_can_reach_another_stores_record(): void
+    {
+        $this->actingAs($this->userA, 'sanctum');
+        $checked = 0;
+        $skipped = [];
+
+        foreach (Route::getRoutes() as $route) {
+            if (! in_array('tenant', $route->gatherMiddleware(), true)) {
+                continue;
+            }
+
+            $names = $route->parameterNames();
+            if ($names === []) {
+                continue;
+            }
+
+            $verb = array_values(array_diff($route->methods(), ['HEAD']))[0];
+            $models = array_map(fn ($n) => $this->boundModel($route->getActionName(), $n), $names);
+
+            // Which positions we can plant a foreign record in.
+            foreach ($names as $i => $name) {
+                $model = $models[$i];
+                if ($model === null || ! in_array(BelongsToStore::class, class_uses_recursive($model), true)) {
+                    continue;
+                }
+
+                if (! method_exists($model, 'factory')) {
+                    $skipped[] = $verb.' '.$route->uri();
+
+                    continue;
+                }
+
+                try {
+                    $theirs = $model::factory()->create(['store_id' => $this->b->id]);
+                } catch (\Throwable) {
+                    $skipped[] = $verb.' '.$route->uri();
+
+                    continue;
+                }
+
+                // Every other parameter gets a record of the acting store when we can make one.
+                $uri = '/'.$route->uri();
+                $buildable = true;
+                foreach ($names as $j => $other) {
+                    if ($j === $i) {
+                        $value = $theirs->getRouteKey();
+                    } elseif ($j < $i && $models[$j] !== null && method_exists($models[$j], 'factory')) {
+                        try {
+                            $value = $models[$j]::factory()->create(
+                                in_array(BelongsToStore::class, class_uses_recursive($models[$j]), true) ? ['store_id' => $this->a->id] : [],
+                            )->getRouteKey();
+                        } catch (\Throwable) {
+                            $buildable = false;
+                            break;
+                        }
+                    } else {
+                        $value = 999999;
+                    }
+                    $uri = str_replace('{'.$other.'}', (string) $value, $uri);
+                    $uri = str_replace('{'.$other.'?}', (string) $value, $uri);
+                }
+
+                if (! $buildable) {
+                    $skipped[] = $verb.' '.$route->uri();
+
+                    continue;
+                }
+
+                $response = $this->json($verb, $uri, []);
+                $this->assertContains(
+                    $response->getStatusCode(),
+                    [403, 404],
+                    "{$verb} {$uri} reached another store's {$model} (HTTP {$response->getStatusCode()})",
+                );
+                $this->assertDatabaseHas((new $model)->getTable(), [$theirs->getKeyName() => $theirs->getKey()]);
+                $checked++;
+            }
+        }
+
+        $this->assertGreaterThan(40, $checked, 'The sweep found too few routes; the discovery logic is broken.');
+        fwrite(STDERR, "
+[tenancy write sweep] verified {$checked} route positions; skipped: ".count($skipped)."
+".implode("
+", array_slice(array_unique($skipped), 0, 40))."
+");
+    }
+
     /** @return class-string<Model>|null */
     private function boundModel(string $action, string $parameter): ?string
     {

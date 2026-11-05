@@ -30,7 +30,7 @@ return new class extends Migration
             // rows for the same bundle+component; the FormRequest's own
             // duplicate check is what actually prevents that (same caveat
             // already documented on stock_levels' own unique index).
-            $table->unique(['bundle_product_id', 'component_product_id', 'component_variant_id']);
+            $table->unique(['bundle_product_id', 'component_product_id', 'component_variant_id'], 'bundle_items_component_unique');
             $table->index('component_product_id');
         });
     }

@@ -15,16 +15,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('shipments', function (Blueprint $table) {
-            $table->dropUnique(['order_id']);
+            // New index first: MySQL won't drop the unique one while it backs the order_id foreign key.
             $table->index('order_id');
+            $table->dropUnique(['order_id']);
         });
     }
 
     public function down(): void
     {
         Schema::table('shipments', function (Blueprint $table) {
-            $table->dropIndex(['order_id']);
             $table->unique('order_id');
+            $table->dropIndex(['order_id']);
         });
     }
 };

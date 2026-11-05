@@ -16,7 +16,11 @@ class RoleController extends Controller
     {
         $this->authorize('viewAny', Role::class);
 
-        $roles = Role::query()->with('permissions')->get();
+        $roles = Role::query()
+            ->with('permissions')
+            ->when(config('app.saas_mode') && ! request()->user()->hasRole('Platform Admin'),
+                fn ($query) => $query->where('name', '!=', 'Platform Admin'))
+            ->get();
 
         return ApiResponse::success(RoleResource::collection($roles), 'Roles fetched successfully.');
     }

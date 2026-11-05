@@ -9,8 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('stock_levels', function (Blueprint $table) {
-            $table->dropUnique(['product_id', 'warehouse_id']);
-
             // restrictOnDelete, not nullOnDelete/cascade — this is the current-state
             // row, not an audit entry, so a variant with any stock on hand must be
             // guarded against deletion (see ProductVariantController::destroy())
@@ -26,6 +24,10 @@ return new class extends Migration
             // compiles to IS NULL), so that discipline is the real guarantee; this
             // index is a backstop for the has-a-variant case and for catching bugs.
             $table->unique(['product_id', 'product_variant_id', 'warehouse_id']);
+
+            // Dropped last: MySQL refuses to drop the old index while it is the only
+            // one backing the product_id foreign key, so the new one goes in first.
+            $table->dropUnique(['product_id', 'warehouse_id']);
         });
     }
 
