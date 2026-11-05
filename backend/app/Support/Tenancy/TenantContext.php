@@ -2,6 +2,8 @@
 
 namespace App\Support\Tenancy;
 
+use Illuminate\Support\Facades\Log;
+
 /**
  * The store ("tenant") the current request or job is acting for.
  *
@@ -52,6 +54,15 @@ class TenantContext
     {
         $previous = $this->bypass;
         $this->bypass = true;
+
+        // Every bypass leaves a trace: who asked, from where.
+        $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1] ?? [];
+        Log::info('tenancy.bypass', [
+            'user_id' => auth()->id(),
+            'caller' => ($caller['class'] ?? '').($caller['type'] ?? '').($caller['function'] ?? ''),
+            'file' => $caller['file'] ?? null,
+            'line' => $caller['line'] ?? null,
+        ]);
 
         try {
             return $callback();

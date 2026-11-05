@@ -53,7 +53,7 @@ class AuthController extends Controller
             ]);
         }
 
-        $token = $customer->createToken('account')->plainTextToken;
+        $token = $customer->createToken('account', ['customer', 'store:'.$customer->store_id])->plainTextToken;
 
         return ApiResponse::success(
             ['customer' => new CustomerResource($customer), 'token' => $token],
@@ -77,7 +77,7 @@ class AuthController extends Controller
             return ApiResponse::error('Your account is not active. Please contact support.', [], 403);
         }
 
-        $token = $customer->createToken('account')->plainTextToken;
+        $token = $customer->createToken('account', ['customer', 'store:'.$customer->store_id])->plainTextToken;
 
         return ApiResponse::success(
             ['customer' => new CustomerResource($customer), 'token' => $token],

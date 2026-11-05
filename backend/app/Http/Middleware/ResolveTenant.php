@@ -37,6 +37,11 @@ class ResolveTenant
 
         $this->tenant->set($requested);
 
+        // From here on the store is decided: FormRequests that still read a
+        // store_id input (unique/exists rules) must see the verified store, not
+        // whatever the client sent.
+        $request->merge(['store_id' => $requested]);
+
         try {
             return $next($request);
         } finally {

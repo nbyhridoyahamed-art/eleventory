@@ -22,6 +22,15 @@ class EnsureCustomerUser
             return ApiResponse::error('Unauthenticated.', [], 401);
         }
 
+        // A token minted for one store is dead anywhere else, even if the
+        // customer row is later moved. Tokens issued before this claim existed
+        // carry no store ability and keep working.
+        foreach ($request->user()->currentAccessToken()?->abilities ?? [] as $ability) {
+            if (is_string($ability) && str_starts_with($ability, 'store:') && (int) substr($ability, 6) !== (int) $request->user()->store_id) {
+                return ApiResponse::error('Unauthenticated.', [], 401);
+            }
+        }
+
         app(TenantContext::class)->set((int) $request->user()->store_id);
 
         return $next($request);
