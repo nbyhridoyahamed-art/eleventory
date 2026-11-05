@@ -19,6 +19,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Skeleton } from "@/components/ui/skeleton";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { Logo } from "@/components/shared/logo";
+import { StoreSwitcher } from "@/components/layout/store-switcher";
 import { useLogout } from "@/hooks/use-auth";
 import { useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications } from "@/hooks/use-notifications";
 import { NAV_ITEMS } from "@/components/layout/nav-items";
@@ -120,6 +121,7 @@ export function AdminTopbar({ user }: { user?: User }) {
       </div>
 
       <div className="flex items-center gap-2">
+        <StoreSwitcher />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Contracts\CaptchaVerifier;
 use App\Contracts\SmsGateway;
 use App\Models\Category;
 use App\Models\HomepageBlock;
@@ -9,6 +10,7 @@ use App\Models\NotificationLog;
 use App\Observers\CategoryObserver;
 use App\Observers\HomepageBlockObserver;
 use App\Policies\RolePolicy;
+use App\Services\Captcha\NullCaptchaVerifier;
 use App\Services\Sms\LogSmsGateway;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -34,6 +36,9 @@ class AppServiceProvider extends ServiceProvider
 
         // One tenant context per request/job (see App\Support\Tenancy\TenantContext).
         $this->app->scoped(TenantContext::class);
+
+        // The bot check in front of public sign-up; swap for a real provider when abuse starts.
+        $this->app->bind(CaptchaVerifier::class, NullCaptchaVerifier::class);
     }
 
     /**
@@ -91,6 +96,12 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        // Public merchant sign-up. Named limiters, not "throttle:5,60": the
+        // numeric shorthand shares ONE counter per IP across every route that
+        // uses it, so polling the address check would eat the sign-up allowance.
+        RateLimiter::for('merchant-signup', fn (Request $request) => Limit::perHour(5)->by('merchant-signup|'.$request->ip()));
+        RateLimiter::for('slug-check', fn (Request $request) => Limit::perMinute(30)->by('slug-check|'.$request->ip()));
 
         // Phase 22: keeps the storefront's cached category tree
         // (Category::storefrontCacheKey()) from ever going stale after an

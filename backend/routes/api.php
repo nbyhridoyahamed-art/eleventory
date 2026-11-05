@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\V1\Account\ProfileController as AccountProfileContr
 use App\Http\Controllers\Api\V1\Account\ReviewController as AccountReviewController;
 use App\Http\Controllers\Api\V1\AnalyticsController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Auth\MerchantSignupController;
+use App\Http\Controllers\Api\V1\Auth\StoreSwitchController;
 use App\Http\Controllers\Api\V1\BlogCategoryController;
 use App\Http\Controllers\Api\V1\BlogPostController;
 use App\Http\Controllers\Api\V1\BlogTagController;
@@ -28,6 +30,7 @@ use App\Http\Controllers\Api\V1\MediaController;
 use App\Http\Controllers\Api\V1\NewsletterSubscriberController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\NotificationSettingController;
+use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\OrderPaymentController;
 use App\Http\Controllers\Api\V1\PageController;
@@ -82,6 +85,8 @@ Route::prefix('v1')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->middleware('throttle:6,1');
         Route::post('login', [AuthController::class, 'login']);
+        Route::post('signup', [MerchantSignupController::class, 'signup'])->middleware('throttle:merchant-signup');
+        Route::get('slug-available', [MerchantSignupController::class, 'slugAvailable'])->middleware('throttle:slug-check');
         Route::get('verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
             ->middleware(['signed', 'throttle:20,1'])
             ->name('staff.verification.verify');
@@ -92,6 +97,8 @@ Route::prefix('v1')->group(function () {
         Route::middleware(['auth:sanctum', 'staff'])->group(function () {
             Route::post('logout', [AuthController::class, 'logout']);
             Route::get('me', [AuthController::class, 'me']);
+            Route::get('my-stores', [StoreSwitchController::class, 'index']);
+            Route::post('switch-store', [StoreSwitchController::class, 'switch']);
         });
     });
 
@@ -179,6 +186,7 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::middleware(['auth:sanctum', 'staff', 'tenant'])->group(function () {
+        Route::get('onboarding', [OnboardingController::class, 'show']);
         Route::apiResource('stores', StoreController::class);
         Route::apiResource('warehouses', WarehouseController::class);
         Route::apiResource('users', UserController::class);

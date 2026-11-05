@@ -68,6 +68,12 @@ return [
 
     'staff_registration' => (bool) env('STAFF_REGISTRATION', true),
 
+    // Public merchant sign-up: anyone may create an account plus their own store. Off until the platform opens.
+    'merchant_signup' => (bool) env('MERCHANT_SIGNUP', false),
+
+    // Length of the free trial given to a new store (placeholder until billing exists).
+    'trial_days' => (int) env('TRIAL_DAYS', 14),
+
     // Shared secret the storefront server sends so its page-render API calls skip the per-IP rate limit.
     'ssr_key' => env('STOREFRONT_SSR_KEY'),
 

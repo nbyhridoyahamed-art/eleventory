@@ -195,3 +195,21 @@ Before switching `SAAS_MODE=true` on live (checklist):
 - [ ] Deploy this build and run migration `2026_11_05_100000_backfill_store_user_membership`
 - [ ] Confirm every staff user has an active `store_user` row, and the owner has the `Platform Admin` role
 - [ ] Re-create existing MCP connections (old tokens have no store pin; they fall back to the user's current store)
+
+### Phase 2 – sign-up & onboarding (backend + admin UI built 2026-11-06)
+Built (behind `MERCHANT_SIGNUP`, default off, and only when `SAAS_MODE` is on, because a store owner's role would otherwise reach the single store's shared roles):
+- [x] `POST /auth/signup` creates user + organization + store in one transaction (`StoreProvisioner`): owner membership + `Store Owner` role, BDT currency, main warehouse, "General" category, six standard pages, three homepage blocks, trial placeholder (`organizations.plan = trial`, `trial_ends_at`, `TRIAL_DAYS`)
+- [x] Store address rules (`StoreSlug`): 3-40 chars, lowercase/digits/single hyphens, reserved list in `config/signup.php`, unique including soft-deleted stores; `GET /auth/slug-available` for live checking
+- [x] Abuse limits: 5 sign-ups per hour per IP and 30 address checks per minute (named limiters; the `throttle:N,M` shorthand shares one counter per IP across routes), disposable-email block, terms must be accepted, `CaptchaVerifier` hook (default accepts everyone)
+- [x] Email verification reuses `VerifyStaffEmailNotification`; the owner cannot sign in until verified
+- [x] `GET /onboarding` checklist computed from real data (verify email, first product, delivery zones, store details, optional domain) + trial days left; shown on the dashboard until complete
+- [x] Multi-store switcher: `GET /auth/my-stores`, `POST /auth/switch-store` (membership checked, same refusal for "not yours" and "does not exist"); topbar dropdown appears for people in 2+ stores
+- [x] Tests: `MerchantSignupTest` (12). Verified in the browser: sign-up -> verify -> sign-in -> own empty store + checklist
+
+Not built (decide or schedule):
+- [ ] Phone OTP (the prompt says optional); needs an SMS budget decision
+- [ ] A real captcha provider (Turnstile/hCaptcha) - needs an account and keys
+- [ ] "Emails for each onboarding step" - needs templates and a scheduler; outward-facing, so not enabled without your say-so
+- [ ] A multi-step wizard page; the checklist links into the existing screens instead
+- [ ] Logo/currency/payment-method steps (payment methods arrive with Phase 7)
+- [ ] The Terms/Privacy links in the form point nowhere until Phase 10 provides the pages

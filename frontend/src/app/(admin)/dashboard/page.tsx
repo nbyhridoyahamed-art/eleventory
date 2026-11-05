@@ -23,6 +23,7 @@ import { useOrderStatusBreakdown, useSalesTrend } from "@/hooks/use-dashboard";
 import { useOrders } from "@/hooks/use-orders";
 import { formatMoney } from "@/lib/money";
 import { DashboardInsightsPanel } from "@/components/dashboard/insights";
+import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { OrderStatusChart } from "@/components/charts/order-status-chart";
 import { SalesTrendChart } from "@/components/charts/sales-trend-chart";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -173,6 +174,8 @@ export default function DashboardPage() {
           Here&apos;s the current state of your store.
         </p>
       </div>
+
+      <OnboardingChecklist />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((card) =>
