@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -114,7 +115,6 @@ export default function GeneralSettingsPage() {
       organization_id: store.organization_id,
       name: values.name,
       slug: values.slug,
-      domain: values.domain || null,
       default_currency_id: values.default_currency_id ? Number(values.default_currency_id) : null,
       default_timezone: values.default_timezone,
       default_locale: values.default_locale,
@@ -150,8 +150,11 @@ export default function GeneralSettingsPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="domain">Custom domain</Label>
-            <Input id="domain" placeholder="shop.example.com" {...register("domain")} />
+            <Label htmlFor="domain">Primary domain</Label>
+            <Input id="domain" value={store.domain ?? ""} placeholder="None yet" readOnly />
+            <p className="text-xs text-text-secondary">
+              Connect and verify domains on the <Link href="/dashboard/settings/domains" className="font-semibold text-primary underline">Domains</Link> page.
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

@@ -66,6 +66,9 @@ return [
     // Off keeps the single-store behaviour; turn on before a second store exists.
     'saas_mode' => (bool) env('SAAS_MODE', false),
 
+    // Stores are served at {slug}.<platform_domain>; e.g. "eleventory.com". Empty = no subdomain stores.
+    'platform_domain' => env('PLATFORM_DOMAIN'),
+
     'staff_registration' => (bool) env('STAFF_REGISTRATION', true),
 
     // Public merchant sign-up: anyone may create an account plus their own store. Off until the platform opens.

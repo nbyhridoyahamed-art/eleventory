@@ -32,8 +32,8 @@ class OnboardingController extends Controller
             ['key' => 'verify_email', 'label' => 'Verify your email address', 'done' => $user->email_verified_at !== null, 'href' => null],
             ['key' => 'first_product', 'label' => 'Add your first product', 'done' => Product::where('store_id', $store->id)->exists(), 'href' => '/dashboard/catalog/products/new'],
             ['key' => 'shipping', 'label' => 'Set up delivery zones and rates', 'done' => DeliveryZone::where('store_id', $store->id)->exists(), 'href' => '/dashboard/delivery/zones'],
-            ['key' => 'store_details', 'label' => 'Review your store details', 'done' => filled($store->domain) || $store->updated_at->gt($store->created_at->addMinute()), 'href' => '/dashboard/settings/general'],
-            ['key' => 'domain', 'label' => 'Connect your own domain (optional)', 'done' => filled($store->domain), 'href' => '/dashboard/settings/general', 'optional' => true],
+            ['key' => 'store_details', 'label' => 'Review your store details', 'done' => $store->updated_at->gt($store->created_at->addMinute()), 'href' => '/dashboard/settings/general'],
+            ['key' => 'domain', 'label' => 'Connect your own domain (optional)', 'done' => filled($store->domain), 'href' => '/dashboard/settings/domains', 'optional' => true],
         ];
 
         $required = array_filter($steps, fn ($step) => empty($step['optional']));

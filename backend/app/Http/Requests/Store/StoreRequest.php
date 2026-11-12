@@ -20,7 +20,8 @@ class StoreRequest extends FormRequest
             'organization_id' => ['required', 'exists:organizations,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('stores', 'slug')->ignore($storeId)],
-            'domain' => ['nullable', 'string', 'max:255', Rule::unique('stores', 'domain')->ignore($storeId)],
+            // No 'domain' here on purpose: a domain routes shoppers to this store, so it may only be
+            // attached through the verified flow (DomainController / DomainManager), never typed in.
             'default_currency_id' => ['nullable', 'exists:currencies,id'],
             'default_timezone' => ['nullable', 'string', 'max:64'],
             'default_locale' => ['nullable', 'string', 'max:5'],

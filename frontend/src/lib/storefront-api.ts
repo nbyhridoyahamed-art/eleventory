@@ -1,3 +1,4 @@
+import { getStoreHost } from "@/lib/store-host";
 import { ApiError, type ApiResponse, type PaginationMeta } from "@/types/api";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
@@ -9,9 +10,16 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/a
  * server (not a visitor's browser) and is exempt from that limit. Server-only:
  * never a NEXT_PUBLIC_ variable.
  */
-export function serverHeaders(): Record<string, string> {
+export async function serverHeaders(): Promise<Record<string, string>> {
   const key = process.env.STOREFRONT_SSR_KEY;
-  return key ? { Accept: "application/json", "X-Storefront-Key": key } : { Accept: "application/json" };
+  const host = await getStoreHost();
+
+  return {
+    Accept: "application/json",
+    ...(key ? { "X-Storefront-Key": key } : {}),
+    // Multi-store mode: tells the API which store this request is for.
+    ...(host ? { "X-Store-Host": host } : {}),
+  };
 }
 
 /**
@@ -23,7 +31,7 @@ export function serverHeaders(): Record<string, string> {
  */
 async function requestStorefront<T>(path: string): Promise<{ data: T; meta?: PaginationMeta }> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: serverHeaders(),
+    headers: await serverHeaders(),
     cache: "no-store",
   });
 
@@ -45,7 +53,7 @@ export const storefrontApi = {
   post: async (path: string, body: unknown): Promise<void> => {
     await fetch(`${API_BASE_URL}${path}`, {
       method: "POST",
-      headers: { ...serverHeaders(), "Content-Type": "application/json" },
+      headers: { ...(await serverHeaders()), "Content-Type": "application/json" },
       body: JSON.stringify(body),
       cache: "no-store",
     });

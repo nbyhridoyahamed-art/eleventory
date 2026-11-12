@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Storefront;
 
+use App\Services\Tenancy\StoreResolver;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
@@ -21,6 +22,8 @@ class StoreController extends StorefrontController
             'name' => $store->name,
             'slug' => $store->slug,
             'currency_code' => $store->currency?->code ?? 'BDT',
+            // The store's primary custom domain; the storefront server redirects other addresses to it.
+            'canonical_host' => config('app.saas_mode') ? app(StoreResolver::class)->canonicalHost($store) : null,
         ], 'Store fetched successfully.');
     }
 }

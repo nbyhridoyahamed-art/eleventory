@@ -3,9 +3,8 @@ import { notFound, permanentRedirect, redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import { storefrontApi } from "@/lib/storefront-api";
+import { getSiteUrl } from "@/lib/store-host";
 import type { Seo } from "@/types/seo";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 interface RedirectLookupResult {
   to_path: string;
@@ -51,16 +50,16 @@ interface BuildStorefrontMetadataOptions {
 }
 
 /** Falls back to the entity's own name/excerpt when it has no SEO override — never a blank title. */
-export function buildStorefrontMetadata({
+export async function buildStorefrontMetadata({
   seo,
   fallbackTitle,
   fallbackDescription,
   path,
   image,
-}: BuildStorefrontMetadataOptions): Metadata {
+}: BuildStorefrontMetadataOptions): Promise<Metadata> {
   const title = seo?.title || fallbackTitle;
   const description = seo?.description || fallbackDescription || undefined;
-  const canonical = seo?.canonical_url || `${SITE_URL}${path}`;
+  const canonical = seo?.canonical_url || `${await getSiteUrl()}${path}`;
   const ogImage = seo?.og_image || image || undefined;
   const twitterImage = seo?.twitter_image || ogImage;
 

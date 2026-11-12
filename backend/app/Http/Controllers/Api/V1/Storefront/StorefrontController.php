@@ -5,25 +5,21 @@ namespace App\Http\Controllers\Api\V1\Storefront;
 use App\Http\Controllers\Controller;
 use App\Models\StockLevel;
 use App\Models\Store;
+use App\Services\Tenancy\StoreResolver;
 use App\Support\BundleExpander;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Collection;
 
 /**
- * Base for every public, unauthenticated storefront endpoint. The schema
- * already supports multiple stores per org, but nothing yet resolves
- * "which store" a storefront request is for (a real deployment would do
- * this from the request's domain — `stores.domain` already exists for
- * that) — Wave 1 deliberately keeps this simple and serves whichever
- * store is active, since every environment so far only seeds one. Real
- * domain-based resolution is a documented Wave 2 concern, not invented
- * ahead of a second store to test it against.
+ * Base for every public, unauthenticated storefront endpoint. With SAAS_MODE
+ * off it serves the one active store (the live single-store site); with it on
+ * the store is resolved from the request host (see StoreResolver).
  */
 abstract class StorefrontController extends Controller
 {
     protected function currentStore(): Store
     {
-        $store = Store::where('status', 'active')->firstOrFail();
+        $store = app(StoreResolver::class)->activeForRequest(request());
 
         app(TenantContext::class)->set($store->id);
 

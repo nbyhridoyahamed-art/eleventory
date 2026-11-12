@@ -1,4 +1,4 @@
-import { getPublicSeo } from "@/lib/seo-settings";
+import { getPublicSeo, isStoreOpen } from "@/lib/seo-settings";
 
 /**
  * robots.txt, driven by the SEO section's Technical tab. A route handler
@@ -29,7 +29,7 @@ export async function GET() {
 
   let body: string;
 
-  if (robots.mode === "block_all") {
+  if (!(await isStoreOpen()) || robots.mode === "block_all") {
     body = ["User-agent: *", "Disallow: /"].join("\n");
   } else if (robots.mode === "custom" && robots.custom?.trim()) {
     const custom = robots.custom.trim();

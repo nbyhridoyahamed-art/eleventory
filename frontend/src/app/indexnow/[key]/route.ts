@@ -1,4 +1,4 @@
-import { getPublicSeo } from "@/lib/seo-settings";
+import { getPublicSeo, isStoreOpen } from "@/lib/seo-settings";
 
 /**
  * Serves the IndexNow ownership file. next.config rewrites /<32 hex>.txt here;
@@ -10,7 +10,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ key
   const { settings } = await getPublicSeo();
   const saved = settings.indexnow?.key;
 
-  if (!saved || saved !== key) {
+  if (!(await isStoreOpen()) || !saved || saved !== key) {
     return new Response("Not found", { status: 404 });
   }
 

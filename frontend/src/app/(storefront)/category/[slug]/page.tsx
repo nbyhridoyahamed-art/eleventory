@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 
 import { breadcrumbJsonLd, disabledSchemas, JsonLd } from "@/lib/json-ld";
 import { storefrontApi } from "@/lib/storefront-api";
+import { getSiteUrl } from "@/lib/store-host";
 import { buildStorefrontMetadata, resolveRedirectOrNotFound } from "@/lib/storefront-seo";
 import { ApiError } from "@/types/api";
 import type { StorefrontCategory, StorefrontProduct } from "@/types/storefront";
 import { CategoryClient } from "./category-client";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 async function getCategory(slug: string): Promise<StorefrontCategory | null> {
   try {
@@ -47,6 +47,7 @@ export default async function CategoryPage({ params }: PageProps<"/category/[slu
     throw new Error("unreachable");
   }
 
+  const SITE_URL = await getSiteUrl();
   const url = `${SITE_URL}/category/${category.slug}`;
 
   return (

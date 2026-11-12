@@ -7,7 +7,7 @@ use App\Http\Requests\Account\LoginRequest;
 use App\Http\Requests\Account\RegisterRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
-use App\Models\Store;
+use App\Services\Tenancy\StoreResolver;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +25,7 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $store = Store::where('status', 'active')->firstOrFail();
+        $store = app(StoreResolver::class)->activeForRequest($request);
         $data = $request->validated();
 
         $customer = Customer::where('store_id', $store->id)->where('phone', $data['phone'])->first();
@@ -64,7 +64,7 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $store = Store::where('status', 'active')->firstOrFail();
+        $store = app(StoreResolver::class)->activeForRequest($request);
         $customer = Customer::where('store_id', $store->id)->where('phone', $request->string('phone'))->first();
 
         if (! $customer || ! $customer->password || ! Hash::check($request->string('password'), $customer->password)) {

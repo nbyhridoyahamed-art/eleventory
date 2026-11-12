@@ -213,3 +213,48 @@ Not built (decide or schedule):
 - [ ] A multi-step wizard page; the checklist links into the existing screens instead
 - [ ] Logo/currency/payment-method steps (payment methods arrive with Phase 7)
 - [ ] The Terms/Privacy links in the form point nowhere until Phase 10 provides the pages
+
+### Phase 3 - multi-tenant storefront (built 2026-11-12)
+Built (behind `SAAS_MODE` on the API and `MULTI_STORE=true` on the Next.js server; both off = the live single-store site is unchanged):
+- [x] `StoreResolver`: host -> store, by custom domain (`stores.domain`, with/without `www.`, port and case ignored) or `{slug}.PLATFORM_DOMAIN` (exactly one label). `GET /storefront/*` and customer sign-up/sign-in use it. The Next.js server forwards the shopper's host as `X-Store-Host`; a browser calling the API directly is identified by `Origin`
+- [x] Unknown host -> 404 `store_not_found`; suspended/closed store -> 503 `store_unavailable`; soft-deleted store no longer resolves. No fall-back to "some other store"
+- [x] Customer accounts are per shop: same phone can register at two shops, and signing in at the wrong shop fails
+- [x] Next.js `proxy.ts`: on a store's own host, a missing/closed store gets the "store unavailable" page with a real 503 (answer cached 30 s per host, bounded); platform hosts (`PLATFORM_HOSTS`) pass through; an API outage never takes shops offline
+- [x] Per-store SEO: canonical/Open Graph/JSON-LD use the request's own origin, `robots.txt` and `sitemap.xml` are per host (sitemap cache keyed by host, bounded), a missing/closed store serves `Disallow: /`, an empty sitemap and no IndexNow key; the SEO-settings data cache is keyed by host
+- [x] Landing page at `/` only on platform hosts in multi-store mode
+- [x] Cache keys were already per store (`storefront:categories:{id}`, `storefront:homepage:{id}`)
+- [x] Tests: `HostResolutionTest` (10). Verified in the browser with `*.localhost` addresses: two stores, an unknown host and a suspended store
+
+Config added: API `PLATFORM_DOMAIN` (e.g. `eleventory.com`); Next.js `MULTI_STORE`, `PLATFORM_HOSTS` (comma list, e.g. `app.eleventory.com,eleventory.com`).
+
+Not built / known limits:
+- [ ] Custom-domain verification, TLS and wildcard DNS (Phase 4); until then a custom domain is just a value in `stores.domain`
+- [ ] Store hosts still serve `/dashboard`, `/signup` and `/login` (harmless: they need a signed-in member, but they should be blocked or redirected to the platform host once the admin domain exists)
+- [ ] `SITE_URL` is still a fixed value on the admin SEO pages (preview text only)
+- [ ] Browser-side API calls rely on `Origin`; a store's page and API must be on origins the API's CORS allows (currently `*`)
+
+Before switching on for live: set `SAAS_MODE`, `PLATFORM_DOMAIN` on the API and `MULTI_STORE`, `PLATFORM_HOSTS` on the Next.js server together; set `stores.domain` for elevendollar.store (`elevendollar.store`) **first**, otherwise the live shop becomes "store not found".
+
+### Phase 4 - domains & TLS (built 2026-11-12)
+Built (admin + API; the TLS server itself needs the VPS, so that part is configuration, not tested here):
+- [x] `store_domains` table (pending / active / failed, per-domain verification token, primary flag). `active_domain` is unique, so a domain has one live owner while anyone may hold a pending claim: a squatter cannot block the real owner
+- [x] Ownership proof by DNS TXT: `_eleventory.<domain>` = `eleventory-verify=<token>`. A stranger's claim never routes traffic; a domain someone else already proved fails with "already connected to another store"; `www.` and bare spellings count as the same site
+- [x] Admin API (`settings.manage`, tenant-scoped, other stores' ids are 404): `GET/POST /domains`, `POST /domains/{id}/verify` (rate-limited), `POST /domains/{id}/primary`, `DELETE /domains/{id}`. Validation: real hostname only, no IPs, nothing under the platform domain, max 5 per store (`MAX_DOMAINS_PER_STORE`)
+- [x] Closed a hole: the store update request no longer accepts `domain`. Since Phase 3 a domain routes shoppers, so typing someone else's domain into General settings would have hijacked it
+- [x] `StoreResolver` serves active domains (and keeps honouring `stores.domain`, which mirrors the primary domain). Migration backfills every existing `stores.domain` (e.g. elevendollar.store) as an active primary domain
+- [x] Redirects: the storefront API reports `canonical_host` (the primary domain); the Next.js proxy 308-redirects every other address of that store (free address, www/bare, secondary domains) to it
+- [x] On-demand TLS "ask": `GET /api/v1/internal/tls-ask?domain=&secret=` -> 200 only for a verified domain or an active store's free address; refuses everything without `TLS_ASK_SECRET`
+- [x] Settings > Domains is a real screen (add, DNS instructions, Check now, Make primary, Remove); General settings shows the primary domain read-only
+- [x] Tests: `CustomDomainsTest` (15) incl. squatting, cross-tenant 404s, tls-ask, backfill. Verified in the browser: add -> instructions -> "record not found yet"
+- [x] `deploy/caddy/Caddyfile.saas.example`
+
+Config added: API `PLATFORM_CNAME_TARGET`, `PLATFORM_SERVER_IPS`, `TLS_ASK_SECRET`, `MAX_DOMAINS_PER_STORE` (`config/tenancy.php`).
+
+Not built / known limits:
+- [ ] Automatic re-checking of pending domains and expiry notices (needs the scheduler/queue; Phase 8). Today the owner presses "Check now"
+- [ ] A domain that stops verifying stays active (we do not take a working shop offline over a DNS hiccup); the screen shows the warning
+- [ ] Certificate status per domain (issued / renewing) is not shown: Caddy does not report it back. "Connected" means ownership proven, not certificate issued
+- [ ] Per-plan domain limits arrive with billing (Phase 5)
+- [ ] Not exercised against real DNS or a real Caddy; needs the VPS
+
+Before switching on for live: the live shop's `stores.domain` is backfilled by the migration, so elevendollar.store keeps working. Run it with the Phase 3 settings.

@@ -30,6 +30,8 @@ use App\Http\Controllers\Api\V1\MediaController;
 use App\Http\Controllers\Api\V1\NewsletterSubscriberController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\NotificationSettingController;
+use App\Http\Controllers\Api\V1\DomainController;
+use App\Http\Controllers\Api\V1\Internal\TlsAskController;
 use App\Http\Controllers\Api\V1\OnboardingController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\OrderPaymentController;
@@ -105,6 +107,9 @@ Route::prefix('v1')->group(function () {
     // Public, unauthenticated storefront API — no auth:sanctum. Wave 1
     // serves whichever single store is active (see StorefrontController);
     // real multi-tenant domain routing is a documented Wave 2 concern.
+    // Called by the TLS server (Caddy on-demand TLS "ask"), guarded by a shared secret.
+    Route::get('internal/tls-ask', TlsAskController::class);
+
     Route::prefix('storefront')->group(function () {
         Route::get('store', [StorefrontStoreController::class, 'show']);
         Route::get('seo-settings', [StorefrontSeoSettingController::class, 'show']);
@@ -187,6 +192,11 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware(['auth:sanctum', 'staff', 'tenant'])->group(function () {
         Route::get('onboarding', [OnboardingController::class, 'show']);
+        Route::get('domains', [DomainController::class, 'index']);
+        Route::post('domains', [DomainController::class, 'store']);
+        Route::post('domains/{storeDomain}/verify', [DomainController::class, 'verify'])->middleware('throttle:20,1');
+        Route::post('domains/{storeDomain}/primary', [DomainController::class, 'primary']);
+        Route::delete('domains/{storeDomain}', [DomainController::class, 'destroy']);
         Route::apiResource('stores', StoreController::class);
         Route::apiResource('warehouses', WarehouseController::class);
         Route::apiResource('users', UserController::class);

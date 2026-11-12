@@ -1,0 +1,55 @@
+# Eleventory SaaS: HTTPS for every store address, on a VPS (Phase 4).
+# NOT for the current cPanel host: shared hosting cannot run Caddy or obtain
+# certificates on demand. Copy to /etc/caddy/Caddyfile and replace the values.
+#
+#   eleventory.com          marketing site / sign-up  (Next.js)
+#   app.eleventory.com      merchant admin            (Next.js)
+#   api.eleventory.com      Laravel API
+#   *.eleventory.com        free store addresses  {slug}.eleventory.com  (Next.js)
+#   any verified domain     merchants' custom domains                   (Next.js)
+
+{
+	# Certificates for custom domains are issued the first time someone visits, but
+	# ONLY when the API says the domain belongs to a store (see TlsAskController).
+	# Without this check anyone could point random names here and exhaust the
+	# Let's Encrypt rate limits.
+	on_demand_tls {
+		ask http://127.0.0.1:8000/api/v1/internal/tls-ask?secret=REPLACE_WITH_TLS_ASK_SECRET
+	}
+}
+
+# The platform's own names get normal certificates.
+eleventory.com, app.eleventory.com {
+	reverse_proxy 127.0.0.1:3000
+}
+
+api.eleventory.com {
+	# PHP-FPM / artisan octane / whatever serves Laravel; adjust to your setup.
+	reverse_proxy 127.0.0.1:8000
+}
+
+# Everything else: a store address. The Host header reaches Next.js unchanged, which
+# is how the storefront knows which store to show (MULTI_STORE=true).
+https:// {
+	tls {
+		on_demand
+	}
+	reverse_proxy 127.0.0.1:3000 {
+		header_up Host {host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+# Merchants' DNS:
+#   TXT    _eleventory.<their domain>   eleventory-verify=<token shown in Settings > Domains>
+#   CNAME  <their domain>               stores.eleventory.com     (PLATFORM_CNAME_TARGET)
+#   (a bare domain such as example.com needs ALIAS/ANAME, or an A record to PLATFORM_SERVER_IPS)
+#
+# Free addresses need one wildcard DNS record:  *.eleventory.com  ->  this server.
+# Wildcard certificates need the DNS-challenge plugin for your DNS provider; or just let
+# on-demand TLS issue each {slug}.eleventory.com certificate (the ask endpoint approves
+# any slug that belongs to an active store).
+#
+# API environment:  PLATFORM_DOMAIN=eleventory.com  PLATFORM_CNAME_TARGET=stores.eleventory.com
+#                   TLS_ASK_SECRET=<same secret as above>  SAAS_MODE=true
+# Next.js:          MULTI_STORE=true  PLATFORM_HOSTS=eleventory.com,app.eleventory.com

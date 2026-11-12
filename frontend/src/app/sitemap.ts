@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 
-import { getPublicSeo } from "@/lib/seo-settings";
+import { getPublicSeo, isStoreOpen } from "@/lib/seo-settings";
 import { storefrontApi } from "@/lib/storefront-api";
+import { getSiteUrl } from "@/lib/store-host";
 import type { PaginationMeta } from "@/types/api";
 import type { StorefrontBrand, StorefrontCategory, StorefrontPage, StorefrontProduct } from "@/types/storefront";
 
@@ -113,14 +114,22 @@ async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
 
 // Building the sitemap pages through the whole catalog (dozens of API calls), so
 // keep the result in memory for a while rather than rebuilding it on every crawl.
+// One entry per store address: each host has its own catalogue, and the map is
+// bounded because hosts are chosen by whoever sends the request.
 const SITEMAP_TTL_MS = 60 * 60 * 1000;
-let cached: { at: number; entries: MetadataRoute.Sitemap } | null = null;
+const MAX_CACHED_SITES = 200;
+const cached = new Map<string, { at: number; entries: MetadataRoute.Sitemap }>();
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  if (cached && Date.now() - cached.at < SITEMAP_TTL_MS) return cached.entries;
+  if (!(await isStoreOpen())) return [];
+
+  const siteKey = await getSiteUrl();
+  const hit = cached.get(siteKey);
+  if (hit && Date.now() - hit.at < SITEMAP_TTL_MS) return hit.entries;
 
   const entries = await buildSitemap();
-  cached = { at: Date.now(), entries };
+  if (cached.size >= MAX_CACHED_SITES) cached.clear();
+  cached.set(siteKey, { at: Date.now(), entries });
 
   return entries;
 }

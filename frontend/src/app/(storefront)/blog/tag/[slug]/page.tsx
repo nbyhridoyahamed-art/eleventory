@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 
 import { breadcrumbJsonLd, disabledSchemas, JsonLd } from "@/lib/json-ld";
 import { storefrontApi } from "@/lib/storefront-api";
+import { getSiteUrl } from "@/lib/store-host";
 import { buildStorefrontMetadata, resolveRedirectOrNotFound } from "@/lib/storefront-seo";
 import { ApiError } from "@/types/api";
 import type { StorefrontBlogPostSummary, StorefrontBlogTag } from "@/types/storefront";
 import { BlogTagClient } from "./blog-tag-client";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 async function getBlogTag(slug: string): Promise<StorefrontBlogTag | null> {
   try {
@@ -46,6 +46,7 @@ export default async function BlogTagPage({ params }: PageProps<"/blog/tag/[slug
     throw new Error("unreachable");
   }
 
+  const SITE_URL = await getSiteUrl();
   const url = `${SITE_URL}/blog/tag/${tag.slug}`;
 
   return (

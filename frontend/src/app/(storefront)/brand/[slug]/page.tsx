@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 
 import { breadcrumbJsonLd, disabledSchemas, JsonLd } from "@/lib/json-ld";
 import { storefrontApi } from "@/lib/storefront-api";
+import { getSiteUrl } from "@/lib/store-host";
 import { buildStorefrontMetadata, resolveRedirectOrNotFound } from "@/lib/storefront-seo";
 import { ApiError } from "@/types/api";
 import type { StorefrontBrand, StorefrontProduct } from "@/types/storefront";
 import { BrandClient } from "./brand-client";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 async function getBrand(slug: string): Promise<StorefrontBrand | null> {
   try {
@@ -47,6 +47,7 @@ export default async function BrandPage({ params }: PageProps<"/brand/[slug]">) 
     throw new Error("unreachable");
   }
 
+  const SITE_URL = await getSiteUrl();
   const url = `${SITE_URL}/brand/${brand.slug}`;
 
   return (

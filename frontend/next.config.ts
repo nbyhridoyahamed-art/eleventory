@@ -7,12 +7,24 @@ const nextConfig: NextConfig = {
   async rewrites() {
     // IndexNow ownership file: /<key>.txt is answered by app/indexnow/[key]/route.ts.
     const afterFiles = [{ source: "/:key([a-f0-9]{32}).txt", destination: "/indexnow/:key" }];
-    const beforeFiles: { source: string; destination: string }[] = [];
+    const beforeFiles: { source: string; destination: string; has?: { type: "host"; value: string }[] }[] = [];
 
     // SaaS platform site: show the marketing landing page at the root instead of a store.
-    // Off by default so the live single-store site is unchanged.
+    // Off by default so the live single-store site is unchanged. In multi-store mode only
+    // the platform's own hosts get it; a store's address keeps showing that store.
     if (process.env.PLATFORM_LANDING === "true") {
-      beforeFiles.push({ source: "/", destination: "/platform" });
+      const platformHosts = (process.env.PLATFORM_HOSTS ?? "")
+        .split(",")
+        .map((host) => host.trim().split(":")[0])
+        .filter(Boolean);
+
+      if (process.env.MULTI_STORE === "true" && platformHosts.length > 0) {
+        for (const host of new Set(platformHosts)) {
+          beforeFiles.push({ source: "/", destination: "/platform", has: [{ type: "host", value: host }] });
+        }
+      } else {
+        beforeFiles.push({ source: "/", destination: "/platform" });
+      }
     }
 
     return { beforeFiles, afterFiles };
