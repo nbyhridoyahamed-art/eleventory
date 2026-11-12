@@ -4,6 +4,8 @@ export interface StorefrontStore {
   name: string;
   slug: string;
   currency_code: string;
+  /** The shop's own logo (from Settings > Themes); null shows the initial-letter mark. */
+  logo_url?: string | null;
 }
 
 export interface StorefrontPage {

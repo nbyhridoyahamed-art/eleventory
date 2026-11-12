@@ -22,7 +22,7 @@ class EnsureSubscriptionActive
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (! config('app.saas_mode') || $request->isMethodSafe() || $request->is('api/v1/billing*', 'api/v1/auth/*', 'api/v1/onboarding')) {
+        if (! config('app.saas_mode') || $request->isMethodSafe() || $request->is('api/v1/billing*', 'api/v1/auth/*', 'api/v1/onboarding', 'api/v1/compliance/*')) {
             return $next($request);
         }
 

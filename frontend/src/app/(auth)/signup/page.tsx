@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/shared/logo";
-import { useResendVerification, useSignupStore, useSlugAvailable } from "@/hooks/use-auth";
+import { useResendVerification, useSignupOptions, useSignupStore, useSlugAvailable } from "@/hooks/use-auth";
 import { ApiError } from "@/types/api";
 
 const schema = z
@@ -28,6 +28,7 @@ const schema = z
     phone: z.string().optional(),
     password: z.string().min(8, "Use at least 8 characters."),
     password_confirmation: z.string(),
+    invite_code: z.string().optional(),
     accept_terms: z.boolean().refine((v) => v, "You need to accept the terms to continue."),
   })
   .refine((v) => v.password === v.password_confirmation, {
@@ -72,6 +73,7 @@ export default function SignupPage() {
     return () => clearTimeout(timer);
   }, [storeSlug]);
 
+  const options = useSignupOptions();
   const slugCheck = useSlugAvailable(debouncedSlug);
   const slugSettled = debouncedSlug === storeSlug && slugCheck.data?.slug === storeSlug;
 
@@ -155,6 +157,18 @@ export default function SignupPage() {
               <Alert variant="danger">
                 <AlertDescription>{serverError.message}</AlertDescription>
               </Alert>
+            ) : null}
+
+            {options.data?.invite_required ? (
+              <div className="space-y-1.5">
+                <Label htmlFor="invite_code">Invite code</Label>
+                <Input id="invite_code" autoComplete="off" error={Boolean(fieldError("invite_code"))} {...register("invite_code")} />
+                {fieldError("invite_code") ? (
+                  <p className="text-xs text-danger">{fieldError("invite_code")}</p>
+                ) : (
+                  <p className="text-xs text-text-secondary">We are in a closed beta. Use the code we sent you.</p>
+                )}
+              </div>
             ) : null}
 
             <div className="space-y-1.5">
@@ -263,7 +277,14 @@ export default function SignupPage() {
             <div className="space-y-1">
               <label className="flex items-start gap-2 text-sm text-text-secondary">
                 <input type="checkbox" className="mt-0.5 size-4" {...register("accept_terms")} />
-                <span>I agree to the Terms of Service and Privacy Policy.</span>
+                <span>
+                  I agree to the{" "}
+                  <Link href="/legal/terms" target="_blank" className="font-medium text-primary hover:underline">Terms of Service</Link>
+                  {", "}
+                  <Link href="/legal/privacy" target="_blank" className="font-medium text-primary hover:underline">Privacy Policy</Link>
+                  {" and "}
+                  <Link href="/legal/dpa" target="_blank" className="font-medium text-primary hover:underline">Data Processing Agreement</Link>.
+                </span>
               </label>
               {errors.accept_terms ?? fieldError("accept_terms") ? (
                 <p className="text-xs text-danger">{errors.accept_terms?.message ?? fieldError("accept_terms")}</p>

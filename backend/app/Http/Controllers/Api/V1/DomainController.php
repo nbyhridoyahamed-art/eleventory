@@ -41,6 +41,8 @@ class DomainController extends Controller
 
         $domain = $this->domains->add($this->currentStore($request), $data['domain']);
 
+        \App\Services\Compliance\ActivityRecorder::record('domain.added', 'Added domain '.$domain->domain);
+
         return ApiResponse::success($this->present($domain), 'Domain added successfully.', status: 201);
     }
 
@@ -61,7 +63,9 @@ class DomainController extends Controller
     public function destroy(Request $request, StoreDomain $storeDomain): JsonResponse
     {
         $this->authorizeManage($request);
+        $removed = $storeDomain->domain;
         $this->domains->remove($storeDomain);
+        \App\Services\Compliance\ActivityRecorder::record('domain.removed', 'Removed domain '.$removed);
 
         return ApiResponse::success(null, 'Domain removed successfully.');
     }

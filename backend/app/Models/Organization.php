@@ -15,7 +15,7 @@ class Organization extends Model
 
     protected function casts(): array
     {
-        return ['trial_ends_at' => 'datetime', 'feature_overrides' => 'array'];
+        return ['deletion_requested_at' => 'datetime', 'purged_at' => 'datetime', 'trial_ends_at' => 'datetime', 'feature_overrides' => 'array'];
     }
 
     protected static function boot(): void

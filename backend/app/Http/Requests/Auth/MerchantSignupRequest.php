@@ -41,6 +41,19 @@ class MerchantSignupRequest extends FormRequest
             'store_name' => ['required', 'string', 'min:2', 'max:80'],
             'store_slug' => ['required', 'string', new StoreSlug],
             'accept_terms' => ['accepted'],
+            'invite_code' => [(array) config('app.signup_invite_codes') !== [] ? 'required' : 'nullable', 'string', 'max:60', function (string $attribute, mixed $value, \Closure $fail) {
+                $codes = (array) config('app.signup_invite_codes');
+
+                if ($codes === []) {
+                    return;
+                }
+
+                $given = strtolower(trim((string) $value));
+
+                if ($given === '' || ! collect($codes)->contains(fn ($c) => hash_equals(strtolower($c), $given))) {
+                    $fail('That invite code is not valid. Sign-up is invite-only for now.');
+                }
+            }],
             'captcha_token' => ['nullable', 'string', 'max:2048'],
         ];
     }

@@ -47,6 +47,7 @@ class BillingController extends Controller
         ]);
 
         $invoice = $this->billing->subscribe($organization, Plan::where('key', $data['plan'])->firstOrFail(), $data['cycle']);
+        \App\Services\Compliance\ActivityRecorder::record('billing.subscribe', 'Chose the '.$data['plan'].' plan ('.$data['cycle'].')');
 
         // A scheduled downgrade has no invoice.
         if (! $invoice) {
@@ -71,6 +72,7 @@ class BillingController extends Controller
     public function cancel(Request $request): JsonResponse
     {
         $subscription = $this->billing->cancel($this->organization($request));
+        \App\Services\Compliance\ActivityRecorder::record('billing.cancel', 'Cancelled the subscription at period end');
 
         return ApiResponse::success($this->presentSubscription($subscription->load(['plan', 'pendingPlan'])), 'Your subscription will end at the close of the current period.');
     }
@@ -78,6 +80,7 @@ class BillingController extends Controller
     public function resume(Request $request): JsonResponse
     {
         $subscription = $this->billing->resume($this->organization($request));
+        \App\Services\Compliance\ActivityRecorder::record('billing.resume', 'Resumed the subscription');
 
         return ApiResponse::success($this->presentSubscription($subscription->load(['plan', 'pendingPlan'])), 'Your subscription will continue.');
     }

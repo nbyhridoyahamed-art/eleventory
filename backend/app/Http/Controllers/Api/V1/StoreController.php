@@ -66,6 +66,7 @@ class StoreController extends Controller
         $this->authorize('update', $store);
 
         $store->update($request->validated());
+        \App\Services\Compliance\ActivityRecorder::record('store.updated', 'Changed store settings', $store->id);
 
         return ApiResponse::success(new StoreResource($store->load('currency')), 'Store updated successfully.');
     }

@@ -174,7 +174,12 @@ export default function PlatformLandingPage() {
 
       <footer className="flex flex-wrap justify-between gap-4 border-t border-border bg-surface px-6 py-8 text-sm text-text-muted lg:px-16">
         <span>© Eleventory</span>
-        <span className="flex gap-6"><span>Terms</span><span>Privacy</span><span>Support</span></span>
+        <span className="flex gap-6">
+          <Link href="/legal/terms" className="hover:text-text-primary">Terms</Link>
+          <Link href="/legal/privacy" className="hover:text-text-primary">Privacy</Link>
+          <Link href="/legal/dpa" className="hover:text-text-primary">DPA</Link>
+          <Link href="/help" className="hover:text-text-primary">Help</Link>
+        </span>
       </footer>
     </div>
   );

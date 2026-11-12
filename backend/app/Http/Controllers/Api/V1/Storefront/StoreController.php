@@ -21,6 +21,7 @@ class StoreController extends StorefrontController
         return ApiResponse::success([
             'name' => $store->name,
             'slug' => $store->slug,
+            'logo_url' => app(\App\Services\Themes\ThemeService::class)->publishedLogoUrl($store->id),
             'currency_code' => $store->currency?->code ?? 'BDT',
             // The store's primary custom domain; the storefront server redirects other addresses to it.
             'canonical_host' => config('app.saas_mode') ? app(StoreResolver::class)->canonicalHost($store) : null,

@@ -16,6 +16,8 @@ const TABS = [
   { label: "Payments", href: "/dashboard/settings/payments", permission: "settings.manage" },
   { label: "Billing", href: "/dashboard/settings/billing", permission: "settings.manage" },
   { label: "Themes", href: "/dashboard/settings/themes", permission: "settings.manage" },
+  { label: "Activity", href: "/dashboard/settings/activity", permission: "settings.manage" },
+  { label: "Your data", href: "/dashboard/settings/data", permission: "settings.manage" },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

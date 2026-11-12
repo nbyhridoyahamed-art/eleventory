@@ -346,3 +346,44 @@ Not built / known limits:
 - [ ] Storage quota counts the `media` table; product images are media rows, but any file written outside `MediaLibrary` is not counted
 
 Before switching on for live: run migration `2026_11_16_100000_add_storage_limit_to_plans`; the rest is opt-in by env.
+
+### Phase 10 - compliance and launch (built 2026-11-12)
+Code is built and tested; the legal text and launch decisions are **yours**. Nothing changes for the live site while `SAAS_MODE` is off, except new tables/columns from migration `2026_11_18_100000_create_compliance_tables`.
+- [x] Legal pages: Terms, Privacy Policy and DPA at `/legal/{terms,privacy,dpa}`, help centre skeleton at `/help` (6 articles), links from the landing page and sign-up. All are **drafts with placeholders** (`COMPANY` in `frontend/src/lib/legal-docs.ts`), written for a lawyer to review
+- [x] Proof of acceptance: sign-up records acceptance of all three documents (version, time, IP) in `legal_acceptances`. Bumping `LEGAL_VERSION` makes the dashboard show an "I accept" banner (`GET auth/legal`, `POST auth/legal/accept`); old acceptances are kept
+- [x] Merchant data export: owner-only zip of one CSV per table plus a README (`POST compliance/exports`, download via authenticated blob). Secret-looking columns are never included; 1-hour cooldown per shop; files expire after 7 days. Uses the same table map as backups, so new tables are included automatically
+- [x] Account deletion: owner re-enters password and types the store address; shops go offline (`suspension_reason = deletion`), renewals stop, 14-day grace, cancel any time. `account:purge` (daily 04:00) then deletes shop rows, uploaded files and exports. Kept: invoices, the organization row (renamed "Deleted account", contact details cleared), legal acceptances, platform audit log. Staff who belong to no other shop are anonymised; platform admins are never touched
+- [x] Merchant activity log (Settings > Activity): store settings, domains, payment gateways, staff, plan/billing, data exports and deletion are recorded with who/when/IP; 1-year retention (reuses the existing `activity_logs` table, adds a `summary` column)
+- [x] Transactional emails: deletion requested/cancelled and export ready use one shared layout (`ServiceNoticeNotification`); `php artisan mail:preview` renders each to HTML for review. Account-deletion/export mail is on by default (`COMPLIANCE_EMAILS`), billing mail stays off by default
+- [x] Closed beta: `SIGNUP_INVITE_CODES` makes sign-up invite-only; the sign-up form shows the field only then (`GET auth/signup-options`)
+- [x] `php artisan platform:preflight`: PASS/WARN/FAIL readiness check, exit code 1 on FAIL
+- [x] Docs: `deploy/vps/GO-LIVE.md` (decisions, preflight, load test, elevendollar.store as tenant #1, rollback), `deploy/vps/BETA-CHECKLIST.md`; `deploy/loadtest/storefront.k6.js`
+- [x] Tests: `ComplianceTest` (11): acceptance, invite codes, re-acceptance, export content/isolation/secrets, owner-only, cooldown, expiry, deletion confirmation, grace period, purge keeps invoices and other shops, anonymisation rules, activity log, preflight
+
+Not built / known limits:
+- [ ] Legal texts are unreviewed drafts; retention periods are placeholders. Do not launch on them
+- [ ] k6 load test written, never run. Docker/compose, backup.sh and the go-live steps never run on a real server
+- [ ] Purge cannot remove data already inside database backups (they age out); say so in the privacy policy
+- [ ] No shopper-facing self-service export/delete (the merchant is the controller; requests must be forwarded)
+- [ ] Activity log covers high-impact actions, not every product/order edit; export CSV cells are not sanitised against spreadsheet formula injection
+- [x] Phase 9 (themes) was parked while this was built and has since been completed (see below)
+
+Before switching on for live: run `2026_11_18_100000_create_compliance_tables`, then `php artisan platform:preflight`.
+
+### Phase 9 - themes and storefront customisation (built 2026-11-12)
+Nothing changes for a shop that has never saved a theme (it gets the standard look) or while `SAAS_MODE` is off for the live site (the storefront simply receives an empty theme).
+- [x] `store_themes` (one row per shop; draft and published JSON, preview token). Migration `2026_11_19_100000_create_store_themes_table` also adds the plan feature `custom_css` (Starter no; Growth, Pro, founding plan yes)
+- [x] Settings > Themes: 5 presets (Classic, Midnight, Bazaar, Fresh, Boutique), header/footer and accent colours (text colour flips between dark and light automatically for contrast), corner radius, font, show/hide the top strip, logo and favicon from the media library, gated custom CSS
+- [x] Draft first: changes are saved as a draft, previewed on the real storefront via a private preview link (`?theme_preview=TOKEN`; anyone holding the secret link sees the draft, nobody else does, and the token changes on every publish), then published or discarded. Visitors never see a draft
+- [x] Storefront: `GET storefront/theme` returns only values (CSS variables, font stack, logo/favicon URLs, sanitised CSS); the layout injects them as one `<style>`. Preview responses are `no-store, private`
+- [x] Custom CSS sandbox: no `@import`, `url()`, `@font-face`, `@charset`, `image-set`, `expression`, `javascript:`, backslash escapes, comments are stripped, `<` refused, only `@media`/`@supports`/`@keyframes` at-rules, braces must balance, 20 KB cap. If a shop drops to a plan without custom CSS, its CSS stops being served at once (the saved text is kept)
+- [x] Tests: `ThemeTest` (31, 15 of them forbidden-CSS cases): standard look by default, draft invisible until published, preview token, token rotation, discard, contrast, validation, logo, another shop's file refused as logo, settings permission, plan gate and fallback, comment stripping, isolation between shops. Backup coverage guard and leak sweep still pass with the new table. Browser check: draft saved (visitors still standard), published (storefront served Midnight colours), then reverted on the dev shop
+
+Not built / known limits:
+- [ ] Homepage block templates per theme are not built on purpose: applying them would overwrite a merchant's existing homepage. Themes change colours, type, shape, logo and CSS only
+- [ ] Custom CSS is sandboxed by a denylist/allowlist parser written here and has had no outside security review; keep it a paid-plan feature and review before widening
+- [ ] No theme marketplace, no per-page layouts, no Google Fonts (only Inter, system, Georgia and a rounded stack, to avoid loading third-party fonts)
+- [ ] The standalone "Preview" opens the storefront in a new tab; there is no side-by-side editor
+- [ ] Only the Settings > Themes screen was checked in a browser, on desktop width
+
+Before switching on for live: run `2026_11_19_100000_create_store_themes_table`.

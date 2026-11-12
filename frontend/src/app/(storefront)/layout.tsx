@@ -6,7 +6,10 @@ import { MobileBottomNav } from "@/components/storefront/mobile-bottom-nav";
 import { SeoScripts } from "@/components/storefront/seo-scripts";
 import { StorefrontFooter } from "@/components/storefront/storefront-footer";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
+import { ThemePreview } from "@/components/storefront/theme-preview";
 import { getPublicSeo } from "@/lib/seo-settings";
+import { getPublicTheme } from "@/lib/storefront-theme";
+import { buildThemeCss } from "@/lib/theme-css";
 
 /**
  * Site-wide SEO that every storefront page inherits: search-engine ownership
@@ -15,7 +18,7 @@ import { getPublicSeo } from "@/lib/seo-settings";
  * description and canonical.
  */
 export async function generateMetadata(): Promise<Metadata> {
-  const { settings } = await getPublicSeo();
+  const [{ settings }, theme] = await Promise.all([getPublicSeo(), getPublicTheme()]);
   const v = settings.verification;
 
   const other: Record<string, string> = {};
@@ -31,14 +34,18 @@ export async function generateMetadata(): Promise<Metadata> {
       other: Object.keys(other).length > 0 ? other : undefined,
     },
     robots: settings.robots.mode === "block_all" ? { index: false, follow: false } : undefined,
+    icons: theme.favicon_url ? { icon: theme.favicon_url } : undefined,
   };
 }
 
 export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
-  const { settings, storeName } = await getPublicSeo();
+  const [{ settings, storeName }, theme] = await Promise.all([getPublicSeo(), getPublicTheme()]);
+  const themeCss = buildThemeCss(theme);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      {themeCss ? <style id="store-theme" dangerouslySetInnerHTML={{ __html: themeCss }} /> : null}
+      <ThemePreview />
       <StorefrontHeader />
       <main className="flex-1">{children}</main>
       <StorefrontFooter />

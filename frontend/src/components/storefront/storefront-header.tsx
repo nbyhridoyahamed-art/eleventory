@@ -13,6 +13,7 @@ import { useStorefrontCategories, useStorefrontStore } from "@/hooks/use-storefr
 import { useCustomerAuthToken } from "@/lib/customer-auth-token";
 import { STOREFRONT_CONTACT } from "@/lib/storefront-contact";
 import { useCartStore } from "@/stores/cart-store";
+import { useThemePreviewStore } from "@/stores/theme-preview-store";
 
 const TOP_LINKS = [
   { href: "/pages/about-us", label: "About Us" },
@@ -29,7 +30,21 @@ const NAV_LINKS = [
   { href: "/blog", label: "Blog" },
 ] as const;
 
-function Logo({ name }: { name: string }) {
+function Logo({ name, logoUrl }: { name: string; logoUrl?: string | null }) {
+  const preview = useThemePreviewStore();
+  // While previewing a draft, its logo (even "none") replaces the published one.
+  const url = preview.active ? preview.logoUrl : logoUrl;
+
+  if (url) {
+    return (
+      <Link href="/" className="flex min-w-0 items-center gap-2 text-shop-on-nav" aria-label={`${name} home`}>
+        {/* A merchant-uploaded logo of unknown size: a plain img, bounded in height. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={url} alt={name} className="h-9 w-auto max-w-[180px] object-contain tablet:h-10" />
+      </Link>
+    );
+  }
+
   return (
     <Link href="/" className="flex min-w-0 items-center gap-2 text-shop-on-nav" aria-label={`${name} home`}>
       <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-shop-accent text-lg font-bold text-shop-on-accent">
@@ -68,9 +83,9 @@ export function StorefrontHeader() {
 
   return (
     // Desktop: the top strip (h-9) scrolls away while the rest sticks. Phone: the search row collapses on scroll.
-    <header className="sticky top-0 z-40 desktop:-top-9">
+    <header className="storefront-header sticky top-0 z-40 desktop:-top-9">
       {/* Top strip */}
-      <div className="hidden h-9 bg-shop-nav text-xs text-shop-on-nav desktop:block">
+      <div className="storefront-topbar hidden h-9 bg-shop-nav text-xs text-shop-on-nav desktop:block">
         <div className="mx-auto flex h-full max-w-[1400px] items-center justify-between border-b border-white/10 px-4">
           <p>
             Cash on Delivery nationwide · Easy 7-day returns.{" "}
@@ -142,7 +157,7 @@ export function StorefrontHeader() {
             </button>
           </Sheet>
 
-          <Logo name={storeName} />
+          <Logo name={storeName} logoUrl={store?.logo_url} />
 
           <div className="hidden min-w-0 flex-1 desktop:flex">{searchForm}</div>
 

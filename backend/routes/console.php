@@ -16,3 +16,6 @@ Schedule::call(fn () => \Illuminate\Support\Facades\Cache::put(\App\Http\Control
 
 // Phase 8: nightly per-shop exports (off until BACKUP_TENANT_EXPORTS=true; a whole-database dump is deploy/vps/backup.sh).
 Schedule::command('tenant:export --all --prune')->dailyAt('03:30')->when(fn () => config('backup.tenant_exports'));
+
+// Phase 10: delete accounts whose 14-day deletion grace is over, expire data exports, trim old activity.
+Schedule::command('account:purge')->dailyAt('04:00');

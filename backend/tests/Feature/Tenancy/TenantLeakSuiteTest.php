@@ -160,7 +160,10 @@ class TenantLeakSuiteTest extends TestCase
     {
         $customer = Customer::factory()->create(['store_id' => $this->a->id, 'phone' => '01711112222', 'password' => 'secret-pass-1']);
 
-        $this->postJson('/api/v1/account/auth/login', ['phone' => '01711112222', 'password' => 'secret-pass-1'])->assertOk();
+        // Since Phase 3 a shopper's store is the host they are on (not an X-Store-Id header).
+        config(['app.platform_domain' => 'eleventory.test']);
+
+        $this->postJson('/api/v1/account/auth/login', ['phone' => '01711112222', 'password' => 'secret-pass-1'], ['X-Store-Host' => $this->a->slug.'.eleventory.test'])->assertOk();
 
         $abilities = $customer->tokens()->latest('id')->first()->abilities;
         $this->assertContains('store:'.$this->a->id, $abilities);
@@ -193,6 +196,7 @@ class TenantLeakSuiteTest extends TestCase
             'api/v1/homepage-blocks/{homepageBlock}/revisions/{revision}/restore' => 'revision is looked up through the (store-scoped) block: $block->revisions()->findOrFail()',
             'api/v1/blog-posts/{blogPost}/versions/{version}/restore' => 'version is looked up through the (store-scoped) post',
             'api/v1/roles/{role}' => 'roles are platform-wide templates; edits are Platform Admin only',
+            'api/v1/payment-gateways/{provider}' => 'provider is a fixed key (sslcommerz|stripe|fake), not a record; rows are looked up by the acting store id',
             'api/v1/stores/{store}' => 'StorePolicy limits to member stores',
             'api/v1/users/{user}' => 'UserPolicy::sharesStore limits to the acting store',
         ];

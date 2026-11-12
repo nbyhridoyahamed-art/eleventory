@@ -98,6 +98,16 @@ export interface SlugCheck {
   reason: string | null;
 }
 
+/** Whether sign-up is open and whether it needs an invite code (closed beta). */
+export function useSignupOptions() {
+  return useQuery({
+    queryKey: ["auth", "signup-options"],
+    queryFn: () => api.get<{ open: boolean; invite_required: boolean; legal_version: string }>("/auth/signup-options"),
+    retry: false,
+    staleTime: 60_000,
+  });
+}
+
 /** Asks whether a store address is free; the caller debounces the slug it passes in. */
 export function useSlugAvailable(slug: string) {
   return useQuery({

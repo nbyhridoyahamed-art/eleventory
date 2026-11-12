@@ -68,6 +68,7 @@ class PaymentGatewayController extends Controller
             'test_mode' => $data['test_mode'],
             'credentials' => $merged,
         ])->save();
+        \App\Services\Compliance\ActivityRecorder::record('payment_gateway.updated', ($data['is_enabled'] ? 'Enabled ' : 'Disabled ').$gateway->label().($data['test_mode'] ? ' (test mode)' : ''), $storeId);
 
         return ApiResponse::success($this->present($gateway, $account, $storeId), 'Payment gateway saved.');
     }

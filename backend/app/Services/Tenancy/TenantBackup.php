@@ -62,7 +62,15 @@ class TenantBackup
         'users', 'stores', 'organizations', 'plans', 'subscriptions', 'invoices', 'announcements',
         'roles', 'permissions', 'role_has_permissions', 'model_has_roles', 'model_has_permissions',
         'currencies', 'bd_divisions', 'bd_districts', 'bd_upazilas',
+        'legal_acceptances', // about people, not shops: kept as proof of what each person accepted
     ];
+
+    /**
+     * Platform-side records ABOUT a shop (support notes, audit trail, abuse reports). They carry a store_id
+     * but are the platform's, so they are never in a shop's export or backup and never restored or wiped
+     * with it (deleting the shop row nulls or cascades them by their own foreign keys).
+     */
+    public const PLATFORM_OWNED = ['platform_audit_logs', 'abuse_reports', 'tenant_notes'];
 
     /** Tables to read and write, direct ones first, each with how to select a shop's rows. */
     public function tables(): array
@@ -70,7 +78,7 @@ class TenantBackup
         $tables = [];
 
         foreach ($this->allTables() as $table) {
-            if (in_array($table, self::GLOBAL_TABLES, true) || isset(self::CHILDREN[$table])) {
+            if (in_array($table, self::GLOBAL_TABLES, true) || in_array($table, self::PLATFORM_OWNED, true) || isset(self::CHILDREN[$table])) {
                 continue;
             }
 
@@ -198,6 +206,36 @@ class TenantBackup
         }
 
         return $restored;
+    }
+
+    /**
+     * One shop's rows in $table (a direct table, or a child reached through its parents), as a query.
+     * Used by the shop export and by the data export for merchants.
+     */
+    public function rows(string $table, int $storeId): \Illuminate\Database\Query\Builder
+    {
+        if (! isset(self::CHILDREN[$table])) {
+            return DB::table($table)->where('store_id', $storeId);
+        }
+
+        [$parent, $fk] = self::CHILDREN[$table];
+
+        return DB::table($table)->whereIn($fk, $this->rows($parent, $storeId)->select('id'));
+    }
+
+    /** Every table a shop's data lives in: direct tables, then children. @return string[] */
+    public function allShopTables(): array
+    {
+        return array_values(array_merge($this->tables(), array_filter(array_keys(self::CHILDREN), fn ($t) => Schema::hasTable($t))));
+    }
+
+    /**
+     * Delete every row of the shop's data (not the shop row itself). The caller owns the transaction and
+     * foreign-key switch, as restore() and the account purge both do.
+     */
+    public function wipeStore(int $storeId): void
+    {
+        $this->wipe($storeId);
     }
 
     private function wipe(int $storeId): void

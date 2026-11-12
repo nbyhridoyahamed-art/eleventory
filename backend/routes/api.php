@@ -96,6 +96,7 @@ Route::prefix('v1')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->middleware('throttle:6,1');
         Route::post('login', [AuthController::class, 'login']);
         Route::post('signup', [MerchantSignupController::class, 'signup'])->middleware('throttle:merchant-signup');
+        Route::get('signup-options', [MerchantSignupController::class, 'options'])->middleware('throttle:slug-check');
         Route::get('slug-available', [MerchantSignupController::class, 'slugAvailable'])->middleware('throttle:slug-check');
         Route::get('verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
             ->middleware(['signed', 'throttle:20,1'])
@@ -109,6 +110,8 @@ Route::prefix('v1')->group(function () {
             Route::get('me', [AuthController::class, 'me']);
             Route::get('my-stores', [StoreSwitchController::class, 'index']);
             Route::post('switch-store', [StoreSwitchController::class, 'switch']);
+            Route::get('legal', [\App\Http\Controllers\Api\V1\ComplianceController::class, 'legalStatus']);
+            Route::post('legal/accept', [\App\Http\Controllers\Api\V1\ComplianceController::class, 'acceptLegal'])->middleware('throttle:10,1');
         });
     });
 
@@ -120,6 +123,7 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('storefront')->group(function () {
         Route::get('store', [StorefrontStoreController::class, 'show']);
+        Route::get('theme', [\App\Http\Controllers\Api\V1\Storefront\StorefrontThemeController::class, 'show']);
         Route::get('seo-settings', [StorefrontSeoSettingController::class, 'show']);
         Route::post('seo/not-found', [StorefrontSeoSettingController::class, 'notFound'])->middleware('throttle:600,1');
         Route::get('products', [StorefrontProductController::class, 'index']);
@@ -246,6 +250,16 @@ Route::prefix('v1')->group(function () {
         Route::post('billing/cancel', [\App\Http\Controllers\Api\V1\BillingController::class, 'cancel']);
         Route::post('billing/resume', [\App\Http\Controllers\Api\V1\BillingController::class, 'resume']);
         Route::get('onboarding', [OnboardingController::class, 'show']);
+        Route::get('theme', [\App\Http\Controllers\Api\V1\ThemeController::class, 'show']);
+        Route::put('theme', [\App\Http\Controllers\Api\V1\ThemeController::class, 'update']);
+        Route::post('theme/publish', [\App\Http\Controllers\Api\V1\ThemeController::class, 'publish']);
+        Route::post('theme/discard', [\App\Http\Controllers\Api\V1\ThemeController::class, 'discard']);
+        Route::get('compliance', [\App\Http\Controllers\Api\V1\ComplianceController::class, 'show']);
+        Route::post('compliance/exports', [\App\Http\Controllers\Api\V1\ComplianceController::class, 'createExport'])->middleware('throttle:5,1');
+        Route::get('compliance/exports/{dataExport}', [\App\Http\Controllers\Api\V1\ComplianceController::class, 'download'])->middleware('throttle:20,1');
+        Route::post('compliance/deletion', [\App\Http\Controllers\Api\V1\ComplianceController::class, 'requestDeletion'])->middleware('throttle:5,1');
+        Route::delete('compliance/deletion', [\App\Http\Controllers\Api\V1\ComplianceController::class, 'cancelDeletion']);
+        Route::get('compliance/activity', [\App\Http\Controllers\Api\V1\ComplianceController::class, 'activity']);
         Route::get('domains', [DomainController::class, 'index']);
         Route::post('domains', [DomainController::class, 'store']);
         Route::post('domains/{storeDomain}/verify', [DomainController::class, 'verify'])->middleware('throttle:20,1');

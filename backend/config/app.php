@@ -74,6 +74,9 @@ return [
     // Public merchant sign-up: anyone may create an account plus their own store. Off until the platform opens.
     'merchant_signup' => (bool) env('MERCHANT_SIGNUP', false),
 
+    // Closed beta: when set (comma separated), sign-up needs one of these codes. Empty = open to anyone.
+    'signup_invite_codes' => array_values(array_filter(array_map('trim', explode(',', (string) env('SIGNUP_INVITE_CODES', ''))))),
+
     // Length of the free trial given to a new store (placeholder until billing exists).
     'trial_days' => (int) env('TRIAL_DAYS', 14),
 

@@ -83,6 +83,8 @@ class UserController extends Controller
             $user->syncRoles($data['roles']);
         }
 
+        \App\Services\Compliance\ActivityRecorder::record('user.created', 'Added staff member '.$user->email);
+
         return ApiResponse::success(new UserResource($user->load('roles')), 'User created successfully.', status: 201);
     }
 
@@ -119,7 +121,9 @@ class UserController extends Controller
     {
         $this->authorize('delete', $user);
 
+        $email = $user->email;
         $user->delete();
+        \App\Services\Compliance\ActivityRecorder::record('user.deleted', 'Removed staff member '.$email);
 
         return ApiResponse::success(message: 'User deleted successfully.');
     }

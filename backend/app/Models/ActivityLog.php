@@ -12,7 +12,7 @@ class ActivityLog extends Model
     use BelongsToStore;
 
     protected $fillable = [
-        'store_id', 'user_id', 'action', 'entity_type', 'entity_id',
+        'store_id', 'user_id', 'action', 'summary', 'entity_type', 'entity_id',
         'old_values', 'new_values', 'ip_address', 'user_agent',
     ];
 

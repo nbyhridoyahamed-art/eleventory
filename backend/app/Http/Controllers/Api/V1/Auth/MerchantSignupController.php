@@ -39,6 +39,7 @@ class MerchantSignupController extends Controller
 
         $data = $request->validated();
         $user = $register->execute($data);
+        \App\Http\Controllers\Api\V1\ComplianceController::recordAcceptance($user->id, $request->ip());
         $store = $provisioner->provision($user, $data['store_name'], $data['store_slug']);
 
         $sent = $this->sendVerification($user);
@@ -54,6 +55,16 @@ class MerchantSignupController extends Controller
                 : 'Your store is ready, but the verification email could not be sent. Use "Resend verification" on the sign-in page.',
             status: 201,
         );
+    }
+
+    /** What the sign-up form needs to know before it is shown. */
+    public function options(): JsonResponse
+    {
+        return ApiResponse::success([
+            'open' => (bool) config('app.merchant_signup') && (bool) config('app.saas_mode'),
+            'invite_required' => (array) config('app.signup_invite_codes') !== [],
+            'legal_version' => config('legal.version'),
+        ]);
     }
 
     /** Lets the sign-up form say "taken" before the person presses the button. */
