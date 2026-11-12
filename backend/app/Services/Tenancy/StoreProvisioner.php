@@ -45,6 +45,10 @@ class StoreProvisioner
                 'trial_ends_at' => now()->addDays((int) config('app.trial_days', 14)),
             ]);
 
+            if (\App\Models\Plan::query()->exists()) {
+                app(\App\Services\Billing\BillingService::class)->startTrial($organization);
+            }
+
             $store = Store::create([
                 'organization_id' => $organization->id,
                 'name' => $storeName,

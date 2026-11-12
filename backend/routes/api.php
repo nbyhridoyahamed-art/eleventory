@@ -25,6 +25,11 @@ use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeliveryZoneController;
 use App\Http\Controllers\Api\V1\HomepageBlockController;
 use App\Http\Controllers\Api\V1\LocationController;
+use App\Http\Controllers\Api\V1\Platform\AbuseReportController as PlatformAbuseReportController;
+use App\Http\Controllers\Api\V1\Platform\AnnouncementController as PlatformAnnouncementController;
+use App\Http\Controllers\Api\V1\Platform\AuditLogController as PlatformAuditLogController;
+use App\Http\Controllers\Api\V1\Platform\OverviewController as PlatformOverviewController;
+use App\Http\Controllers\Api\V1\Platform\TenantController as PlatformTenantController;
 use App\Http\Controllers\Api\V1\McpTokenController;
 use App\Http\Controllers\Api\V1\MediaController;
 use App\Http\Controllers\Api\V1\NewsletterSubscriberController;
@@ -84,6 +89,9 @@ use App\Http\Controllers\Api\V1\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+    // Uptime monitors / load balancer. Public, throttled, reveals only which check failed.
+    Route::get('health', \App\Http\Controllers\Api\V1\HealthController::class)->middleware('throttle:60,1');
+
     Route::prefix('auth')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->middleware('throttle:6,1');
         Route::post('login', [AuthController::class, 'login']);
@@ -155,6 +163,8 @@ Route::prefix('v1')->group(function () {
         // reserves real stock, so it needs the same abuse guard.
         Route::post('checkout', [StorefrontCheckoutController::class, 'store'])->middleware('throttle:15,1');
         Route::get('orders/{uuid}', [StorefrontCheckoutController::class, 'show']);
+        Route::get('payment-methods', [StorefrontCheckoutController::class, 'paymentMethods']);
+        Route::post('orders/{uuid}/pay', [StorefrontCheckoutController::class, 'pay'])->middleware('throttle:15,1');
 
         // A real browsing session fires many more of these than a checkout
         // (page views, product views, searches) — a higher, still-bounded
@@ -190,7 +200,51 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-    Route::middleware(['auth:sanctum', 'staff', 'tenant'])->group(function () {
+    Route::get('plans', [\App\Http\Controllers\Api\V1\PlanController::class, 'index']);
+
+    // Payment providers calling back (no auth: each call is verified with the provider).
+    Route::post('billing/webhooks/sslcommerz', [\App\Http\Controllers\Api\V1\BillingWebhookController::class, 'sslcommerz']);
+    Route::match(['get', 'post'], 'billing/return/{outcome}', [\App\Http\Controllers\Api\V1\BillingWebhookController::class, 'back'])->whereIn('outcome', ['success', 'fail', 'cancel']);
+    Route::get('billing/fake/{tranId}/pay', [\App\Http\Controllers\Api\V1\BillingWebhookController::class, 'fakePay']);
+
+    // Payment providers and shoppers coming back from a payment page (public; each call is verified).
+    Route::post('payments/webhooks/{provider}/{storeId}', [\App\Http\Controllers\Api\V1\PaymentWebhookController::class, 'webhook'])
+        ->whereNumber('storeId')->middleware('throttle:300,1');
+    Route::match(['get', 'post'], 'payments/return/{tranId}/{outcome}', [\App\Http\Controllers\Api\V1\PaymentWebhookController::class, 'back'])
+        ->whereIn('outcome', ['success', 'fail', 'cancel'])->middleware('throttle:60,1');
+    Route::get('payments/fake/{tranId}/pay', [\App\Http\Controllers\Api\V1\PaymentWebhookController::class, 'fakePay']);
+
+    // Anyone can report a shop; throttled.
+    Route::post('abuse-reports', [\App\Http\Controllers\Api\V1\Platform\AbuseReportController::class, 'submit'])->middleware('throttle:6,1');
+
+    // The platform's own area. No tenant: these cross every shop on purpose, and only Platform Admins get in.
+    Route::prefix('platform')->middleware(['auth:sanctum', 'staff', 'platform'])->group(function () {
+        Route::get('overview', PlatformOverviewController::class);
+        Route::get('tenants', [PlatformTenantController::class, 'index']);
+        Route::get('tenants/{store}', [PlatformTenantController::class, 'show']);
+        Route::post('tenants/{store}/suspend', [PlatformTenantController::class, 'suspend']);
+        Route::post('tenants/{store}/restore', [PlatformTenantController::class, 'restore']);
+        Route::post('tenants/{store}/plan', [PlatformTenantController::class, 'setPlan']);
+        Route::put('tenants/{store}/overrides', [PlatformTenantController::class, 'setOverrides']);
+        Route::post('tenants/{store}/notes', [PlatformTenantController::class, 'addNote']);
+        Route::post('tenants/{store}/enter', [PlatformTenantController::class, 'enter']);
+        Route::get('audit-log', PlatformAuditLogController::class);
+        Route::get('reports', [PlatformAbuseReportController::class, 'index']);
+        Route::post('reports/{report}/resolve', [PlatformAbuseReportController::class, 'resolve']);
+        Route::apiResource('announcements', PlatformAnnouncementController::class)->except('show');
+    });
+
+    // What merchants see on their dashboard.
+    Route::get('announcements/live', [PlatformAnnouncementController::class, 'live'])->middleware(['auth:sanctum', 'staff']);
+
+    Route::middleware(['auth:sanctum', 'staff', 'tenant', 'subscription'])->group(function () {
+        Route::get('payment-gateways', [\App\Http\Controllers\Api\V1\PaymentGatewayController::class, 'index']);
+        Route::put('payment-gateways/{provider}', [\App\Http\Controllers\Api\V1\PaymentGatewayController::class, 'update']);
+        Route::get('billing', [\App\Http\Controllers\Api\V1\BillingController::class, 'show']);
+        Route::post('billing/subscribe', [\App\Http\Controllers\Api\V1\BillingController::class, 'subscribe']);
+        Route::post('billing/invoices/{invoice}/pay', [\App\Http\Controllers\Api\V1\BillingController::class, 'pay']);
+        Route::post('billing/cancel', [\App\Http\Controllers\Api\V1\BillingController::class, 'cancel']);
+        Route::post('billing/resume', [\App\Http\Controllers\Api\V1\BillingController::class, 'resume']);
         Route::get('onboarding', [OnboardingController::class, 'show']);
         Route::get('domains', [DomainController::class, 'index']);
         Route::post('domains', [DomainController::class, 'store']);
@@ -358,6 +412,7 @@ Route::prefix('v1')->group(function () {
         Route::post('orders/{order}/deliver', [OrderController::class, 'deliver']);
         Route::post('orders/{order}/cancel', [OrderController::class, 'cancel']);
         Route::post('orders/{order}/payments', [OrderPaymentController::class, 'store']);
+        Route::post('orders/{order}/payments/refund', [\App\Http\Controllers\Api\V1\OrderRefundController::class, 'store']);
 
         Route::apiResource('coupons', CouponController::class);
 

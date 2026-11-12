@@ -33,7 +33,7 @@ export function OnboardingChecklist() {
             <strong>
               {trial.days_left} day{trial.days_left === 1 ? "" : "s"} left in your free trial.
             </strong>{" "}
-            Plans and billing are coming soon; your store stays online while the trial runs.
+            Your store stays online while the trial runs. <Link href="/dashboard/settings/billing" className="font-medium underline">Choose a plan</Link> before it ends to keep selling.
           </AlertDescription>
         </Alert>
       ) : null}

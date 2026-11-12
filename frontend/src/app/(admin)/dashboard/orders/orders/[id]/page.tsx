@@ -13,6 +13,7 @@ import {
   useOrder,
   useProcessOrder,
   useRecordOrderPayment,
+  useRefundOrderPayment,
   useShipOrder,
   useUpdateOrder,
 } from "@/hooks/use-orders";
@@ -58,6 +59,13 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   card: "Card",
   bank_transfer: "Bank transfer",
 };
+
+/** Online gateways are recorded under their own name; show something readable for them. */
+const ONLINE_METHOD_LABELS: Record<string, string> = { sslcommerz: "Online (SSLCommerz)", stripe: "Card (Stripe)", fake: "Test payment" };
+
+function methodLabel(method: string): string {
+  return ONLINE_METHOD_LABELS[method] ?? (PAYMENT_METHOD_LABELS as Record<string, string>)[method] ?? method;
+}
 
 const PAYMENT_STATUS_LABELS: Record<Order["payment_status"], string> = {
   unpaid: "Unpaid",
@@ -240,6 +248,7 @@ export default function OrderShowPage({ params }: PageProps<"/dashboard/orders/o
 
   const { data: currentUser } = useCurrentUser();
   const { data: order, isLoading, isError } = useOrder(orderId);
+  const refundPayment = useRefundOrderPayment(orderId);
   const processOrder = useProcessOrder(orderId);
   const shipOrder = useShipOrder(orderId);
   const deliverOrder = useDeliverOrder(orderId);
@@ -576,12 +585,27 @@ export default function OrderShowPage({ params }: PageProps<"/dashboard/orders/o
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Payments</CardTitle>
-            {canRecordPayment ? (
-              <Button size="sm" variant="outline" onClick={() => setPaymentOpen(true)}>
-                <Wallet />
-                Record payment
-              </Button>
-            ) : null}
+            <div className="flex gap-2">
+              {canRecordPayment && order.payments.some((p) => ["sslcommerz", "stripe", "fake"].includes(p.method) && p.amount > 0) ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  loading={refundPayment.isPending}
+                  onClick={() => {
+                    const amount = window.prompt("How much should be sent back to the shopper? (recorded and refunded through the payment gateway)");
+                    if (amount && Number(amount) > 0) refundPayment.mutate({ amount, reason: "Refund from admin" });
+                  }}
+                >
+                  Refund
+                </Button>
+              ) : null}
+              {canRecordPayment ? (
+                <Button size="sm" variant="outline" onClick={() => setPaymentOpen(true)}>
+                  <Wallet />
+                  Record payment
+                </Button>
+              ) : null}
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             {order.payments.length > 0 ? (
@@ -590,7 +614,7 @@ export default function OrderShowPage({ params }: PageProps<"/dashboard/orders/o
                   <li key={payment.id} className="flex items-center justify-between border-b border-border pb-2 last:border-0">
                     <div>
                       <p className="font-medium text-text-primary">
-                        {formatMoney(payment.amount, payment.currency_code)} — {PAYMENT_METHOD_LABELS[payment.method]}
+                        {formatMoney(payment.amount, payment.currency_code)} — {methodLabel(payment.method)}
                       </p>
                       {payment.reference ? <p className="text-xs text-text-muted">Ref: {payment.reference}</p> : null}
                     </div>

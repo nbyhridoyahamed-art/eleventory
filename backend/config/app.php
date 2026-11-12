@@ -80,6 +80,9 @@ return [
     // Shared secret the storefront server sends so its page-render API calls skip the per-IP rate limit.
     'ssr_key' => env('STOREFRONT_SSR_KEY'),
 
+    /* Requests per minute one shop's signed-in users may make together (SaaS mode only). */
+    'tenant_requests_per_minute' => (int) env('TENANT_REQUESTS_PER_MINUTE', 600),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

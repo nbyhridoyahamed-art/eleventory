@@ -4,7 +4,7 @@ namespace App\Http\Resources\Storefront;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
+use App\Support\MediaLibrary;
 
 class BrandResource extends JsonResource
 {
@@ -15,7 +15,7 @@ class BrandResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
-            'logo_url' => $this->logo_path ? Storage::disk('public')->url($this->logo_path) : null,
+            'logo_url' => $this->logo_path ? MediaLibrary::url($this->logo_path) : null,
             'seo' => $this->whenLoaded('seoMetadata', fn () => \App\Support\SeoTemplateResolver::payload($this->resource)),
         ];
     }

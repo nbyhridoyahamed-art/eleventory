@@ -1,70 +1,69 @@
-import { Badge, type BadgeProps } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { PreviewNotice } from "@/components/shared/preview-notice";
+"use client";
 
-export const metadata = { title: "Platform: tenants" };
+import Link from "next/link";
 
-const STATS = [
-  { label: "Stores", value: "128" },
-  { label: "On trial", value: "41" },
-  { label: "Paying", value: "79" },
-  { label: "Suspended", value: "3" },
-];
+import { usePlatformOverview } from "@/hooks/use-platform";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const TENANTS: { store: string; domain: string; owner: string; plan: string; status: string; variant: BadgeProps["variant"]; orders: string; action: string }[] = [
-  { store: "Rahim Gadgets", domain: "rahimgadgets.com", owner: "Abdur Rahim", plan: "Trial", status: "Trialing", variant: "warning", orders: "24", action: "View as" },
-  { store: "Nusrat Fashion", domain: "nusrat.[your-domain]", owner: "Nusrat Jahan", plan: "Growth", status: "Active", variant: "success", orders: "612", action: "View as" },
-  { store: "Tanvir Electronics", domain: "tanvir.[your-domain]", owner: "Tanvir Hossain", plan: "Pro", status: "Active", variant: "success", orders: "1,940", action: "View as" },
-  { store: "Karim Books", domain: "karimbooks.[your-domain]", owner: "Karim Uddin", plan: "Starter", status: "Suspended", variant: "danger", orders: "0", action: "Reinstate" },
-];
+function Stat({ label, value, tone }: { label: string; value: string | number; tone?: "danger" }) {
+  return (
+    <Card>
+      <CardContent className="pt-5">
+        <div className="text-xs text-text-secondary">{label}</div>
+        <div className={`mt-1 text-3xl font-bold ${tone === "danger" ? "text-danger" : ""}`}>{value}</div>
+      </CardContent>
+    </Card>
+  );
+}
 
-export default function PlatformTenantsPage() {
+export default function PlatformOverviewPage() {
+  const { data, isLoading } = usePlatformOverview();
+
+  if (isLoading || !data) return <Skeleton className="h-64 w-full" />;
+
+  const { tenants, subscriptions, revenue } = data;
+  const money = (n: number) => `${revenue.currency === "BDT" ? "৳" : revenue.currency + " "}${Math.round(n).toLocaleString()}`;
+
   return (
     <div className="space-y-6">
-      <PreviewNotice>Platform-admin screen with sample tenants. Only platform administrators will see it.</PreviewNotice>
-      <div>
-        <h1 className="text-page-title font-semibold text-text-primary">Tenants</h1>
-        <p className="text-sm text-text-secondary">Every store on the platform.</p>
-      </div>
-
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {STATS.map((s) => (
-          <Card key={s.label}>
-            <CardContent className="pt-5">
-              <div className="text-xs text-text-secondary">{s.label}</div>
-              <div className={`mt-1 text-3xl font-bold ${s.label === "Suspended" ? "text-danger" : ""}`}>{s.value}</div>
-            </CardContent>
-          </Card>
-        ))}
+        <Stat label="Shops" value={tenants.total} />
+        <Stat label="New in 30 days" value={tenants.new_30d} />
+        <Stat label="On trial" value={subscriptions.trialing} />
+        <Stat label="Paying" value={subscriptions.paying} />
+        <Stat label="MRR" value={money(revenue.mrr)} />
+        <Stat label="Collected (30 days)" value={money(revenue.collected_30d)} />
+        <Stat label="Churn (30 days)" value={`${revenue.churn_30d_percent}%`} />
+        <Stat label="Trials ending in 7 days" value={subscriptions.trials_ending_7d} />
+        <Stat label="Payment overdue" value={subscriptions.past_due} tone={subscriptions.past_due ? "danger" : undefined} />
+        <Stat label="Suspended shops" value={tenants.suspended} tone={tenants.suspended ? "danger" : undefined} />
+        <Stat label="Cancelled (30 days)" value={subscriptions.cancelled_30d} />
+        <Stat label="Open abuse reports" value={data.open_reports} tone={data.open_reports ? "danger" : undefined} />
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-        <table className="w-full min-w-[720px] text-sm">
-          <thead className="bg-background text-left text-text-secondary">
-            <tr>
-              {["Store", "Owner", "Plan", "Status", "Orders (30d)", ""].map((h) => (
-                <th key={h} className="px-4 py-3 font-semibold">{h}</th>
+      <Card>
+        <CardHeader>
+          <CardTitle>Paying accounts by plan</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm">
+          {Object.keys(data.by_plan).length === 0 ? (
+            <p className="text-text-secondary">No active subscriptions yet.</p>
+          ) : (
+            <ul className="space-y-1">
+              {Object.entries(data.by_plan).map(([plan, count]) => (
+                <li key={plan} className="flex justify-between">
+                  <span>{plan}</span>
+                  <span className="font-semibold">{count}</span>
+                </li>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {TENANTS.map((t) => (
-              <tr key={t.store} className="border-t border-border">
-                <td className="px-4 py-3">
-                  <div className="font-semibold">{t.store}</div>
-                  <div className="text-xs text-text-secondary">{t.domain}</div>
-                </td>
-                <td className="px-4 py-3">{t.owner}</td>
-                <td className="px-4 py-3">{t.plan}</td>
-                <td className="px-4 py-3"><Badge variant={t.variant}>{t.status}</Badge></td>
-                <td className="px-4 py-3">{t.orders}</td>
-                <td className="px-4 py-3 text-right"><Button size="sm" variant="outline" disabled>{t.action}</Button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </ul>
+          )}
+          <p className="mt-4 text-text-secondary">
+            <Link href="/dashboard/platform/tenants" className="text-primary underline">Open the tenant directory</Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

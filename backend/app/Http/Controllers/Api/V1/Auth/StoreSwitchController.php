@@ -23,6 +23,9 @@ class StoreSwitchController extends Controller
         return ApiResponse::success([
             'current_store_id' => $user->current_store_id,
             'stores' => StoreResource::collection($stores),
+            // True when the current shop is not one this person belongs to (a platform admin helping out).
+            'support_mode' => $user->current_store_id && $user->hasRole('Platform Admin')
+                && ! $user->stores()->where('stores.id', $user->current_store_id)->exists(),
         ], 'Your stores fetched successfully.');
     }
 
@@ -35,7 +38,14 @@ class StoreSwitchController extends Controller
             return ApiResponse::error('You do not have access to this store.', [], 403);
         }
 
-        $request->user()->forceFill(['current_store_id' => $storeId])->save();
+        $user = $request->user();
+
+        // A platform admin stepping into a shop they are not a member of is support access: leave a trace.
+        if ($user->hasRole('Platform Admin') && ! $user->stores()->where('stores.id', $storeId)->exists()) {
+            \App\Models\PlatformAuditLog::record($user, 'tenant.enter', $storeId);
+        }
+
+        $user->forceFill(['current_store_id' => $storeId])->save();
 
         return ApiResponse::success(['current_store_id' => $storeId], 'Store switched.');
     }

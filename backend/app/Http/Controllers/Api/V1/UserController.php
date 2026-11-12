@@ -43,6 +43,7 @@ class UserController extends Controller
     public function store(UserRequest $request): JsonResponse
     {
         $this->authorize('create', User::class);
+        app(\App\Services\Billing\PlanLimits::class)->assertCanAdd((int) app(\App\Support\Tenancy\TenantContext::class)->storeId(), 'staff');
 
         $data = $request->validated();
 

@@ -35,6 +35,8 @@ class DomainManager
             $this->fail('You have reached the limit of '.config('tenancy.max_domains', 5).' domains. Remove one first.');
         }
 
+        app(\App\Services\Billing\PlanLimits::class)->assertCanAdd($store->id, 'custom_domains');
+
         $this->assertNotTakenByAnotherStore($store, $domain);
 
         return StoreDomain::withoutGlobalScopes()->create([

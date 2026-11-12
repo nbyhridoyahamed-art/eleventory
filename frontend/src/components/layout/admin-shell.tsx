@@ -3,6 +3,7 @@
 import type { User } from "@/types/auth";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { AdminTopbar } from "@/components/layout/admin-topbar";
+import { PlatformBanners } from "@/components/layout/platform-banners";
 
 /**
  * The page itself scrolls (one scrollbar, like any website): the sidebar stays
@@ -15,6 +16,7 @@ export function AdminShell({ user, children }: { user?: User; children: React.Re
       <AdminSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminTopbar user={user} />
+        <PlatformBanners />
         <main className="flex-1 p-6">
           <div className="mx-auto max-w-[1600px]">{children}</div>
         </main>

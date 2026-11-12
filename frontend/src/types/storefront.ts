@@ -247,5 +247,7 @@ export interface CheckoutPayload {
   shipping_bd_upazila_id?: number;
   notes?: string;
   coupon_code?: string;
+  /** "cod" (default) or an online method key from /storefront/payment-methods. */
+  payment_method?: string;
   items: CheckoutItemPayload[];
 }

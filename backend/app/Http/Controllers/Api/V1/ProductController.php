@@ -119,6 +119,7 @@ class ProductController extends Controller
     public function store(ProductRequest $request): JsonResponse
     {
         $this->authorize('create', Product::class);
+        app(\App\Services\Billing\PlanLimits::class)->assertCanAdd((int) app(\App\Support\Tenancy\TenantContext::class)->storeId(), 'products');
 
         $data = $this->preparePayload($request);
         // Set explicitly rather than leaning on the migration's column

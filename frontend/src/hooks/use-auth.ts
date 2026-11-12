@@ -120,7 +120,7 @@ export function useMyStores() {
 
   return useQuery({
     queryKey: ["auth", "my-stores"],
-    queryFn: () => api.get<{ current_store_id: number | null; stores: MyStore[] }>("/auth/my-stores"),
+    queryFn: () => api.get<{ current_store_id: number | null; stores: MyStore[]; support_mode?: boolean }>("/auth/my-stores"),
     enabled: Boolean(token),
   });
 }

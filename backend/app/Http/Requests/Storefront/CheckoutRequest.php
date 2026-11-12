@@ -56,6 +56,9 @@ class CheckoutRequest extends FormRequest
 
             'notes' => ['nullable', 'string', 'max:1000'],
             'coupon_code' => ['nullable', 'string', 'max:50'],
+            // "cod" (the default) or the key of an online method the store has switched on;
+            // CheckoutController refuses anything the store does not offer.
+            'payment_method' => ['nullable', 'string', 'max:30'],
 
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],

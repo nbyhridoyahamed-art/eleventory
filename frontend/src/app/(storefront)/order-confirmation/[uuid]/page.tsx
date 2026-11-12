@@ -9,11 +9,15 @@ import { trackEvent } from "@/lib/analytics";
 import { formatMoney } from "@/lib/money";
 import { ApiError } from "@/types/api";
 import { PageBanner } from "@/components/storefront/page-banner";
+import { PayNow } from "@/components/storefront/pay-now";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStorefrontOrder } from "@/hooks/use-storefront-checkout";
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   cod: "Cash on Delivery",
+  sslcommerz: "Online payment",
+  stripe: "Card payment",
+  fake: "Test payment",
 };
 
 const CRUMBS = [{ label: "Home", href: "/" }, { label: "Cart", href: "/cart" }, { label: "Order complete" }];
@@ -79,6 +83,8 @@ export default function OrderConfirmationPage({ params }: PageProps<"/order-conf
             <span className="font-semibold tracking-wide text-shop-ink">{order.order_number}</span>
           </p>
         </div>
+
+        <PayNow order={order} />
 
         {/* Order details */}
         <section className="border border-border bg-surface">

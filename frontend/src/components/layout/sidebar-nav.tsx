@@ -11,7 +11,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { data: user } = useCurrentUser();
 
-  const items = NAV_ITEMS.filter(
+  const items = NAV_ITEMS.filter((item) => !item.platformOnly || user?.roles?.includes("Platform Admin")).filter(
     (item) => !item.anyPermission || item.anyPermission.some((p) => user?.permissions?.includes(p)),
   );
 

@@ -304,6 +304,7 @@ class ReturnController extends Controller
 
         $data = $request->validated();
 
+        try {
         DB::transaction(function () use ($data, $orderReturn, $request) {
             $order = $orderReturn->order;
             $refundAmount = isset($data['refund_amount'])
@@ -330,6 +331,16 @@ class ReturnController extends Controller
                 StoreCreditResolver::issue($order->customer_id, $order->store_id, $refundAmount, $orderReturn, $request->user()->id);
             }
 
+            // Money that came in through an online gateway goes back the same way. This is the last
+            // thing that can fail, so a provider refusing the refund rolls the whole refund back.
+            if ($refundMethod === 'original_payment' && $refundAmount > 0) {
+                $online = app(\App\Services\Payments\MerchantPayments::class);
+
+                if ($online->hasPaidOnlineAttempt($order)) {
+                    $online->refund($order, $refundAmount, (string) ($data['note'] ?? 'Return refund'));
+                }
+            }
+
             // 'refunded' once every order item is fully covered by refunded
             // returns, 'partially_refunded' as soon as any coverage exists —
             // reconciling across several return records, Wave 1 only ever
@@ -339,6 +350,10 @@ class ReturnController extends Controller
                 $order->update(['payment_status' => $reconciled]);
             }
         });
+        } catch (\RuntimeException $e) {
+            // The payment provider refused: nothing was changed.
+            return ApiResponse::error($e->getMessage(), [], 502);
+        }
 
         SafeNotification::send($orderReturn->order->customer, new ReturnStatusChangedNotification($orderReturn));
 

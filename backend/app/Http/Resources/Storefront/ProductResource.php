@@ -5,7 +5,7 @@ namespace App\Http\Resources\Storefront;
 use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
+use App\Support\MediaLibrary;
 
 /**
  * The product-card shape for listing/search/category/brand pages.
@@ -30,7 +30,7 @@ class ProductResource extends JsonResource
             'price' => (new Money($this->price_amount, $this->currency_code))->toDecimal(),
             'sale_price' => $this->sale_price_amount !== null ? (new Money($this->sale_price_amount, $this->currency_code))->toDecimal() : null,
             'compare_at_price' => $this->compare_at_price_amount !== null ? (new Money($this->compare_at_price_amount, $this->currency_code))->toDecimal() : null,
-            'primary_image_url' => $primaryImage ? Storage::disk('public')->url($primaryImage->path) : null,
+            'primary_image_url' => $primaryImage ? MediaLibrary::url($primaryImage->path) : null,
             'featured' => $this->featured,
             'in_stock' => (bool) $this->in_stock,
             'reviews_count' => (int) $this->reviews_count,

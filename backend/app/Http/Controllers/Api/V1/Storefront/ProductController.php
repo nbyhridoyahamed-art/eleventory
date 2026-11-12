@@ -148,7 +148,7 @@ class ProductController extends StorefrontController
                     : null,
                 'currency_code' => $product->currency_code,
                 'image_url' => ($path = $product->images->firstWhere('is_primary', true)?->path ?? $product->images->first()?->path)
-                    ? \Illuminate\Support\Facades\Storage::disk('public')->url($path)
+                    ? \App\Support\MediaLibrary::url($path)
                     : null,
             ]),
         ], 'Suggestions fetched successfully.');

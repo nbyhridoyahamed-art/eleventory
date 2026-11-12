@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,7 +24,7 @@ import {
   useStorefrontDivisions,
   useStorefrontUpazilas,
 } from "@/hooks/use-storefront-catalog";
-import { useStorefrontCheckout } from "@/hooks/use-storefront-checkout";
+import { useStorefrontCheckout, useStorefrontPaymentMethods } from "@/hooks/use-storefront-checkout";
 import { useCartStore } from "@/stores/cart-store";
 
 const checkoutSchema = z.object({
@@ -62,6 +62,10 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, clear } = useCartStore();
   const checkout = useStorefrontCheckout();
+  const { data: onlineMethods } = useStorefrontPaymentMethods();
+  const [paymentMethod, setPaymentMethod] = useState("cod");
+  // A method that stopped being offered (switched off meanwhile) falls back to cash on delivery.
+  const chosenMethod = paymentMethod === "cod" || onlineMethods?.some((m) => m.key === paymentMethod) ? paymentMethod : "cod";
 
   // Mount-only: fires once per checkout page visit, reading the cart
   // imperatively (rather than depending on the reactive `items` above) so
@@ -127,6 +131,7 @@ export default function CheckoutPage() {
         shipping_bd_upazila_id: values.shipping_bd_upazila_id ? Number(values.shipping_bd_upazila_id) : undefined,
         notes: values.notes || undefined,
         coupon_code: values.coupon_code || undefined,
+        payment_method: chosenMethod,
         items: items.map((item) => ({
           product_id: item.productId,
           product_variant_id: item.variantId ?? undefined,
@@ -136,6 +141,12 @@ export default function CheckoutPage() {
       {
         onSuccess: (order) => {
           clear();
+          // Paying online: off to the provider's page. If it could not be opened the order still exists;
+          // the confirmation page offers "Pay now" again.
+          if (order.payment?.redirect_url) {
+            window.location.assign(order.payment.redirect_url);
+            return;
+          }
           router.push(`/order-confirmation/${order.uuid}`);
         },
       },
@@ -313,15 +324,33 @@ export default function CheckoutPage() {
           </Section>
 
           <Section step={3} title="Payment method">
-            <div className="flex items-center gap-3 border-2 border-shop-accent bg-shop-tint p-4">
-              <span className="flex size-5 items-center justify-center rounded-full bg-shop-accent text-shop-on-accent">
-                <Check className="size-3.5" />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-text-primary">Cash on Delivery</p>
-                <p className="text-xs text-text-secondary">Pay in cash when your order arrives. Check your parcel before paying.</p>
-              </div>
-            </div>
+            {[
+              { key: "cod", label: "Cash on Delivery", hint: "Pay in cash when your order arrives. Check your parcel before paying." },
+              ...(onlineMethods ?? []).map((m) => ({
+                key: m.key,
+                label: m.key === "sslcommerz" ? "Pay online (cards, bKash, Nagad)" : m.key === "stripe" ? "Pay by card" : m.label,
+                hint: m.test_mode ? "Test mode: no real money is taken." : "You will be taken to a secure payment page.",
+              })),
+            ].map((method) => {
+              const selected = chosenMethod === method.key;
+              return (
+                <button
+                  key={method.key}
+                  type="button"
+                  onClick={() => setPaymentMethod(method.key)}
+                  aria-pressed={selected}
+                  className={`flex w-full items-center gap-3 border-2 p-4 text-left ${selected ? "border-shop-accent bg-shop-tint" : "border-border"}`}
+                >
+                  <span className={`flex size-5 items-center justify-center rounded-full ${selected ? "bg-shop-accent text-shop-on-accent" : "border border-border"}`}>
+                    {selected ? <Check className="size-3.5" /> : null}
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold text-text-primary">{method.label}</span>
+                    <span className="block text-xs text-text-secondary">{method.hint}</span>
+                  </span>
+                </button>
+              );
+            })}
           </Section>
         </div>
 
@@ -392,11 +421,11 @@ export default function CheckoutPage() {
                 className="w-full rounded-none bg-shop-accent text-xs font-semibold uppercase tracking-wide text-shop-on-accent hover:bg-shop-accent-hover"
                 loading={checkout.isPending}
               >
-                Place order
+                {chosenMethod === "cod" ? "Place order" : "Place order and pay"}
               </Button>
               <p className="flex items-center justify-center gap-1.5 text-xs text-text-muted">
                 <Lock className="size-3.5" />
-                Cash on Delivery. You only pay when your order arrives.
+                {chosenMethod === "cod" ? "Cash on Delivery. You only pay when your order arrives." : "You pay on the next page, on the payment provider's secure site."}
               </p>
             </div>
           </div>

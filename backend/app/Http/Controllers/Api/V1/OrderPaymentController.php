@@ -64,16 +64,7 @@ class OrderPaymentController extends Controller
 
     private function recomputePaymentStatus(Order $order): void
     {
-        $order->load('items');
-        $paidMinor = (int) $order->payments()->sum('amount_amount');
-        $totalMinor = $order->totalAmount();
-
-        $status = match (true) {
-            $paidMinor <= 0 => 'unpaid',
-            $paidMinor < $totalMinor => 'partially_paid',
-            default => 'paid',
-        };
-
-        $order->update(['payment_status' => $status]);
+        // One rule for manual and online payments (refunds are negative rows).
+        app(\App\Services\Payments\MerchantPayments::class)->recomputePaymentStatus($order);
     }
 }

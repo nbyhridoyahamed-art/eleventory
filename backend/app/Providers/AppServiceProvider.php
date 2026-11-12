@@ -36,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
 
         // One tenant context per request/job (see App\Support\Tenancy\TenantContext).
         $this->app->scoped(TenantContext::class);
+        $this->app->scoped(\App\Services\Billing\PlanLimits::class);
 
         // The bot check in front of public sign-up; swap for a real provider when abuse starts.
         $this->app->bind(CaptchaVerifier::class, NullCaptchaVerifier::class);
@@ -94,7 +95,18 @@ class AppServiceProvider extends ServiceProvider
                 return Limit::none();
             }
 
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            $limits = [Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())];
+
+            // Phase 8: one busy (or abusive) shop cannot starve the rest. Every signed-in user of
+            // a shop also draws on that shop's shared budget, however many logins they spread
+            // requests across. Shoppers are covered by the per-address limit above.
+            $storeId = $request->user()?->current_store_id;
+
+            if (config('app.saas_mode') && $storeId) {
+                $limits[] = Limit::perMinute((int) config('app.tenant_requests_per_minute', 600))->by('tenant|'.$storeId);
+            }
+
+            return $limits;
         });
 
         // Public merchant sign-up. Named limiters, not "throttle:5,60": the

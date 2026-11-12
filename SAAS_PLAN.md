@@ -258,3 +258,91 @@ Not built / known limits:
 - [ ] Not exercised against real DNS or a real Caddy; needs the VPS
 
 Before switching on for live: the live shop's `stores.domain` is backfilled by the migration, so elevendollar.store keeps working. Run it with the Phase 3 settings.
+
+### Phase 5 - plans, billing, limits (built 2026-11-12)
+Built (backend, admin billing screen; payment gateway code written but not run against a real provider):
+- [x] `plans` (Starter / Growth / Pro, hidden `legacy`), `subscriptions` (one per organization), `invoices`. States: trialing -> active -> past_due -> suspended -> cancelled. **Prices and limits are placeholders** (Starter 999, Growth 2,499, Pro 5,999 BDT/month; yearly = 10 months): edit the `plans` rows to change them
+- [x] Sign-up starts a 14-day trial on Growth. Existing accounts are backfilled: trials keep their trial dates, everyone else (the live shop) lands on the unlimited `legacy` plan, so nothing changes for them
+- [x] No subscription = unlimited, and limits only apply when `SAAS_MODE` is on: the live single-store site behaves exactly as before
+- [x] Limits: products, staff, custom domains are hard (HTTP 402 `plan_limit_reached`); orders/month is tracked and shown but soft unless `BILLING_HARD_ORDER_LIMIT=true`. `online_payments` is a plan feature flag
+- [x] Choosing a plan: invoice -> checkout. Upgrade credits the unused part of the current period; downgrade is scheduled for period end and refused while usage exceeds the smaller plan; unpaid invoices are reused
+- [x] Gateways (`BILLING_GATEWAY`): `manual` (default; record a bank/bKash transfer with `php artisan billing:mark-paid INV-...`), `fake` (local/testing only), `sslcommerz` (needs the platform's own `SSLCOMMERZ_STORE_ID/PASSWORD`; payments are verified server-side with the provider and the amount/currency must match the invoice)
+- [x] `php artisan billing:run` (scheduled daily 02:00): trial end -> past_due with 3 days' grace -> suspended (store closed, `suspension_reason=billing`, owner can still sign in and pay; writes return 402 `subscription_inactive`); renewals; cancellations at period end; reminders. Payment reopens only shops that billing closed, never one the platform suspended
+- [x] API: public `GET /plans`; staff `GET /billing`, `POST /billing/subscribe`, `POST /billing/invoices/{id}/pay`, `POST /billing/cancel|resume` (settings.manage, own account only); callbacks `POST /billing/webhooks/sslcommerz`, `/billing/return/{success|fail|cancel}`
+- [x] Settings > Billing is a real screen (status, usage meters, plans with monthly/yearly toggle, invoices, pay now, cancel/keep). Verified in the browser with the fake gateway: Growth -> pay -> "Payment received" -> active
+- [x] Tests: `BillingTest` (9): trial/limits 402, idempotent payment, wrong-amount refusal, lapse -> suspend -> pay -> reopen, platform suspension not undone, cross-account invoice 404, fake gateway off outside dev
+
+Not built / known limits:
+- [ ] Billing emails are off (`BILLING_EMAILS=false`) because they are outward-facing; turn on once the wording is approved
+- [ ] SSLCommerz / bKash never exercised against the real provider; needs credentials and a public callback URL
+- [ ] Product CSV import is not counted against the product limit; order limit is not hard-enforced at checkout by default
+- [ ] Landing-page pricing section still static; should read `/plans`
+- [ ] Billing banner outside the Billing screen (e.g. dashboard header) not built
+- [ ] Platform-admin screens (Phase 7) to edit plans / record payments
+
+Before switching on for live: back up, run the migration (live org becomes `legacy`, unlimited), keep `BILLING_GATEWAY=manual` until SSLCommerz credentials exist, add `php artisan schedule:run` cron if not already.
+
+### Phase 6 - platform super-admin (built 2026-11-12)
+Built (API + admin screens under Platform in the sidebar; only people with the `Platform Admin` role see it, and the API enforces it, 403 for everyone else including shop owners and whenever `SAAS_MODE` is off):
+- [x] Tenant directory with search (name, address, owner email) and status filter; tenant page with plan, subscription state, usage vs limits, invoices, support notes
+- [x] Suspend (reason required) and restore. Platform suspensions are tagged `platform`, so a billing payment never reopens them
+- [x] Plan override with no payment (grant as active or as trial, N days) and per-account limit/feature overrides that beat the plan (`organizations.feature_overrides`)
+- [x] Support mode instead of impersonation: a platform admin opens a shop through "Open as support" (or the store switcher) and acts as themselves, so every action stays attributable to them. Entering a shop they are not a member of is audited, and a persistent banner shows while they are inside. No passwords or tokens are minted for shop owners
+- [x] Audit trail (`platform_audit_logs`): suspend, restore, plan override, overrides, enter, announcements, report decisions, role grants. Visible in Platform > Audit log
+- [x] Dashboard: shops, new in 30 days, trials, paying, MRR, collected, churn, trials ending, overdue, suspended, open reports, accounts by plan
+- [x] Abuse reports: public `POST /abuse-reports` (throttled), platform queue with "suspend shop", "mark handled", "dismiss"
+- [x] Announcements: platform writes them (info/warning/critical, optional dates, hide/show); every merchant dashboard shows the live ones
+- [x] `php artisan platform:grant <email> [--revoke]` gives or removes the role (the role was never seeded before)
+- [x] Tests: `PlatformAdminTest` (11): owners/anonymous refused, closed when SaaS mode is off, directory search, suspend/restore audited, plan override and platform suspension not undone by billing, overrides beat the plan, support entry audited and flagged, reports, announcements, MRR figures, audit log access
+
+Not built / known limits:
+- [ ] The storefront has no visible "Report this shop" link yet (the API is ready; needs a footer link on shop pages)
+- [ ] Per-tenant feature flags exist as overrides of the plan's features only (`online_payments` today); a general flag registry arrives when more features need switching
+- [ ] No email to the shop owner on suspension (outward-facing; wording to be agreed)
+- [ ] MRR/churn are calculated from current subscriptions, not a historical series (no trend charts)
+- [ ] No two-person approval or IP allow-list for platform admins; consider 2FA before the live launch
+
+Before switching on for live: run the migration, then `php artisan platform:grant <your email>`; nothing here changes the live single-store site while `SAAS_MODE` is off.
+
+### Phase 7 - merchant payments (built 2026-11-12)
+Each shop takes money into its own provider account. Settings > Payments (owners with the settings permission); storefront checkout offers the enabled methods next to Cash on Delivery.
+- [x] Per-store gateway settings (`store_payment_gateways`): enable, test mode, credentials stored encrypted, never returned by the API (blank secret on save keeps the saved one); webhook URL shown for copying
+- [x] Providers: SSLCommerz (hosted page; covers cards, bKash, Nagad, Rocket, banks), Stripe (Checkout Session), and a `fake` gateway that only exists in local/testing
+- [x] Hosted-checkout flow: order is created, then `POST storefront/orders/{uuid}/pay` or the checkout response gives a redirect URL; shopper returns to `checkout/payment-result`, which polls while the webhook is pending. Unpaid online orders show a "Pay now" button on the confirmation page
+- [x] Reconciliation (`payment_attempts`): provider result is verified server-side (SSLCommerz validation API with the shop's own credentials; Stripe webhook HMAC with 300 s tolerance, bad signature = 400), then settled exactly once under a row lock into a `Payment` row. Amount or currency not matching the attempt marks it `mismatch` and records nothing as paid
+- [x] Refunds: `POST orders/{order}/payments/refund` (admin order page > Payments > Refund) sends the refund through the same provider first, then records a negative Payment; the order becomes partially_refunded / refunded. Return flow with refund method `original_payment` uses the same path
+- [x] Test mode: flagged "TEST" in the Payment note; Stripe needs test keys in test mode
+- [x] Plan gate: `online_payments` feature (Growth and up) checked when enabling, when listing methods and when starting a payment
+- [x] Return URL base is the request Origin only when it resolves to the same shop, otherwise FRONTEND_URL
+- [x] Tests: `MerchantPaymentsTest` (14); checkout/return/order-payment suites still green (96 related). Verified in the browser: enable test gateway, storefront checkout, "Payment received", admin Refund (paid 410 -> 310)
+
+Not built / known limits:
+- [ ] bKash direct and Nagad direct gateways are not built; they are reachable through SSLCommerz. Manual payment recording still exists for anything else
+- [ ] SSLCommerz and Stripe were only exercised against faked HTTP responses, never the real sandboxes. Do a sandbox run per provider before any merchant relies on them
+- [ ] Abandoned unpaid online orders keep their stock reserved (no expiry job yet)
+- [ ] SSLCommerz refunds rely on the bank transaction id saved at settlement
+- [ ] Stripe confirmation depends on the webhook; the return page only polls
+- [ ] Refund amount is entered through a browser prompt, not a proper dialog
+
+Before switching on for live: run the migration `2026_11_15_100000_create_merchant_payment_tables`; nothing changes for the live site while `SAAS_MODE` is off (no gateway rows exist, checkout stays COD only).
+
+### Phase 8 - infrastructure and scale (built 2026-11-12)
+Code that can be proven here is built and tested; the deployment files are written but **never run on a server** (no Docker on this machine). Nothing changes for the live cPanel site: with `SAAS_MODE` off, uploads keep their old folders and no limit applies.
+- [x] Tenant media layout: new uploads go to `tenants/{store_uuid}/<folder>/` on a configurable disk (`MEDIA_DISK`: local `public` or `s3`/R2); old files keep working (`MediaLibrary::url()` picks the disk by path). All storefront/admin image URLs go through it
+- [x] Storage quota: plan limit `storage_mb` (placeholders 1 GB / 10 GB / 50 GB, founding plan unlimited), checked before the file is written, 402 `plan_limit_reached`; shown on the billing screen and in the platform tenant overrides
+- [x] Per-shop rate limit: one shop's signed-in users share `TENANT_REQUESTS_PER_MINUTE` (default 600) on top of the per-user limit
+- [x] `GET /api/v1/health`: database, cache, queue backlog (dead worker) and, where required, scheduler heartbeat; 503 when degraded, names only (for uptime monitors)
+- [x] Per-shop backup: `tenant:export` (one shop or `--all`, encrypted, pruned, schedulable nightly) and `tenant:restore` (all-or-nothing, `--replace`, `--dry-run`). A test fails if a new table is neither covered nor declared global. Drilled against the real dev MariaDB: export of the flagship shop (40 populated tables, 201 orders) restored and rolled back cleanly
+- [x] Sentry hook (no-op until `sentry/sentry-laravel` is installed)
+- [x] `deploy/vps/`: docker-compose (caddy, web, api, worker, scheduler, mariadb, redis), Caddyfile, `.env.example`, `backup.sh` (encrypted dump, integrity check, retention, rclone copy-off), `RUNBOOK.md` (first deploy, CDN, monitoring, restore drill, SPF/DKIM/DMARC, cPanel migration sequence)
+- [x] Tests: `InfrastructureTest` (16): file layout, URLs, quota allow/refuse, usage, health (ok, scheduler, dead worker), backup coverage guard, round trip after data loss, refusal, dry run, isolation between shops, wrong key, commands
+
+Not built / known limits:
+- [ ] Docker/compose/Caddy/backup.sh untested on a real host; Redis behaviour (queue, limiter, sessions) not covered by tests
+- [ ] No script to move old media to tenant folders or a bucket
+- [ ] Shop exports exclude uploaded files, user accounts, plan and subscription; built in memory
+- [ ] Shoppers are rate-limited per IP only, not per shop (use Cloudflare rules)
+- [ ] No Horizon, no autoscaling, no DB replica; no frontend Sentry; no per-merchant sending domains (SPF/DKIM guidance covers the platform domain only)
+- [ ] Storage quota counts the `media` table; product images are media rows, but any file written outside `MediaLibrary` is not counted
+
+Before switching on for live: run migration `2026_11_16_100000_add_storage_limit_to_plans`; the rest is opt-in by env.

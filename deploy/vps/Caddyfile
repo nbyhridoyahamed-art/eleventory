@@ -1,0 +1,29 @@
+# Compose version of ../caddy/Caddyfile.saas.example. {$PLATFORM_DOMAIN} and {$TLS_ASK_SECRET}
+# come from .env (the caddy service loads it).
+{
+	on_demand_tls {
+		ask http://api:8080/api/v1/internal/tls-ask?secret={$TLS_ASK_SECRET}
+	}
+}
+
+{$PLATFORM_DOMAIN}, app.{$PLATFORM_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+}
+
+api.{$PLATFORM_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy api:8080
+}
+
+# Every store address (*.platform domain) and every merchant custom domain.
+https:// {
+	tls {
+		on_demand
+	}
+	encode zstd gzip
+	reverse_proxy web:3000 {
+		header_up Host {host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}

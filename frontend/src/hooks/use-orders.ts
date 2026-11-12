@@ -153,3 +153,20 @@ export function useRecordOrderPayment(orderId: number) {
     },
   });
 }
+
+/** Send money back to the shopper through the gateway they paid with. */
+export function useRefundOrderPayment(orderId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { amount: string; reason?: string }) => api.post(`/orders/${orderId}/payments/refund`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders", "detail", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      toast.success("Refund sent.");
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : "Could not send the refund.");
+    },
+  });
+}

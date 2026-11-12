@@ -22,6 +22,9 @@ use App\Support\DeliveryRateResolver;
 use App\Support\InsufficientStockException;
 use App\Support\Money;
 use App\Support\OrderPlacement;
+use App\Services\Payments\MerchantPayments;
+use App\Services\Tenancy\StoreResolver;
+use RuntimeException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Support\SafeNotification;
@@ -38,6 +41,11 @@ class CheckoutController extends StorefrontController
     {
         $store = $this->currentStore();
         $data = $request->validated();
+        $method = $data['payment_method'] ?? 'cod';
+
+        if ($method !== 'cod' && ! collect(app(MerchantPayments::class)->enabledFor($store->id))->contains('key', $method)) {
+            return ApiResponse::error('That payment method is not available at this shop.', [], 422);
+        }
 
         $resolved = $this->resolveItems($store, $data['items']);
 
@@ -58,7 +66,7 @@ class CheckoutController extends StorefrontController
         ));
 
         try {
-            $order = DB::transaction(function () use ($store, $data, $resolved, $warehouse, $currency, $subtotalMinor) {
+            $order = DB::transaction(function () use ($store, $data, $resolved, $warehouse, $currency, $subtotalMinor, $method) {
                 // Reused across repeat guest orders by phone number — never
                 // overwritten with a new name/email on an existing match, so
                 // typing someone else's real phone can't rewrite their record.
@@ -93,7 +101,7 @@ class CheckoutController extends StorefrontController
                     'customer_id' => $customer->id,
                     'warehouse_id' => $warehouse->id,
                     'status' => 'pending',
-                    'payment_method' => 'cod',
+                    'payment_method' => $method,
                     'source' => 'storefront',
                     'currency_code' => $currency,
                     'shipping_amount' => $shippingResolved['rate_amount'] ?? 0,
@@ -143,11 +151,63 @@ class CheckoutController extends StorefrontController
         SafeNotification::send($order->customer, new OrderPlacedNotification($order));
         SafeNotification::send($this->staffToNotify($store), new NewOrderPlacedNotification($order));
 
-        return ApiResponse::success(
-            new OrderResource($order->load(self::RELATIONS)),
-            'Order placed successfully.',
-            status: 201,
-        );
+        $payload = (new OrderResource($order->load(self::RELATIONS)))->resolve();
+
+        // Paying online: open the provider's page now. If it cannot be opened the order still exists
+        // and the shopper can retry from the confirmation page.
+        if ($method !== 'cod') {
+            $payload['payment'] = $this->startPayment($order, $method, $store);
+        }
+
+        return ApiResponse::success($payload, 'Order placed successfully.', status: 201);
+    }
+
+    /** Online methods this shop accepts (cash on delivery is always available and not listed). */
+    public function paymentMethods(): JsonResponse
+    {
+        return ApiResponse::success(app(MerchantPayments::class)->enabledFor($this->currentStore()->id), 'Payment methods fetched successfully.');
+    }
+
+    /** Pay (again) for an unpaid online order. */
+    public function pay(\Illuminate\Http\Request $request, string $uuid): JsonResponse
+    {
+        $store = $this->currentStore();
+        $provider = (string) $request->validate(['provider' => ['required', 'string', 'max:30']])['provider'];
+        $order = Order::query()->where('uuid', $uuid)->where('store_id', $store->id)->firstOrFail();
+
+        if ($order->payment_status === 'paid' || $order->status === 'cancelled') {
+            return ApiResponse::error('This order does not need a payment.', [], 422);
+        }
+
+        if (! collect(app(MerchantPayments::class)->enabledFor($store->id))->contains('key', $provider)) {
+            return ApiResponse::error('That payment method is not available at this shop.', [], 422);
+        }
+
+        $order->update(['payment_method' => $provider]);
+
+        return ApiResponse::success($this->startPayment($order, $provider, $store), 'Payment started.');
+    }
+
+    /** @return array{redirect_url: ?string, error: ?string} */
+    private function startPayment(Order $order, string $provider, Store $store): array
+    {
+        try {
+            return ['redirect_url' => app(MerchantPayments::class)->start($order, $provider, $this->returnBase($store)), 'error' => null];
+        } catch (RuntimeException $e) {
+            return ['redirect_url' => null, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Where to send the shopper after the payment page: the shop address their browser is on, but
+     * only when it genuinely belongs to this store (never an arbitrary Origin).
+     */
+    private function returnBase(Store $store): ?string
+    {
+        $origin = (string) request()->header('Origin');
+        $host = app(StoreResolver::class)->normalise($origin);
+
+        return $origin !== '' && $host && app(StoreResolver::class)->forHost($host)?->id === $store->id ? rtrim($origin, '/') : null;
     }
 
     /**

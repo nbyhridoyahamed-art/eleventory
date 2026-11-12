@@ -9,6 +9,7 @@ import {
   Package,
   SearchCheck,
   Settings,
+  ShieldCheck,
   ShoppingCart,
   TrendingUp,
   Truck,
@@ -20,6 +21,8 @@ export interface NavItem {
   icon: LucideIcon;
   /** Shown to everyone when omitted; otherwise requires at least one of these permissions. */
   anyPermission?: string[];
+  /** Only people with the Platform Admin role see this entry. */
+  platformOnly?: boolean;
 }
 
 /**
@@ -95,4 +98,5 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Settings,
     anyPermission: ["settings.manage", "users.view", "roles.view"],
   },
+  { label: "Platform", href: "/dashboard/platform", icon: ShieldCheck, platformOnly: true },
 ];

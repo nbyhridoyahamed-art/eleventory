@@ -44,6 +44,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'staff' => EnsureStaffUser::class,
             'tenant' => ResolveTenant::class,
             'customer' => EnsureCustomerUser::class,
+            'platform' => \App\Http\Middleware\EnsurePlatformAdmin::class,
+            'subscription' => \App\Http\Middleware\EnsureSubscriptionActive::class,
         ]);
 
         // Phase 21: a real global backstop (the named 'api' limiter is
@@ -59,6 +61,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Phase 8: error reporting to Sentry once `composer require sentry/sentry-laravel` is run and
+        // SENTRY_LARAVEL_DSN is set (deploy/vps/RUNBOOK.md). Nothing happens, and nothing breaks,
+        // until then.
+        if (class_exists(\Sentry\Laravel\Integration::class)) {
+            \Sentry\Laravel\Integration::handles($exceptions);
+        }
+
         $isApi = fn (Request $request) => $request->is('api/*') || $request->expectsJson();
 
         $exceptions->shouldRenderJsonWhen($isApi);
