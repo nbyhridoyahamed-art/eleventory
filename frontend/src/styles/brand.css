@@ -1,0 +1,90 @@
+/**
+ * The Eleventory brand look, scoped to `.surface-brand` so it never reaches a shop's storefront.
+ * Values come from brand/guide.html. Contrast ratios (WCAG, measured): ink on mist 13.2, slate on mist 5.0,
+ * off-white on teal 7.3, ink on coral 5.2, and in dark: text 14.6, muted 7.8, teal 8.0.
+ */
+.surface-brand {
+  --color-primary: #0b5d59;
+  --color-on-primary: #f6f9f8;
+  --color-accent: #ff6a4d;
+  --color-on-accent: #0a2e2c;
+  --color-success: #1e7a4c;
+  --color-warning: #8a5a00;
+  --color-danger: #b3261e;
+  --color-info: #1c5cab;
+
+  --color-background: #f1f4f3;
+  --color-surface: #f8faf9;
+  --color-surface-elevated: #ffffff;
+  --color-border: #d3ddd8;
+
+  --color-text-primary: #0a2e2c;
+  --color-text-secondary: #566d6b;
+  --color-text-muted: #566d6b;
+
+  --brand-ink: #0a2e2c;
+  --brand-rail: #0a2e2c;
+  --brand-rail-text: #e6efee;
+  --brand-rail-muted: #9db8b5;
+  --brand-grid: #dce4e2;
+  --brand-edge: #6f8683;
+  --brand-q1: #ddedea;
+  --brand-q2: #b5dad5;
+  --brand-q3: #85c2bb;
+  --brand-q4: #52a39b;
+  --brand-q5: #2a817a;
+  --brand-q6: #0b5d59;
+  --brand-q7: #073f3c;
+
+  font-family: var(--font-figtree), var(--font-anek), ui-sans-serif, system-ui, sans-serif;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+}
+
+:root[data-theme="dark"] .surface-brand {
+  --color-primary: #4fc3b8;
+  --color-on-primary: #06201f;
+  --color-accent: #ff7d63;
+  --color-on-accent: #0a2e2c;
+  --color-success: #5fd39a;
+  --color-warning: #e8b04a;
+  --color-danger: #ff8a80;
+  --color-info: #7fb6f0;
+
+  --color-background: #0a1f1e;
+  --color-surface: #102b29;
+  --color-surface-elevated: #153633;
+  --color-border: #1e3f3c;
+
+  --color-text-primary: #e6efee;
+  --color-text-secondary: #9db3b0;
+  --color-text-muted: #8aa3a0;
+
+  --brand-ink: #e6efee;
+  --brand-rail: #071918;
+  --brand-grid: #1b3835;
+  --brand-edge: #5e8480;
+  --brand-q1: #12302e;
+  --brand-q2: #17504b;
+  --brand-q3: #1f746d;
+  --brand-q4: #2e9a91;
+  --brand-q5: #4fc3b8;
+  --brand-q6: #86ddd3;
+  --brand-q7: #bdf0e9;
+}
+
+.surface-brand .font-display,
+.surface-brand h1.brand-display,
+.surface-brand h2.brand-display {
+  font-family: var(--font-bricolage), var(--font-anek), ui-sans-serif, system-ui, sans-serif;
+}
+
+.surface-brand .font-mono {
+  font-family: var(--font-jbmono), ui-monospace, Consolas, monospace;
+}
+
+.surface-brand :lang(bn),
+.surface-brand [lang="bn"] {
+  font-family: var(--font-anek), var(--font-figtree), sans-serif;
+  line-height: 1.75;
+}

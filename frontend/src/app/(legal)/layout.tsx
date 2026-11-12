@@ -1,3 +1,5 @@
+import { brandFontClasses } from "@/lib/brand-fonts";
+import { BrandSurface } from "@/components/shared/brand-surface";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -12,7 +14,7 @@ export default function PlatformInfoLayout({ children }: { children: React.React
   if (!MULTI_STORE) notFound();
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <BrandSurface fontClassName={brandFontClasses} className="flex flex-col">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
           <Link href="/" aria-label="Home">
@@ -27,6 +29,6 @@ export default function PlatformInfoLayout({ children }: { children: React.React
         </div>
       </header>
       <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">{children}</main>
-    </div>
+    </BrandSurface>
   );
 }

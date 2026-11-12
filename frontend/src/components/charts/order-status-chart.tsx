@@ -1,9 +1,8 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Donut } from "@/components/charts/donut";
 import type { OrderStatusBreakdown } from "@/types/dashboard";
 
 interface OrderStatusChartProps {
@@ -11,28 +10,16 @@ interface OrderStatusChartProps {
   isLoading: boolean;
 }
 
-const STATUS_LABELS: Record<keyof OrderStatusBreakdown, string> = {
-  pending: "Pending",
-  processing: "Processing",
-  shipped: "Shipped",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-};
-
-const STATUS_COLORS: Record<keyof OrderStatusBreakdown, string> = {
-  pending: "var(--color-text-muted)",
-  processing: "var(--color-info)",
-  shipped: "var(--color-warning)",
-  delivered: "var(--color-success)",
-  cancelled: "var(--color-danger)",
-};
+const STATUSES: Array<{ key: keyof OrderStatusBreakdown; label: string; color: string }> = [
+  { key: "pending", label: "Pending", color: "var(--brand-edge, #6f8683)" },
+  { key: "processing", label: "Processing", color: "#2a78d6" },
+  { key: "shipped", label: "Shipped", color: "#f7b538" },
+  { key: "delivered", label: "Delivered", color: "var(--color-primary)" },
+  { key: "cancelled", label: "Cancelled", color: "var(--color-danger)" },
+];
 
 export function OrderStatusChart({ data, isLoading }: OrderStatusChartProps) {
-  const chartData = (Object.keys(STATUS_LABELS) as Array<keyof OrderStatusBreakdown>).map((status) => ({
-    status,
-    label: STATUS_LABELS[status],
-    count: data?.[status] ?? 0,
-  }));
+  const slices = STATUSES.map((status) => ({ ...status, value: data?.[status.key] ?? 0 }));
 
   return (
     <Card>
@@ -40,43 +27,7 @@ export function OrderStatusChart({ data, isLoading }: OrderStatusChartProps) {
         <CardTitle>Orders by status</CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <Skeleton className="h-64 w-full" />
-        ) : (
-          <ResponsiveContainer width="100%" height={256}>
-            <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-              <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" vertical={false} />
-              <XAxis
-                dataKey="label"
-                stroke="var(--color-text-muted)"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                stroke="var(--color-text-muted)"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                allowDecimals={false}
-                width={32}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "var(--color-surface)",
-                  borderColor: "var(--color-border)",
-                  borderRadius: "0.5rem",
-                  fontSize: "0.8125rem",
-                }}
-              />
-              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                {chartData.map((entry) => (
-                  <Cell key={entry.status} fill={STATUS_COLORS[entry.status]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        )}
+        {isLoading ? <Skeleton className="h-64 w-full" /> : <Donut slices={slices} totalLabel="orders" />}
       </CardContent>
     </Card>
   );

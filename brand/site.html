@@ -1,0 +1,430 @@
+<title>Eleventory Site Design</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;600;800&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a dark teal scroll story opens the page (sticky 3D scene, four chapters), then calm mist bands.
+   Coral appears once per band, as the single action or the single sale. Sunflower is a rare highlight. */
+:root{
+  --canvas:#F1F4F3; --card:#F8FAF9; --ink:#0A2E2C; --muted:#566D6B; --line:#D3DDDB; --edge:#6F8683;
+  --teal:#0B5D59; --teal-soft:#DDEDEA; --coral:#FF6A4D; --coral-text:#BC381F; --sun:#F7B538; --sun-soft:#FDEFCB;
+  --band:#0A2E2C; --band-2:#0F3E3B; --band-text:#F6F9F8; --band-muted:#A9C2BF; --on-teal:#F6F9F8; --grid:#DCE4E2;
+  --accent:#0B5D59; --accent-soft:#DDEDEA;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif; --body:"Figtree","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace; --bn:"Anek Bangla","Noto Sans Bengali","Nirmala UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0A1F1E; --card:#102B29; --ink:#E6EFEE; --muted:#9DB3B0; --line:#1E3F3C; --edge:#5E8480;
+  --teal:#4FC3B8; --teal-soft:#14403D; --coral:#FF7D63; --coral-text:#FF8F78; --sun-soft:#3A2D0E; --band:#071918; --band-2:#0C2826; --grid:#1B3835; --on-teal:#06201F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --canvas:#0A1F1E; --card:#102B29; --ink:#E6EFEE; --muted:#9DB3B0; --line:#1E3F3C; --edge:#5E8480;
+  --teal:#4FC3B8; --teal-soft:#14403D; --coral:#FF7D63; --coral-text:#FF8F78; --sun-soft:#3A2D0E; --band:#071918; --band-2:#0C2826; --grid:#1B3835; --on-teal:#06201F; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--canvas);color:var(--ink);font:400 17px/1.6 var(--body)}
+body.bn{font-family:var(--bn);line-height:1.75}
+h1,h2,h3,h4{font-family:var(--display);margin:0;line-height:1.08;text-wrap:balance}
+body.bn h1,body.bn h2,body.bn h3,body.bn h4{font-family:var(--bn);line-height:1.25}
+p{margin:0 0 14px;max-width:62ch}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+.tag{font:600 12px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:14px}
+h2{font-size:clamp(30px,4.4vw,52px);font-weight:800;letter-spacing:-.02em;margin-bottom:14px}
+.lede{font-size:19px;color:var(--muted);max-width:56ch}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:12px;padding:14px 22px;font:700 16px var(--body);text-decoration:none;cursor:pointer}
+.btn.coral{background:var(--coral);color:#0A2E2C}
+.btn.line{background:transparent;color:inherit;box-shadow:inset 0 0 0 1.5px currentColor}
+@media (prefers-reduced-motion:no-preference){.btn{transition:transform .15s}.btn:hover{transform:translateY(-2px)}}
+/* nav */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .25s}
+.nav .in{display:flex;align-items:center;gap:22px;height:70px}
+.nav.solid{background:color-mix(in srgb,var(--band) 92%,transparent);backdrop-filter:blur(10px)}
+.nav,.nav a{color:var(--band-text)}
+.nav .lg svg{width:168px;height:auto;display:block}
+.nav .links{display:flex;gap:26px;margin-left:30px;font:600 15px var(--body)}
+.nav .links a{text-decoration:none;opacity:.86}.nav .links a:hover{opacity:1}
+.nav .sp{flex:1}
+.nav .tg{background:transparent;border:1.5px solid rgba(255,255,255,.35);color:var(--band-text);border-radius:10px;padding:7px 12px;font:600 13px var(--body);cursor:pointer}
+.nav .btn{padding:10px 16px;font-size:15px}
+@media (max-width:900px){.nav .links,.nav .si{display:none}.nav .in{gap:10px}.nav .lg svg{width:118px}.nav .tg{padding:6px 8px;font-size:12px}.nav .btn{padding:8px 12px;font-size:14px}}
+/* story */
+.story{height:430vh;position:relative;background:var(--band);color:var(--band-text)}
+.stick{position:sticky;top:0;height:100vh;min-height:620px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:center;gap:10px;padding-top:70px}
+.stick:before{content:"";position:absolute;inset:0;background:radial-gradient(60% 60% at 70% 45%,rgba(79,195,184,.22),transparent 70%),radial-gradient(40% 40% at 20% 90%,rgba(255,106,77,.1),transparent 70%);pointer-events:none}
+.copy{position:relative;padding-left:max(18px,calc((100vw - 1160px)/2 + 18px));padding-right:18px;display:grid}
+.chap{grid-area:1/1;opacity:0;transform:translateY(18px);transition:opacity .5s,transform .5s;pointer-events:none;align-self:center}
+.story[data-ch="1"] .chap[data-n="1"],.story[data-ch="2"] .chap[data-n="2"],.story[data-ch="3"] .chap[data-n="3"],.story[data-ch="4"] .chap[data-n="4"]{opacity:1;transform:none;pointer-events:auto}
+.chap h1{font-size:clamp(38px,5.4vw,72px);font-weight:800;letter-spacing:-.025em;margin-bottom:18px}
+.chap p{font-size:19px;color:var(--band-muted);max-width:44ch}
+.chap .row{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.dots{display:flex;gap:10px;margin-top:34px}
+.dots i{width:34px;height:4px;border-radius:2px;background:rgba(255,255,255,.2);transition:background .3s}
+.story[data-ch="1"] .dots i:nth-child(-n+1),.story[data-ch="2"] .dots i:nth-child(-n+2),.story[data-ch="3"] .dots i:nth-child(-n+3),.story[data-ch="4"] .dots i{background:var(--coral)}
+.hint{margin-top:18px;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--band-muted)}
+/* 3D scene */
+.stage{position:relative;height:100%;perspective:1500px;perspective-origin:50% 40%;display:grid;place-items:center}
+.scene{position:relative;width:700px;height:470px;transform-style:preserve-3d;transform:scale(var(--sc,1)) rotateX(calc(18deg - var(--p,0)*10deg)) rotateY(calc(-30deg + var(--p,0)*56deg));will-change:transform}
+.scene>*{position:absolute;transform-style:preserve-3d}
+.floor{left:-40px;top:300px;width:780px;height:300px;transform:rotateX(90deg) translateZ(-40px);background:repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 1px,transparent 1px 52px),repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 52px);border-radius:20px;mask-image:radial-gradient(closest-side,#000 55%,transparent)}
+.win{left:10px;top:70px;width:390px;height:270px;border-radius:16px;background:#F1F4F3;color:#0A2E2C;box-shadow:0 30px 60px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.1);overflow:hidden;transform:translateZ(0)}
+.win .bar{height:30px;background:#DDE6E4;display:flex;gap:6px;align-items:center;padding:0 12px}
+.win .bar i{width:9px;height:9px;border-radius:50%;background:#9DB3B0}
+.win .bar b{margin-left:10px;font:600 11px var(--mono);color:#566D6B;background:#F8FAF9;border-radius:6px;padding:3px 10px}
+.win .gridp{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+.tile{border-radius:12px;padding:8px;position:relative;height:96px;display:flex;flex-direction:column;justify-content:space-between}
+.tile svg{width:44px;height:44px;align-self:center}
+.tile span{font:700 11px var(--body);display:flex;justify-content:space-between}
+.tile .fl{position:absolute;bottom:7px;left:7px;font:700 9px var(--mono);background:var(--coral);color:#0A2E2C;border-radius:999px;padding:3px 7px;opacity:0;transform:scale(.6);transition:.4s}
+.story[data-ch="3"] .tile .fl,.story[data-ch="4"] .tile .fl{opacity:1;transform:none}
+@media (prefers-reduced-motion:no-preference){.tile{animation:pop .6s cubic-bezier(.2,.8,.2,1) both}.tile:nth-child(2){animation-delay:.1s}.tile:nth-child(3){animation-delay:.2s}.tile:nth-child(4){animation-delay:.3s}}
+@keyframes pop{from{opacity:0;transform:scale(.6) translateY(20px)}}
+.win .addc{margin:0 12px;background:var(--coral);color:#0A2E2C;font:700 12px var(--body);border-radius:9px;padding:8px;text-align:center}
+.phone{left:292px;top:-10px;width:170px;height:330px;border-radius:26px;background:#0A2E2C;border:6px solid #1c4a47;box-shadow:0 30px 60px rgba(0,0,0,.45);transform:translateZ(150px) translateY(40px);opacity:0;transition:opacity .6s,transform .8s cubic-bezier(.2,.8,.2,1);overflow:hidden}
+.story[data-ch="2"] .phone,.story[data-ch="3"] .phone{opacity:1;transform:translateZ(150px)}
+.story[data-ch="4"] .phone{opacity:.0;transform:translateZ(150px) translateY(-40px)}
+.phone .n{margin:14px 10px 0;background:#F6F9F8;color:#0A2E2C;border-radius:12px;padding:10px;font-size:11px;line-height:1.35}
+.phone .n b{display:block;font:800 15px var(--display)}
+.phone .n .k{display:inline-block;font:700 9px var(--mono);background:#e87ba4;color:#fff;border-radius:999px;padding:2px 7px;margin-bottom:5px}
+.phone .n2{opacity:.8;transform:scale(.94)}
+.bars3{left:420px;top:60px;width:280px;height:280px}
+.b3{position:absolute;bottom:0;width:30px;height:calc(var(--h)*1px*var(--g,.4));transform-style:preserve-3d;transition:height .9s cubic-bezier(.2,.8,.2,1)}
+.b3 i{position:absolute;display:block;background:var(--c,#F6F9F8);transition:background .6s}
+.b3 .f{inset:0;transform:translateZ(15px)}
+.b3 .r{top:0;bottom:0;left:calc(100% - 15px);width:30px;transform:rotateY(90deg);filter:brightness(.78)}
+.b3 .t{left:0;right:0;top:-15px;height:30px;transform:rotateX(90deg);filter:brightness(1.12)}
+.story[data-ch="1"]{--g:.38}.story[data-ch="2"]{--g:.6}.story[data-ch="3"]{--g:.82}.story[data-ch="4"]{--g:1}
+.story[data-ch="1"] .b3:last-child{--c:#F6F9F8}
+.story:not([data-ch="1"]) .b3:last-child{--c:#FF6A4D}
+.stock{left:424px;top:20px;font:600 11px var(--mono);color:var(--band-muted);opacity:0;transition:.5s}
+.story[data-ch="3"] .stock{opacity:1}
+.parcel{left:250px;top:250px;width:130px;height:110px;transform:translateZ(200px) translateY(-200px) rotateY(0);opacity:0;transition:transform 1s cubic-bezier(.2,.8,.2,1),opacity .5s}
+.story[data-ch="4"] .parcel{opacity:1;transform:translateZ(200px) translateY(0) rotateY(var(--spin,0deg))}
+.parcel i{position:absolute;display:block;border:2px solid #A9743F;background:#D9A36A;backface-visibility:hidden}
+.parcel .a{width:130px;height:110px;transform:translateZ(55px)}
+.parcel .b{width:130px;height:110px;transform:rotateY(180deg) translateZ(55px)}
+.parcel .c{width:110px;height:110px;left:10px;transform:rotateY(90deg) translateZ(65px);background:#C8905A}
+.parcel .d{width:110px;height:110px;left:10px;transform:rotateY(-90deg) translateZ(65px);background:#C8905A}
+.parcel .e{width:130px;height:110px;top:0;height:110px;transform:rotateX(90deg) translateZ(55px) ;background:#E3B27A}
+.parcel .a:after{content:"";position:absolute;left:42%;width:16%;top:0;bottom:0;background:rgba(255,255,255,.35)}
+.parcel .lab{position:absolute;left:12px;bottom:10px;background:#F6F9F8;color:#0A2E2C;font:700 10px var(--mono);padding:4px 6px;border-radius:4px;z-index:2}
+.courier{left:230px;top:365px;background:#F6F9F8;color:#0A2E2C;border-radius:999px;padding:8px 14px;font:700 12px var(--body);opacity:0;transform:translateZ(240px);transition:.5s .4s}
+.story[data-ch="4"] .courier{opacity:1}
+@media (prefers-reduced-motion:no-preference){.story[data-ch="4"] .parcel{animation:bob 3s ease-in-out infinite}@keyframes bob{50%{margin-top:-10px}}}
+@media (max-width:900px){
+  .stick{grid-template-columns:1fr;grid-template-rows:auto 1fr;align-items:start;padding-top:80px;min-height:560px}
+  .copy{padding:0 18px}.chap h1{font-size:34px;margin-bottom:10px}.chap p{font-size:16px}.chap .row{margin-top:14px}.dots,.hint{display:none}
+  .scene{--sc:.52}.stage{align-self:center;margin-top:-30px}
+}
+@media (prefers-reduced-motion:reduce){.story{height:auto}.stick{position:relative;height:auto;padding-bottom:60px}.scene{transform:scale(var(--sc,1)) rotateX(14deg) rotateY(-14deg)}.chap{display:none}.chap[data-n="1"]{display:block;opacity:1;transform:none}.dots,.hint{display:none}.story{--g:1}.story .b3:last-child{--c:#FF6A4D}}
+/* marquee */
+.mq{background:var(--band-2);color:var(--band-muted);overflow:hidden;border-top:1px solid rgba(255,255,255,.08)}
+.mq .track{display:flex;gap:40px;padding:18px 0;white-space:nowrap;width:max-content;font:600 15px var(--body)}
+.mq span{display:inline-flex;align-items:center;gap:10px}.mq span:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--coral)}
+@media (prefers-reduced-motion:no-preference){.mq .track{animation:mq 38s linear infinite}@keyframes mq{to{transform:translateX(-50%)}}}
+/* sections */
+section.s{padding-block:clamp(64px,9vw,120px)}
+/* bento */
+.bento{display:grid;gap:18px;grid-template-columns:repeat(6,minmax(0,1fr));margin-top:38px;perspective:1200px}
+.bc{grid-column:span 2;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;min-height:250px;display:flex;flex-direction:column;gap:10px;transform-style:preserve-3d;transition:transform .25s ease,box-shadow .25s;will-change:transform}
+.bc.w3{grid-column:span 3}.bc.w4{grid-column:span 4}
+.bc:hover{box-shadow:0 24px 50px rgba(10,46,44,.16)}
+.bc h3{font-size:22px;font-weight:700}.bc p{color:var(--muted);font-size:15.5px;margin:0}
+.bc .vis{margin-top:auto;transform:translateZ(30px)}
+@media (max-width:900px){.bento{grid-template-columns:1fr 1fr}.bc,.bc.w3,.bc.w4{grid-column:span 2}}
+@media (max-width:620px){.bento{grid-template-columns:1fr}.bc,.bc.w3,.bc.w4{grid-column:span 1}}
+.sw{display:flex;gap:8px}.sw i{width:30px;height:30px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 1.5px var(--line)}
+.mb{display:grid;gap:8px}.mb div{height:12px;border-radius:6px;background:var(--grid);overflow:hidden}.mb i{display:block;height:100%;border-radius:6px;background:var(--teal)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{font:600 13px var(--body);padding:6px 12px;border-radius:999px;background:var(--teal-soft);color:var(--ink)}
+.chip.kb{background:#e87ba4;color:#fff}.chip.n{background:#eb6834;color:#fff}.chip.c{background:#1baf7a;color:#fff}.chip.s{background:var(--sun);color:#0A2E2C}
+.tl{display:flex;align-items:center;gap:0}.tl i{width:14px;height:14px;border-radius:50%;background:var(--teal);flex:none}.tl b{height:3px;flex:1;background:var(--teal)}.tl i.o,.tl b.o{background:var(--grid)}
+.minic{width:100%;height:80px}
+/* journey */
+.jr{background:var(--band);color:var(--band-text);position:relative}
+.jr .lede{color:var(--band-muted)}.jr .tag{color:var(--band-muted)}
+.jrg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;margin-top:40px;align-items:start}
+.steps{display:grid;gap:12px}
+.step{border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:20px 22px;cursor:pointer;background:rgba(255,255,255,.03);transition:background .3s,border-color .3s;min-height:128px;text-align:left;color:inherit;font:inherit;width:100%}
+.step h3{font-size:22px;display:flex;gap:12px;align-items:center}
+.step h3 em{font:600 12px var(--mono);font-style:normal;color:var(--band-muted)}
+.step p{color:var(--band-muted);font-size:15.5px;margin:8px 0 0}
+.step[aria-pressed="true"]{background:rgba(255,255,255,.09);border-color:var(--coral)}
+.step .sel{display:none;margin-top:10px;font:600 13px var(--body);color:var(--sun)}.step[aria-pressed="true"] .sel{display:block}
+.phwrap{position:sticky;top:96px;perspective:1200px;display:grid;place-items:center;height:620px}
+.ph3{width:290px;height:580px;border-radius:44px;background:#0A1F1E;border:9px solid #234f4b;box-shadow:0 40px 80px rgba(0,0,0,.5);transform:rotateY(calc(var(--yy,-14deg))) rotateX(4deg);transition:transform .6s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden;color:#0A2E2C}
+.ph3:before{content:"";position:absolute;top:8px;left:50%;width:90px;height:22px;margin-left:-45px;background:#0A1F1E;border-radius:12px;z-index:3}
+.scr{position:absolute;inset:0;background:#F1F4F3;padding:46px 16px 16px;opacity:0;transform:translateX(24px);transition:opacity .45s,transform .45s;pointer-events:none;font-size:13px;line-height:1.4;overflow:hidden}
+.scr.on{opacity:1;transform:none}
+.scr h4{font:800 18px var(--display);margin-bottom:8px}
+.scr .pr{background:#fff;border-radius:12px;padding:10px;display:flex;gap:10px;align-items:center;margin-bottom:8px;box-shadow:0 0 0 1px #D3DDDB}
+.scr .pr .im{width:44px;height:44px;border-radius:10px;flex:none}
+.scr .big{background:var(--coral);color:#0A2E2C;font:800 14px var(--body);text-align:center;padding:12px;border-radius:12px;margin-top:10px}
+.scr .pay{display:flex;justify-content:space-between;align-items:center;border-radius:12px;padding:12px;margin-bottom:8px;font-weight:700;color:#fff}
+.scr .tlv{border-left:3px solid #0B5D59;padding-left:12px;margin:6px 0 0 6px}.scr .tlv div{position:relative;margin-bottom:14px}.scr .tlv div:before{content:"";position:absolute;left:-18px;top:4px;width:11px;height:11px;border-radius:50%;background:#0B5D59}.scr .tlv .o{opacity:.4}
+.scr .fb{background:#fff;border-radius:12px;padding:12px;box-shadow:0 0 0 1px #D3DDDB}
+@media (max-width:900px){.jrg{grid-template-columns:1fr}.phwrap{position:relative;top:0;order:-1;height:520px}.ph3{transform:scale(.85)}}
+/* vendors */
+.tabs{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+.tabs button{border:1.5px solid var(--edge);background:transparent;color:var(--ink);border-radius:999px;padding:10px 18px;font:600 15px var(--body);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
+.vg{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:40px;margin-top:30px;align-items:center}
+.vg ul{padding:0;margin:18px 0;list-style:none;display:grid;gap:12px}.vg li{display:flex;gap:12px}.vg li:before{content:"";width:10px;height:10px;border-radius:3px;background:var(--accent);margin-top:8px;flex:none}
+.shop{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 30px 60px rgba(10,46,44,.12);transform:perspective(1200px) rotateY(-6deg) rotateX(2deg);transition:transform .4s}
+.shop:hover{transform:perspective(1200px) rotateY(0) rotateX(0)}
+.shop .hd{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:var(--accent);color:var(--on-accent,#F6F9F8);font:800 18px var(--display)}
+.shop .hd span{font:600 13px var(--body);opacity:.9}
+.shop .gr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:16px}
+.shop .it{border-radius:12px;overflow:hidden;background:var(--canvas);border:1px solid var(--line)}
+.shop .it .im{aspect-ratio:1/1;display:grid;place-items:center;position:relative}
+.shop .it .im svg{width:50%;height:auto}
+.shop .it .m{padding:8px 10px 10px;font-size:13px}.shop .it .m b{display:block;font:700 15px var(--display)}
+.pick{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
+.pick button{width:34px;height:34px;border-radius:50%;border:3px solid var(--canvas);box-shadow:0 0 0 1.5px var(--edge);cursor:pointer;padding:0}
+.pick button[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.pick span{font-size:14px;color:var(--muted)}
+@media (max-width:900px){.vg{grid-template-columns:1fr}}
+/* dashboard teaser */
+.dt{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.fr{perspective:1600px;margin-top:40px}
+.frame{background:var(--band);border-radius:20px;padding:14px;box-shadow:0 50px 90px rgba(10,46,44,.3);transform:rotateX(calc(14deg - var(--dp,0)*14deg)) rotateY(calc(-8deg + var(--dp,0)*8deg));transform-origin:50% 100%;transition:transform .1s linear}
+.frame .scr2{background:var(--canvas);border-radius:12px;padding:18px;display:grid;gap:14px;grid-template-columns:repeat(4,minmax(0,1fr))}
+.k{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.k small{color:var(--muted);font-size:12.5px;display:block}.k b{font:800 24px var(--display)}.k i{font:600 11px var(--mono);color:#1E7A4C;font-style:normal;display:block}
+.k.w2{grid-column:span 2}.k.w4{grid-column:span 4}
+@media (max-width:700px){.frame .scr2{grid-template-columns:1fr 1fr}.k.w2,.k.w4{grid-column:span 2}}
+.row2{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px;align-items:center}
+/* pricing */
+.pg{display:grid;gap:18px;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:36px}
+.pc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:12px}
+.pc.hot{background:var(--band);color:var(--band-text);border-color:var(--band)}
+.pc h3{font-size:22px}.pc .pr{font:800 40px var(--display);letter-spacing:-.02em}.pc .pr small{font:500 15px var(--body);opacity:.7}
+.pc ul{list-style:none;padding:0;margin:6px 0 10px;display:grid;gap:9px;font-size:15.5px}.pc li:before{content:"✓";margin-right:10px;color:var(--teal);font-weight:800}.pc.hot li:before{color:var(--coral)}
+.pc .btn{margin-top:auto;justify-content:center}
+.draft{font:600 11px var(--mono);letter-spacing:.06em;color:var(--muted);margin-top:14px}
+@media (max-width:900px){.pg{grid-template-columns:1fr}}
+/* faq */
+details{border-bottom:1px solid var(--line);padding:18px 0}
+summary{cursor:pointer;font:700 20px var(--display);list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"+";font:600 26px var(--body);color:var(--teal)}
+details[open] summary:after{content:"−"}
+details p{margin:12px 0 0;color:var(--muted)}
+/* cta */
+.cta{background:var(--band);color:var(--band-text);padding-block:clamp(70px,10vw,130px);overflow:hidden;position:relative}
+.cta h2{font-size:clamp(34px,6vw,72px)}.cta p{color:var(--band-muted);font-size:19px}
+.tally{display:flex;gap:12px;align-items:flex-end;margin-top:44px}.tally i{display:block;width:26px;border-radius:7px;background:var(--band-text);opacity:.9;transform-origin:bottom}.tally i.hot{background:var(--coral);opacity:1}
+@media (prefers-reduced-motion:no-preference){.tally i{animation:rise 1.2s cubic-bezier(.2,.8,.2,1) both}@keyframes rise{from{transform:scaleY(.1)}}}
+footer{background:var(--band);color:var(--band-muted);padding-block:44px;font-size:14.5px;border-top:1px solid rgba(255,255,255,.1)}
+footer .fg{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center}footer svg{width:150px;height:auto}footer a{margin-right:20px;text-decoration:none}
+.themeb{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:60;font:600 13px var(--body);background:var(--ink);color:var(--canvas);border:0;border-radius:999px;padding:10px 16px;cursor:pointer}
+</style>
+
+<header class="nav" id="nav"><div class="wrap in">
+  <a class="lg" href="#top" aria-label="Eleventory home"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2640 518" role="img" aria-label="Eleventory"><g transform="translate(0 0) scale(1) translate(-281 -281)"><defs><mask id="e5m_1" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1080"><rect width="1080" height="1080" fill="#fff"/><circle cx="540" cy="540" r="209" fill="#000"/><polygon points="540 501 1100 1061 1100 1163 540 603" fill="#000"/></mask><clipPath id="e5c_1"><circle cx="540" cy="540" r="174"/></clipPath></defs><g fill="#F6F9F8"><g mask="url(#e5m_1)"><path d="M336 281H540A259 259 0 0 1 540 799H336A55 55 0 0 1 281 744V336A55 55 0 0 1 336 281Z"/><polygon points="666 766 735 799 652 715"/></g><circle cx="540" cy="540" r="180" fill="none" stroke="#F6F9F8" stroke-width="12"/><g clip-path="url(#e5c_1)"><polygon points="417 575 516 486 516 800 441 800 441 575"/><polygon points="541 528 640 440 640 800 565 800 565 528"/></g></g></g><g transform="translate(621.6 0) scale(2.4549763033175354)" fill="#F6F9F8" stroke="#F6F9F8" stroke-linejoin="miter" stroke-linecap="butt"><g stroke="none"></g><g><g transform="translate(0 0)"><path d="M10.5 0V100M0 10.5H60M0 50H52.8M0 89.5H60" fill="none" stroke-width="21"/></g><g transform="translate(73 0)"><path d="M10.5 0V100M0 89.5H56.00000000000001" fill="none" stroke-width="21"/></g><g transform="translate(142 0)"><path d="M10.5 0V100M0 10.5H60M0 50H52.8M0 89.5H60" fill="none" stroke-width="21"/></g><g transform="translate(215 0)"><polygon points="0 0 24.78 0 53.39 100 28.61 100"/><polygon points="57.22 0 82 0 53.39 100 28.61 100"/></g><g transform="translate(310 0)"><path d="M10.5 0V100M0 10.5H60M0 50H52.8M0 89.5H60" fill="none" stroke-width="21"/></g><g transform="translate(383 0)"><rect x="0" y="0" width="21" height="100"/><rect x="53" y="0" width="21" height="100"/><polygon points="0 0 27.26 0 74 100 46.74 100"/></g><g transform="translate(470 0)"><path d="M0 10.5H64M32 0V100" fill="none" stroke-width="21"/></g><g transform="translate(547 0)"><circle cx="50" cy="50" r="39.5" fill="none" stroke-width="21"/></g><g transform="translate(660 0)"><rect x="0" y="0" width="21" height="100"/><path d="M10.5 10.5H38A19.5 19.5 0 0 1 38 49.5H10.5" fill="none" stroke-width="21"/><polygon points="24.48 39 49.26 39 68 100 43.22 100"/></g><g transform="translate(741 0)"><polygon points="0 0 24.78 0 52.39 50 27.61 50"/><polygon points="55.22 0 80 0 52.39 50 27.61 50"/><rect x="28.11" y="49" width="23.79" height="51"/></g></g><g transform="translate(0 160)"><g transform="translate(0 0)"><path d="M41.25 11.31A21.2 21.2 0 1 0 41.25 39.69" fill="none" stroke-width="8.6"/></g><g transform="translate(113.3 0)"><circle cx="25.5" cy="25.5" r="21.2" fill="none" stroke-width="8.6"/></g><g transform="translate(234.63 0)"><rect x="0" y="0" width="8.6" height="51"/><rect x="39.34" y="0" width="8.6" height="51"/><polygon points="0 0 10.15 0 29.04 35.7 18.9 35.7"/><polygon points="37.79 0 47.94 0 29.04 35.7 18.9 35.7"/></g><g transform="translate(352.9 0)"><rect x="0" y="0" width="8.6" height="51"/><rect x="39.34" y="0" width="8.6" height="51"/><polygon points="0 0 10.15 0 29.04 35.7 18.9 35.7"/><polygon points="37.79 0 47.94 0 29.04 35.7 18.9 35.7"/></g><g transform="translate(471.16 0)"><path d="M4.3 0V51M0 4.3H30.599999999999998M0 25.5H26.927999999999997M0 46.7H30.599999999999998" fill="none" stroke-width="8.6"/></g><g transform="translate(572.09 0)"><rect x="0" y="0" width="8.6" height="51"/><path d="M4.3 4.3H19.38A11 11 0 0 1 19.38 26.3H4.3" fill="none" stroke-width="8.6"/><polygon points="12.48 22 22.63 22 34.68 51 24.53 51"/></g><g transform="translate(677.1 0)"><path d="M41.25 11.31A21.2 21.2 0 1 0 41.25 39.69" fill="none" stroke-width="8.6"/></g><g transform="translate(790.4 0)"><path d="M4.3 0V51M0 4.3H30.599999999999998M0 25.5H26.927999999999997M0 46.7H30.599999999999998" fill="none" stroke-width="8.6"/></g></g></g></svg></a>
+  <nav class="links" aria-label="Main"><a href="#features" data-i="n1">Features</a><a href="#journey" data-i="n2">How it works</a><a href="#sellers" data-i="n3">Sellers</a><a href="#pricing" data-i="n4">Pricing</a></nav>
+  <span class="sp"></span>
+  <button class="tg" id="lang" type="button" aria-label="Language">EN / বাং</button>
+  <a class="si" href="#" data-i="n5" style="font:600 15px var(--body);text-decoration:none">Sign in</a>
+  <a class="btn coral" href="#cta" data-i="n6">Start free</a>
+</div></header>
+
+<main id="top">
+<section class="story" id="story" data-ch="1">
+  <div class="stick">
+    <div class="copy">
+      <div class="chap" data-n="1"><h1 data-i="h1">Open your shop in an afternoon.</h1><p data-i="p1">Add your products, pick a colour, share the link. No developer, no waiting.</p><div class="row"><a class="btn coral" href="#cta" data-i="n6">Start free</a><a class="btn line" href="#journey" data-i="see">See how it works</a></div></div>
+      <div class="chap" data-n="2"><h1 data-i="h2">An order comes in. So does the money.</h1><p data-i="p2">bKash, Nagad or cash on delivery. The order lands on your list the moment the customer taps pay.</p><div class="row"><a class="btn coral" href="#cta" data-i="n6">Start free</a></div></div>
+      <div class="chap" data-n="3"><h1 data-i="h3">Stock that always adds up.</h1><p data-i="p3">Every sale takes one off the count. When a product runs low, you know before a customer finds out.</p><div class="row"><a class="btn coral" href="#cta" data-i="n6">Start free</a></div></div>
+      <div class="chap" data-n="4"><h1 data-i="h4">The parcel is on its way.</h1><p data-i="p4">Book Pathao or Steadfast in one click. Your customer follows the parcel. You get on with the next order.</p><div class="row"><a class="btn coral" href="#cta" data-i="n6">Start free</a></div></div>
+      <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div class="hint" data-i="scroll">Scroll to follow one order</div>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="scene" id="scene">
+        <div class="floor"></div>
+        <div class="win">
+          <div class="bar"><i></i><i></i><i></i><b>nusrat-looms.eleventory.shop</b></div>
+          <div class="gridp">
+            <div class="tile" style="background:#FFE3DC"><span>Jamdani saree<b>৳2,490</b></span><svg viewBox="0 0 100 100"><path d="M22 28L50 14l28 14-8 58H30z" fill="#BC381F"/><path d="M38 40h24M36 54h28" stroke="#FFE3DC" stroke-width="5" stroke-linecap="round"/></svg><em class="fl">42 LEFT</em></div>
+            <div class="tile" style="background:#DDEDEA"><span>Clay mug<b>৳650</b></span><svg viewBox="0 0 100 100"><path d="M26 30h44v38q0 16-22 16T26 68z" fill="#0B5D59"/><path d="M70 40h10q10 0 10 12t-12 12h-8" fill="none" stroke="#0B5D59" stroke-width="7"/></svg><em class="fl">LOW</em></div>
+            <div class="tile" style="background:#FDEFCB"><span>Canvas sneaker<b>৳1,890</b></span><svg viewBox="0 0 100 100"><path d="M12 64q0-20 22-22l14 8q14 4 36 6 8 2 8 12v4H12z" fill="#0A2E2C"/><path d="M12 72h80" stroke="#F7B538" stroke-width="6"/></svg><em class="fl">18 LEFT</em></div>
+            <div class="tile" style="background:#E5E9F5"><span>Power bank<b>৳1,450</b></span><svg viewBox="0 0 100 100"><rect x="28" y="14" width="44" height="72" rx="10" fill="#33407A"/><rect x="34" y="24" width="32" height="46" rx="4" fill="#E5E9F5"/></svg><em class="fl">3 LEFT</em></div>
+          </div>
+          <div class="addc">Add to cart</div>
+        </div>
+        <div class="phone"><div class="n"><span class="k">bKash</span><b>৳2,490 received</b>Rumana Akter bought Jamdani saree</div><div class="n n2" style="margin-top:10px"><b>New order #20418</b>Ready to pack</div></div>
+        <div class="bars3" id="bars">
+          <div class="b3" style="--h:60;left:0;--c:#F6F9F8"><i class="f"></i><i class="r"></i><i class="t"></i></div>
+          <div class="b3" style="--h:90;left:40px"><i class="f"></i><i class="r"></i><i class="t"></i></div>
+          <div class="b3" style="--h:120;left:80px"><i class="f"></i><i class="r"></i><i class="t"></i></div>
+          <div class="b3" style="--h:150;left:120px"><i class="f"></i><i class="r"></i><i class="t"></i></div>
+          <div class="b3" style="--h:185;left:160px"><i class="f"></i><i class="r"></i><i class="t"></i></div>
+          <div class="b3" style="--h:230;left:200px"><i class="f"></i><i class="r"></i><i class="t"></i></div>
+        </div>
+        <div class="stock">3 left: reorder soon</div>
+        <div class="parcel"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i><i class="e"></i><span class="lab" style="transform:translateZ(58px)">ELV-20418</span></div>
+        <div class="courier">Pathao · arrives tomorrow</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="mq" aria-label="Works with"><div class="track"><span>bKash</span><span>Nagad</span><span>Cash on delivery</span><span>Cards</span><span>Pathao</span><span>Steadfast</span><span>Facebook shops</span><span>WhatsApp orders</span><span>Bangla and English</span><span>bKash</span><span>Nagad</span><span>Cash on delivery</span><span>Cards</span><span>Pathao</span><span>Steadfast</span><span>Facebook shops</span><span>WhatsApp orders</span><span>Bangla and English</span></div></div>
+
+<section class="s" id="features"><div class="wrap">
+  <span class="tag" data-i="t1">Everything a seller needs</span>
+  <h2 data-i="f_h">One place for the shop, the stock and the money.</h2>
+  <p class="lede">Most sellers start with a Facebook page and a notebook. Eleventory keeps the parts that work and replaces the notebook.</p>
+  <div class="bento" id="bento">
+    <article class="bc w3"><h3>A store that looks like yours</h3><p>Pick a colour, add your logo, choose a layout. Every shop gets its own look and its own address.</p><div class="vis sw"><i style="background:#0B5D59"></i><i style="background:#BC381F"></i><i style="background:#33407A"></i><i style="background:#6B3A8C"></i><i style="background:#2F6B2A"></i><i style="background:#F7B538"></i></div></article>
+    <article class="bc w3"><h3>Stock that adds up</h3><p>Every sale takes one off. Set a reorder level and get told before you run out.</p><div class="vis mb"><div><i style="width:78%"></i></div><div><i style="width:34%;background:var(--coral)"></i></div><div><i style="width:56%"></i></div></div></article>
+    <article class="bc"><h3>Orders in one list</h3><p>Facebook, WhatsApp and website orders, side by side.</p><div class="vis chips"><span class="chip">New 14</span><span class="chip s">Packing 9</span><span class="chip">Shipped 22</span></div></article>
+    <article class="bc"><h3>Payments people trust</h3><p>Take bKash, Nagad, cards or cash on delivery.</p><div class="vis chips"><span class="chip kb">bKash</span><span class="chip n">Nagad</span><span class="chip c">COD</span></div></article>
+    <article class="bc"><h3>Couriers in one click</h3><p>Book the parcel, share the tracking link, done.</p><div class="vis tl"><i></i><b></b><i></i><b></b><i></i><b class="o"></b><i class="o"></i></div></article>
+    <article class="bc w4"><h3>Numbers you can read</h3><p>Sales, best sellers, busy hours and where parcels go. No spreadsheet needed.</p><svg class="vis minic" viewBox="0 0 400 80" aria-hidden="true"><path d="M0 62C40 58 60 30 100 40S160 66 200 44 270 14 310 30 370 22 400 8" fill="none" stroke="var(--teal)" stroke-width="3" stroke-linecap="round"/><path d="M0 62C40 58 60 30 100 40S160 66 200 44 270 14 310 30 370 22 400 8V80H0Z" fill="var(--teal)" opacity=".14"/></svg></article>
+    <article class="bc"><h3>Bangla and English</h3><p>Your dashboard and your shop speak both. Switch with one tap.</p><div class="vis chips"><span class="chip">English</span><span class="chip s" style="font-family:var(--bn)">বাংলা</span></div></article>
+    <article class="bc w3"><h3>Your own address</h3><p>Use a domain you own. We add the padlock for free.</p><div class="vis chips"><span class="chip">shop.yourname.com</span></div></article>
+    <article class="bc w3"><h3>Your data stays yours</h3><p>Download everything any time. Leave whenever you like.</p><div class="vis chips"><span class="chip">Export to spreadsheet</span></div></article>
+  </div>
+</div></section>
+
+<section class="s jr" id="journey"><div class="wrap">
+  <span class="tag" data-i="t2">The customer's journey</span>
+  <h2 data-i="j_h">From a post to a parcel at the door.</h2>
+  <p class="lede">Follow one customer. Tap a step to see their screen.</p>
+  <div class="jrg">
+    <div class="steps" id="steps">
+      <button class="step" type="button" aria-pressed="true" data-s="0"><h3><em>1</em>Finds you</h3><p>A Facebook post or a WhatsApp message carries one link to your shop.</p></button>
+      <button class="step" type="button" aria-pressed="false" data-s="1"><h3><em>2</em>Browses</h3><p>Photos, prices and what is left. It loads fast on a phone.</p></button>
+      <button class="step" type="button" aria-pressed="false" data-s="2"><h3><em>3</em>Fills the cart</h3><p>Delivery cost shows before checkout, so there are no surprises.</p></button>
+      <button class="step" type="button" aria-pressed="false" data-s="3"><h3><em>4</em>Pays their way</h3><p>bKash, Nagad, card or cash on delivery.</p></button>
+      <button class="step" type="button" aria-pressed="false" data-s="4"><h3><em>5</em>Follows the parcel</h3><p>Every status change reaches them by SMS or email.</p></button>
+      <button class="step" type="button" aria-pressed="false" data-s="5"><h3><em>6</em>Comes back</h3><p>A thank-you, a review request and a one-tap reorder.</p></button>
+    </div>
+    <div class="phwrap"><div class="ph3" id="ph3">
+      <div class="scr on"><h4>Nusrat Looms</h4><div class="fb"><b>Eid collection is live</b><br>New Jamdani sarees, from ৳2,490. Order here: nusrat-looms.eleventory.shop<div class="big" style="margin-top:10px">Open shop</div></div></div>
+      <div class="scr"><h4>Sarees</h4><div class="pr"><div class="im" style="background:#FFE3DC"></div><div><b>Jamdani cotton</b><br>৳2,490 · 42 left</div></div><div class="pr"><div class="im" style="background:#DDEDEA"></div><div><b>Tant, indigo</b><br>৳1,850 · 17 left</div></div><div class="pr"><div class="im" style="background:#FDEFCB"></div><div><b>Muslin, sunflower</b><br>৳3,200 · 3 left</div></div></div>
+      <div class="scr"><h4>Your cart</h4><div class="pr"><div class="im" style="background:#FFE3DC"></div><div><b>Jamdani cotton</b><br>৳2,490 × 1</div></div><div style="display:flex;justify-content:space-between;margin:10px 4px">Delivery, Dhaka<b>৳70</b></div><div style="display:flex;justify-content:space-between;margin:0 4px;font-size:16px"><b>Total</b><b>৳2,560</b></div><div class="big">Checkout</div></div>
+      <div class="scr"><h4>Pay</h4><div class="pay" style="background:#e87ba4">bKash<span>৳2,560</span></div><div class="pay" style="background:#eb6834">Nagad<span>৳2,560</span></div><div class="pay" style="background:#1baf7a">Cash on delivery<span>৳2,560</span></div><div class="pay" style="background:#2a78d6">Card<span>৳2,560</span></div></div>
+      <div class="scr"><h4>Order #20418</h4><div class="tlv"><div><b>Order placed</b><br>9:41pm</div><div><b>Packed</b><br>10:20pm</div><div><b>Pathao picked up</b><br>Tomorrow, 11am</div><div class="o"><b>Delivered</b><br>Expected Sunday</div></div></div>
+      <div class="scr"><h4>Thank you, Rumana</h4><div class="fb">Your saree arrived on Sunday. How was it?<div style="font-size:22px;margin:8px 0;color:#F7B538">★★★★★</div><div class="big">Order again</div></div></div>
+    </div></div>
+  </div>
+</div></section>
+
+<section class="s" id="sellers"><div class="wrap">
+  <span class="tag" data-i="t3">Built for sellers like you</span>
+  <h2 data-i="v_h">Whatever you sell, the shop fits.</h2>
+  <div class="tabs" id="tabs" role="group" aria-label="Seller type"></div>
+  <div class="vg">
+    <div><h3 id="vt" style="font-size:30px"></h3><ul id="vl"></ul><div class="pick" id="pick"><span>Try a shop colour</span></div></div>
+    <div class="shop" id="shop"><div class="hd"><b id="sn"></b><span>Cart 0</span></div><div class="gr" id="sg"></div></div>
+  </div>
+</div></section>
+
+<section class="s dt" id="dash"><div class="wrap">
+  <span class="tag" data-i="t4">Your dashboard</span>
+  <h2>See what sold before the day ends.</h2>
+  <p class="lede">Sales, stock, orders and customers on one screen. Open the full dashboard design to see every chart.</p>
+  <div class="row2"><a class="btn coral" href="#cta">Start free</a></div>
+  <div class="fr"><div class="frame" id="frame"><div class="scr2">
+    <div class="k"><small>Revenue</small><b>৳5,61,267</b><i>▲ 12.4%</i></div><div class="k"><small>Orders</small><b>1,514</b><i>▲ 8.1%</i></div><div class="k"><small>Conversion</small><b>3.4%</b><i>▲ 0.6%</i></div><div class="k"><small>Average order</small><b>৳1,214</b><i style="color:#B3261E">▼ 2.3%</i></div>
+    <div class="k w2"><small>Revenue, 30 days</small><svg viewBox="0 0 400 120" style="width:100%;height:auto" aria-hidden="true"><path d="M0 90C30 80 50 50 90 62S150 96 190 66 250 24 290 44 350 36 400 14" fill="none" stroke="var(--teal)" stroke-width="3" stroke-linecap="round"/><path d="M0 90C30 80 50 50 90 62S150 96 190 66 250 24 290 44 350 36 400 14V120H0Z" fill="var(--teal)" opacity=".14"/></svg></div>
+    <div class="k w2"><small>Orders by channel</small><svg viewBox="0 0 400 120" style="width:100%;height:auto" aria-hidden="true"><g fill="#2a78d6"><rect x="10" y="50" width="30" height="70" rx="4"/><rect x="60" y="40" width="30" height="80" rx="4"/><rect x="110" y="56" width="30" height="64" rx="4"/><rect x="160" y="30" width="30" height="90" rx="4"/><rect x="210" y="44" width="30" height="76" rx="4"/><rect x="260" y="26" width="30" height="94" rx="4"/><rect x="310" y="36" width="30" height="84" rx="4"/></g><g fill="#eb6834"><rect x="10" y="34" width="30" height="14" rx="4"/><rect x="60" y="22" width="30" height="16" rx="4"/><rect x="110" y="42" width="30" height="12" rx="4"/><rect x="160" y="10" width="30" height="18" rx="4"/><rect x="210" y="28" width="30" height="14" rx="4"/><rect x="260" y="8" width="30" height="16" rx="4"/><rect x="310" y="18" width="30" height="16" rx="4"/></g></svg></div>
+  </div></div></div>
+</div></section>
+
+<section class="s" id="pricing"><div class="wrap">
+  <span class="tag" data-i="t5">Pricing</span>
+  <h2 data-i="pr_h">Start free. Pay when you grow.</h2>
+  <div class="pg">
+    <article class="pc"><h3>Starter</h3><div class="pr">৳0<small> / month</small></div><ul><li>Your own shop address</li><li>Up to 50 products</li><li>Cash on delivery</li><li>Bangla and English</li></ul><a class="btn line" href="#cta">Start free</a></article>
+    <article class="pc hot"><h3>Growth</h3><div class="pr">৳1,499<small> / month</small></div><ul><li>Unlimited products</li><li>bKash, Nagad and cards</li><li>Courier booking</li><li>Full analytics</li><li>Your own domain</li></ul><a class="btn coral" href="#cta">Start free</a></article>
+    <article class="pc"><h3>Scale</h3><div class="pr">৳4,999<small> / month</small></div><ul><li>Team accounts and roles</li><li>Several warehouses</li><li>Custom theme code</li><li>Priority support</li></ul><a class="btn line" href="#cta">Talk to us</a></article>
+  </div>
+  <div class="draft">DRAFT PRICES FOR THIS DESIGN. Real plans and amounts are set in the billing settings.</div>
+</div></section>
+
+<section class="s" style="padding-top:0" id="faq"><div class="wrap" style="max-width:860px">
+  <span class="tag" data-i="t6">Questions sellers ask</span>
+  <h2 data-i="q_h">Straight answers.</h2>
+  <details open><summary>Do I need a developer or a designer?</summary><p>No. You add products, pick a colour and your shop is live. If you want more control later, you can change the theme.</p></details>
+  <details><summary>Can my customers pay with bKash and Nagad?</summary><p>Yes, along with cards and cash on delivery. Each method can be switched on or off in your settings.</p></details>
+  <details><summary>I already sell on Facebook. Do I have to stop?</summary><p>No. Keep posting. Put your shop link in the post, and orders from Facebook, WhatsApp and your shop all land in one list.</p></details>
+  <details><summary>What happens when something is almost out of stock?</summary><p>You set a reorder level for each product. When stock drops to it, you get a message, and the product shows how few are left.</p></details>
+  <details><summary>Can I use my own domain?</summary><p>Yes, on the Growth plan and above. We give you a free certificate so the padlock shows.</p></details>
+  <details><summary>Can I leave and take my data?</summary><p>Yes. Download your products, orders and customers as spreadsheet files whenever you like.</p></details>
+  <details><summary>Is it really free to start?</summary><p>The Starter plan costs nothing and has no time limit. You only pay when you need more than it includes.</p></details>
+</div></section>
+
+<section class="cta" id="cta"><div class="wrap">
+  <span class="tag" style="color:var(--band-muted)">Ready when you are</span>
+  <h2 data-i="c_h">Your first order could be tonight.</h2>
+  <p data-i="c_p">Open a shop in an afternoon. It costs nothing to start.</p>
+  <div class="row2"><a class="btn coral" href="#" data-i="n6">Start free</a><a class="btn line" href="#features">See what is included</a></div>
+  <div class="tally" aria-hidden="true"><i style="height:30px;animation-delay:.0s"></i><i style="height:44px;animation-delay:.05s"></i><i style="height:58px;animation-delay:.1s"></i><i style="height:76px;animation-delay:.15s"></i><i style="height:96px;animation-delay:.2s"></i><i style="height:120px;animation-delay:.25s"></i><i style="height:148px;animation-delay:.3s"></i><i class="hot" style="height:182px;animation-delay:.35s"></i></div>
+</div></section>
+</main>
+<footer><div class="wrap fg"><div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2640 518" role="img" aria-label="Eleventory"><g transform="translate(0 0) scale(1) translate(-281 -281)"><defs><mask id="e5m_2" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1080"><rect width="1080" height="1080" fill="#fff"/><circle cx="540" cy="540" r="209" fill="#000"/><polygon points="540 501 1100 1061 1100 1163 540 603" fill="#000"/></mask><clipPath id="e5c_2"><circle cx="540" cy="540" r="174"/></clipPath></defs><g fill="#F6F9F8"><g mask="url(#e5m_2)"><path d="M336 281H540A259 259 0 0 1 540 799H336A55 55 0 0 1 281 744V336A55 55 0 0 1 336 281Z"/><polygon points="666 766 735 799 652 715"/></g><circle cx="540" cy="540" r="180" fill="none" stroke="#F6F9F8" stroke-width="12"/><g clip-path="url(#e5c_2)"><polygon points="417 575 516 486 516 800 441 800 441 575"/><polygon points="541 528 640 440 640 800 565 800 565 528"/></g></g></g><g transform="translate(621.6 0) scale(2.4549763033175354)" fill="#F6F9F8" stroke="#F6F9F8" stroke-linejoin="miter" stroke-linecap="butt"><g stroke="none"></g><g><g transform="translate(0 0)"><path d="M10.5 0V100M0 10.5H60M0 50H52.8M0 89.5H60" fill="none" stroke-width="21"/></g><g transform="translate(73 0)"><path d="M10.5 0V100M0 89.5H56.00000000000001" fill="none" stroke-width="21"/></g><g transform="translate(142 0)"><path d="M10.5 0V100M0 10.5H60M0 50H52.8M0 89.5H60" fill="none" stroke-width="21"/></g><g transform="translate(215 0)"><polygon points="0 0 24.78 0 53.39 100 28.61 100"/><polygon points="57.22 0 82 0 53.39 100 28.61 100"/></g><g transform="translate(310 0)"><path d="M10.5 0V100M0 10.5H60M0 50H52.8M0 89.5H60" fill="none" stroke-width="21"/></g><g transform="translate(383 0)"><rect x="0" y="0" width="21" height="100"/><rect x="53" y="0" width="21" height="100"/><polygon points="0 0 27.26 0 74 100 46.74 100"/></g><g transform="translate(470 0)"><path d="M0 10.5H64M32 0V100" fill="none" stroke-width="21"/></g><g transform="translate(547 0)"><circle cx="50" cy="50" r="39.5" fill="none" stroke-width="21"/></g><g transform="translate(660 0)"><rect x="0" y="0" width="21" height="100"/><path d="M10.5 10.5H38A19.5 19.5 0 0 1 38 49.5H10.5" fill="none" stroke-width="21"/><polygon points="24.48 39 49.26 39 68 100 43.22 100"/></g><g transform="translate(741 0)"><polygon points="0 0 24.78 0 52.39 50 27.61 50"/><polygon points="55.22 0 80 0 52.39 50 27.61 50"/><rect x="28.11" y="49" width="23.79" height="51"/></g></g><g transform="translate(0 160)"><g transform="translate(0 0)"><path d="M41.25 11.31A21.2 21.2 0 1 0 41.25 39.69" fill="none" stroke-width="8.6"/></g><g transform="translate(113.3 0)"><circle cx="25.5" cy="25.5" r="21.2" fill="none" stroke-width="8.6"/></g><g transform="translate(234.63 0)"><rect x="0" y="0" width="8.6" height="51"/><rect x="39.34" y="0" width="8.6" height="51"/><polygon points="0 0 10.15 0 29.04 35.7 18.9 35.7"/><polygon points="37.79 0 47.94 0 29.04 35.7 18.9 35.7"/></g><g transform="translate(352.9 0)"><rect x="0" y="0" width="8.6" height="51"/><rect x="39.34" y="0" width="8.6" height="51"/><polygon points="0 0 10.15 0 29.04 35.7 18.9 35.7"/><polygon points="37.79 0 47.94 0 29.04 35.7 18.9 35.7"/></g><g transform="translate(471.16 0)"><path d="M4.3 0V51M0 4.3H30.599999999999998M0 25.5H26.927999999999997M0 46.7H30.599999999999998" fill="none" stroke-width="8.6"/></g><g transform="translate(572.09 0)"><rect x="0" y="0" width="8.6" height="51"/><path d="M4.3 4.3H19.38A11 11 0 0 1 19.38 26.3H4.3" fill="none" stroke-width="8.6"/><polygon points="12.48 22 22.63 22 34.68 51 24.53 51"/></g><g transform="translate(677.1 0)"><path d="M41.25 11.31A21.2 21.2 0 1 0 41.25 39.69" fill="none" stroke-width="8.6"/></g><g transform="translate(790.4 0)"><path d="M4.3 0V51M0 4.3H30.599999999999998M0 25.5H26.927999999999997M0 46.7H30.599999999999998" fill="none" stroke-width="8.6"/></g></g></g></svg></div><div><a href="#">Terms</a><a href="#">Privacy</a><a href="#">Help</a><a href="#">Contact</a></div><div>© 2026 Eleventory</div></div></footer>
+<button class="themeb" id="themeBtn" type="button">Dark / light</button>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* ---------- scroll story ---------- */
+const story=$("#story"),scene=$("#scene"),nav=$("#nav"),frame=$("#frame");
+let spin=0;
+function onScroll(){
+  const y=scrollY,top=story.offsetTop,len=story.offsetHeight-innerHeight;
+  const p=reduce?0.5:Math.max(0,Math.min(1,(y-top)/len));
+  story.style.setProperty("--p",p.toFixed(4));
+  const ch=reduce?2:1+Math.min(3,Math.floor(p*4));
+  if(story.dataset.ch!=ch)story.dataset.ch=ch;
+  scene.style.setProperty("--spin",(p*540)+"deg");
+  nav.classList.toggle("solid",y>40);
+  const r=frame.getBoundingClientRect(),dp=Math.max(0,Math.min(1,1-(r.top-innerHeight*.18)/(innerHeight*.6)));
+  frame.style.setProperty("--dp",reduce?1:dp.toFixed(3));
+}
+let tick=false;addEventListener("scroll",()=>{if(!tick){tick=true;requestAnimationFrame(()=>{onScroll();tick=false})}},{passive:true});addEventListener("resize",onScroll);onScroll();
+/* bars as css vars in scene */
+$$(".b3",scene);
+/* ---------- bento tilt ---------- */
+if(!reduce&&matchMedia("(hover:hover)").matches)$$(".bc").forEach(c=>{c.addEventListener("mousemove",e=>{const b=c.getBoundingClientRect(),x=(e.clientX-b.left)/b.width-.5,y=(e.clientY-b.top)/b.height-.5;c.style.transform=`rotateY(${x*9}deg) rotateX(${-y*9}deg) translateZ(8px)`});c.addEventListener("mouseleave",()=>c.style.transform="")});
+/* ---------- journey ---------- */
+const scr=$$(".scr",$("#ph3")),stepsEl=$$(".step");
+function go(i){stepsEl.forEach((s,k)=>s.setAttribute("aria-pressed",k===i));scr.forEach((s,k)=>s.classList.toggle("on",k===i));$("#ph3").style.setProperty("--yy",(i%2?12:-14)+"deg")}
+stepsEl.forEach((s,i)=>s.addEventListener("click",()=>go(i)));
+if("IntersectionObserver"in window){const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting&&matchMedia("(min-width:901px)").matches)go(stepsEl.indexOf(e.target))})},{rootMargin:"-45% 0px -45% 0px"});stepsEl.forEach(s=>io.observe(s))}
+/* ---------- sellers ---------- */
+const TH={saree:c=>`<svg viewBox="0 0 100 100"><path d="M22 28L50 14l28 14-8 58H30z" fill="${c}"/><path d="M38 40h24M36 54h28" stroke="rgba(255,255,255,.7)" stroke-width="5" stroke-linecap="round"/></svg>`,mug:c=>`<svg viewBox="0 0 100 100"><path d="M26 30h44v38q0 16-22 16T26 68z" fill="${c}"/><path d="M70 40h10q10 0 10 12t-12 12h-8" fill="none" stroke="${c}" stroke-width="7"/></svg>`,shoe:c=>`<svg viewBox="0 0 100 100"><path d="M12 64q0-20 22-22l14 8q14 4 36 6 8 2 8 12v4H12z" fill="${c}"/></svg>`,phone:c=>`<svg viewBox="0 0 100 100"><rect x="28" y="14" width="44" height="72" rx="10" fill="${c}"/><rect x="34" y="24" width="32" height="46" rx="4" fill="rgba(255,255,255,.8)"/></svg>`,bag:c=>`<svg viewBox="0 0 100 100"><path d="M24 36h52l4 50H20z" fill="${c}"/><path d="M36 36v-6a14 14 0 0 1 28 0v6" fill="none" stroke="${c}" stroke-width="6"/></svg>`,tea:c=>`<svg viewBox="0 0 100 100"><rect x="30" y="20" width="40" height="64" rx="8" fill="${c}"/><rect x="36" y="34" width="28" height="22" rx="3" fill="rgba(255,255,255,.8)"/></svg>`};
+const SELL=[
+ {k:"Fashion",t:"For clothing and saree sellers",l:["Sizes and colours on one product","Return reasons that show which size runs small","Eid and sale flags in one tap"],shop:"Nusrat Looms",items:[["Jamdani saree","saree","৳2,490","#FFE3DC","#BC381F"],["Tant, indigo","saree","৳1,850","#E5E9F5","#33407A"],["Leather tote","bag","৳3,000","#EEE4F6","#6B3A8C"]]},
+ {k:"Electronics",t:"For gadget and accessory shops",l:["Serial and warranty notes on each sale","Low stock alerts before a launch day","Cash on delivery with an advance option"],shop:"Gadget Ghor",items:[["Power bank","phone","৳1,450","#E5E9F5","#33407A"],["Earbuds","phone","৳2,200","#DDEDEA","#0B5D59"],["Phone case","phone","৳390","#FDEFCB","#0A2E2C"]]},
+ {k:"Food and grocery",t:"For tea, spice and pantry sellers",l:["Weights and pack sizes as options","Expiry notes on each batch","Delivery areas with their own charges"],shop:"Sylhet Pantry",items:[["Sylhet tea","tea","৳300","#E3F2DF","#2F6B2A"],["Mustard oil","mug","৳420","#FDEFCB","#8A5A00"],["Mixed spice","tea","৳180","#FFE3DC","#BC381F"]]},
+ {k:"Handmade",t:"For potters, weavers and makers",l:["Made-to-order items with a lead time","Photos first, because that is what sells","Gift notes at checkout"],shop:"Clay and Cane",items:[["Clay mug","mug","৳650","#DDEDEA","#0B5D59"],["Cane basket","bag","৳900","#FDEFCB","#8A5A00"],["Jute tote","bag","৳540","#E3F2DF","#2F6B2A"]]},
+ {k:"Wholesale",t:"For sellers who supply other shops",l:["Price tiers by quantity","Several warehouses and their stock","Invoices and payment terms"],shop:"Dhaka Bulk Mart",items:[["Cotton shirt, 12 pack","bag","৳9,600","#E5E9F5","#33407A"],["Sneaker, 6 pack","shoe","৳7,800","#FDEFCB","#0A2E2C"],["Mug, 24 pack","mug","৳8,400","#DDEDEA","#0B5D59"]]}
+];
+const COLS=[["#0B5D59","Teal"],["#BC381F","Brick"],["#33407A","Indigo"],["#6B3A8C","Plum"],["#2F6B2A","Leaf"],["#8A5A00","Amber"]];
+let cur=0,col=COLS[0][0];
+function drawSell(){
+  const s=SELL[cur];$("#vt").textContent=s.t;$("#vl").innerHTML=s.l.map(x=>`<li>${x}</li>`).join("");$("#sn").textContent=s.shop;
+  $("#sg").innerHTML=s.items.map(i=>`<div class="it"><div class="im" style="background:${i[3]}">${TH[i[1]](i[4])}</div><div class="m">${i[0]}<b>${i[2]}</b></div></div>`).join("");
+  $$("#tabs button").forEach((b,k)=>b.setAttribute("aria-pressed",k===cur));
+  const sh=$("#shop");sh.style.setProperty("--accent",col);
+}
+$("#tabs").innerHTML=SELL.map((s,i)=>`<button type="button" aria-pressed="${i===0}" data-i2="${i}">${s.k}</button>`).join("");
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b){cur=+b.dataset.i2;drawSell()}});
+$("#pick").insertAdjacentHTML("beforeend",COLS.map((c,i)=>`<button type="button" style="background:${c[0]}" aria-label="${c[1]}" aria-pressed="${i===0}" data-c="${c[0]}"></button>`).join(""));
+$("#pick").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;col=b.dataset.c;$$("#pick button").forEach(x=>x.setAttribute("aria-pressed",x===b));drawSell()});
+drawSell();
+/* ---------- language ---------- */
+const BN={n1:"সুবিধা",n2:"কীভাবে কাজ করে",n3:"বিক্রেতা",n4:"মূল্য",n5:"লগ ইন",n6:"বিনামূল্যে শুরু করুন",see:"কীভাবে কাজ করে দেখুন",scroll:"একটি অর্ডারের পথ দেখুন, স্ক্রল করুন",
+ h1:"এক বিকেলেই খুলুন আপনার দোকান।",p1:"পণ্য যোগ করুন, রং বেছে নিন, লিংক শেয়ার করুন। কোনো ডেভেলপার লাগবে না।",
+ h2:"অর্ডার এলো, টাকাও এলো।",p2:"বিকাশ, নগদ বা ক্যাশ অন ডেলিভারি। ক্রেতা পে করলেই অর্ডার আপনার তালিকায় উঠে যায়।",
+ h3:"স্টক থাকে সবসময় ঠিক।",p3:"প্রতিটি বিক্রিতে গোনা এক কমে। কম পড়লে ক্রেতার আগেই আপনি জানতে পারবেন।",
+ h4:"পার্সেল রওনা হয়েছে।",p4:"এক ক্লিকে পাঠাও বা স্টিডফাস্ট বুক করুন। ক্রেতা পার্সেল অনুসরণ করেন, আপনি পরের অর্ডারে যান।",
+ t1:"বিক্রেতার যা যা দরকার",f_h:"দোকান, স্টক আর টাকা, সব এক জায়গায়।",t2:"ক্রেতার পথ",j_h:"একটি পোস্ট থেকে দরজায় পার্সেল।",t3:"আপনার মতো বিক্রেতাদের জন্য",v_h:"যা-ই বেচুন, দোকান মানিয়ে যায়।",t4:"আপনার ড্যাশবোর্ড",t5:"মূল্য",pr_h:"বিনামূল্যে শুরু করুন। বড় হলে তবেই দিন।",t6:"বিক্রেতাদের প্রশ্ন",q_h:"সোজা উত্তর।",c_h:"আজ রাতেই আসতে পারে আপনার প্রথম অর্ডার।",c_p:"এক বিকেলে দোকান খুলুন। শুরু করতে কোনো খরচ নেই।"};
+const EN={};$$("[data-i]").forEach(e=>EN[e.dataset.i]=EN[e.dataset.i]||e.textContent);
+let bn=false;$("#lang").addEventListener("click",()=>{bn=!bn;document.body.classList.toggle("bn",bn);$("#lang").textContent=bn?"বাং / EN":"EN / বাং";$$("[data-i]").forEach(e=>e.textContent=(bn?BN:EN)[e.dataset.i]||e.textContent)});
+$("#themeBtn").addEventListener("click",()=>{const r=document.documentElement,d=r.getAttribute("data-theme")==="dark"||(r.getAttribute("data-theme")!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches);r.setAttribute("data-theme",d?"light":"dark")});
+</script>

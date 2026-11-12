@@ -1,0 +1,353 @@
+<title>Eleventory Brand Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;600;800&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one long, calm column of bands. Teal is the ground, coral is the single sale-moment accent, sunflower is rare. */
+:root{
+  --canvas:#F1F4F3; --card:#F8FAF9; --ink:#0A2E2C; --muted:#566D6B; --line:#D3DDDB; --line-strong:#6F8683;
+  --teal:#0B5D59; --teal-soft:#DDEDEA; --coral:#FF6A4D; --coral-text:#BC381F; --coral-soft:#FFE3DC;
+  --sun:#F7B538; --sun-soft:#FDEFCB; --on-teal:#F6F9F8; --band:#0A2E2C; --band-text:#F6F9F8; --band-muted:#A9C2BF;
+  --ok:#1E7A4C; --warn:#8A5A00; --bad:#B3261E;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif; --body:"Figtree","Segoe UI",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace; --bn:"Anek Bangla","Noto Sans Bengali","Nirmala UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0A1F1E; --card:#102B29; --ink:#E6EFEE; --muted:#9DB3B0; --line:#1E3F3C; --line-strong:#5E8480;
+  --teal:#4FC3B8; --teal-soft:#14403D; --coral:#FF7D63; --coral-text:#FF8F78; --coral-soft:#3A211C; --sun:#F7B538; --sun-soft:#3A2D0E; --on-teal:#06201F; --band:#071918; --band-text:#E6EFEE; --band-muted:#9DB3B0;
+  --ok:#5FD39A; --warn:#E8B04A; --bad:#FF8A80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --canvas:#0A1F1E; --card:#102B29; --ink:#E6EFEE; --muted:#9DB3B0; --line:#1E3F3C; --line-strong:#5E8480;
+  --teal:#4FC3B8; --teal-soft:#14403D; --coral:#FF7D63; --coral-text:#FF8F78; --coral-soft:#3A211C; --sun:#F7B538; --sun-soft:#3A2D0E; --on-teal:#06201F; --band:#071918; --band-text:#E6EFEE; --band-muted:#9DB3B0;
+  --ok:#5FD39A; --warn:#E8B04A; --bad:#FF8A80; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--canvas);color:var(--ink);font:400 16px/1.6 var(--body);padding-block:0}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+section{padding-block:72px;border-top:1px solid var(--line)}
+section:first-of-type{border-top:0}
+h1,h2,h3{font-family:var(--display);line-height:1.08;text-wrap:balance;margin:0}
+h1{font-size:clamp(40px,7vw,76px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(28px,4vw,42px);font-weight:700;letter-spacing:-.015em;margin-bottom:12px}
+h3{font-size:20px;font-weight:700;margin-bottom:6px}
+p{margin:0 0 14px;max-width:65ch}
+.lede{font-size:19px;color:var(--muted);max-width:60ch}
+.tag{font:600 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:block}
+.grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;min-width:0}
+code,.mono{font-family:var(--mono);font-size:.88em}
+svg{max-width:100%}
+.lg-d{display:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .lg-l{display:none}:root:not([data-theme="light"]) .lg-d{display:block}}
+:root[data-theme="dark"] .lg-l{display:none}:root[data-theme="dark"] .lg-d{display:block}
+.theme{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:5;font:600 13px var(--body);background:var(--ink);color:var(--canvas);border:0;border-radius:999px;padding:10px 16px;cursor:pointer}
+:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+/* hero */
+.hero{padding-block:56px 72px}
+.hero .logo{width:min(600px,100%);margin-bottom:56px}
+.hero .logo svg{width:100%;height:auto;display:block}
+.hero p{margin-top:20px}
+.pill{display:inline-block;border-radius:999px;padding:4px 12px;font:600 13px var(--body)}
+/* logo board */
+.board{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.tile{border-radius:14px;padding:32px;display:flex;align-items:center;justify-content:center;min-height:170px;border:1px solid var(--line)}
+.tile svg{width:100%;max-width:280px;height:auto}
+.tile.t1{background:#F1F4F3}.tile.t2{background:#0A2E2C}.tile.t3{background:#FF6A4D}.tile.t4{background:#F7B538}
+.tile .m{width:110px}
+.cap{font-size:13px;color:var(--muted);margin-top:8px}
+.clear{position:relative;padding:22px;border:1.5px dashed var(--line-strong);border-radius:12px;display:inline-block;background:var(--card);max-width:100%}
+.clear svg{width:300px;max-width:100%;display:block;height:auto}
+.clear i{position:absolute;font:600 11px var(--mono);color:var(--coral-text);font-style:normal}
+.sizes{display:flex;gap:28px;align-items:flex-end;flex-wrap:wrap}
+.sizes div{text-align:center;font:12px var(--mono);color:var(--muted)}
+.sizes .sz{display:block;margin:0 auto 8px}.sizes .sz svg{width:100%;height:auto;display:block}
+.misuse{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.misuse div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;font-size:13px;color:var(--muted)}
+.misuse .mu{width:100%;max-width:120px;margin-bottom:12px;overflow:hidden;border-radius:8px}.misuse .mu svg{width:100%;height:auto;display:block}
+/* colour */
+.sw{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.sw div{border-radius:14px;padding:16px 16px 14px;min-height:150px;display:flex;flex-direction:column;justify-content:flex-end;font-size:13px}
+.sw b{font:700 18px var(--display);display:block}
+.sw span{font-family:var(--mono);font-size:12px;opacity:.9}
+.ratio{display:flex;height:44px;border-radius:10px;overflow:hidden;border:1px solid var(--line);margin:22px 0 8px}
+.ratio span{display:flex;align-items:center;padding-left:10px;font:600 11px var(--mono)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line)}
+th{font:600 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td .chip{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:8px;border:1px solid var(--line)}
+.pass{color:var(--ok);font-weight:700}.fail{color:var(--bad);font-weight:700}
+/* type */
+.spec{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.big{font-size:68px;line-height:1;margin-bottom:10px}
+.bn{font-family:var(--bn)}
+/* band (dark teal section) */
+.band{background:var(--band);color:var(--band-text);border-top:0}
+.band .lede,.band .tag,.band p.m{color:var(--band-muted)}
+.band .card{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14);color:var(--band-text)}
+/* tally motif */
+.tally{display:flex;gap:10px;align-items:flex-end;margin:22px 0}
+.tally i{display:block;width:14px;border-radius:5px;background:var(--band-text);opacity:.9}
+.tally i.hot{background:var(--coral)}
+/* voice */
+.dd{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.say{font-size:19px;font-family:var(--display);font-weight:600;line-height:1.3;margin:0 0 8px}
+.no{color:var(--bad)}.yes{color:var(--ok)}
+.q{border-left:4px solid var(--coral);padding-left:14px;margin:0 0 12px}
+/* UI sample */
+.ui{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.btn{font:600 15px var(--body);border:0;border-radius:10px;padding:11px 18px;cursor:pointer}
+.b1{background:var(--coral);color:#0A2E2C}.b2{background:var(--teal);color:var(--on-teal)}
+.b3{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line-strong)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.inp{width:100%;font:400 15px var(--body);padding:11px 12px;border-radius:10px;border:1.5px solid var(--line-strong);background:var(--canvas);color:var(--ink)}
+label{font:600 13px var(--body);display:block;margin-bottom:6px}
+.st{display:inline-flex;gap:6px;align-items:center;font:600 12px var(--body);padding:4px 10px;border-radius:999px}
+.st:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.s-ok{background:var(--teal-soft);color:var(--ok)}.s-warn{background:var(--sun-soft);color:var(--warn)}.s-bad{background:var(--coral-soft);color:var(--bad)}.s-new{background:var(--teal-soft);color:var(--teal)}
+.kpi{font:800 34px var(--display);letter-spacing:-.02em}
+.delta{font:600 13px var(--mono);color:var(--ok)}
+/* product presentation */
+.shop{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.prod{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.prod .ph{aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;position:relative}
+.prod .ph svg{width:62%;height:auto}
+.prod .pi{padding:14px 16px 16px}
+.prod h4{font:600 15px var(--body);margin:0 0 2px}
+.prod .pr{font:700 16px var(--display)}
+.prod .was{font:400 13px var(--body);color:var(--muted);text-decoration:line-through;margin-left:6px}
+.flag{position:absolute;top:12px;left:12px;font:700 11px var(--mono);letter-spacing:.05em;padding:5px 9px;border-radius:999px;background:var(--coral);color:#0A2E2C}
+.flag.sun{background:var(--sun)}
+.fav{display:flex;gap:22px;align-items:flex-end;flex-wrap:wrap}
+.fav figure{margin:0;text-align:center;font:12px var(--mono);color:var(--muted)}
+.fav img{display:block;margin:0 auto 8px;border-radius:0}
+.tab{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:10px 10px 0 0;padding:9px 14px;font:13px var(--body);width:min(260px,100%)}
+ul.clean{margin:0;padding-left:18px}ul.clean li{margin:6px 0;max-width:62ch}
+footer{padding-block:56px 110px;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:no-preference){.btn{transition:transform .15s}.btn:hover{transform:translateY(-1px)}}
+</style>
+
+<button class="theme" id="themeBtn" type="button">Dark / light</button>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="logo"><div class="lg-l">{{logo-horizontal}}</div><div class="lg-d">{{logo-horizontal-reverse}}</div></div>
+    <span class="tag">Brand guide · v1.0 · Bangladesh first, English and Bangla</span>
+    <h1>The shop you open at 11, and the order that lands at 11:11.</h1>
+    <p class="lede">Eleventory gives a small seller a real store, stock that adds up and customers who can pay the way they already pay. This guide holds the mark, colour, type, voice and the screens that carry them, so every page looks like one company wrote it.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag">The idea</span>
+    <h2>A bubble, a lens and two rising bars.</h2>
+    <p class="lede">The icon holds three ideas in one shape. A speech bubble for the conversations that sell on Facebook and WhatsApp. A magnifier for seeing what is really selling. Two bars that rise and read as eleven. It is a single colour, so it works on a shop sign, a parcel sticker and a phone screen.</p>
+    <div class="grid" style="margin-top:28px">
+      <div class="card"><h3>Who we serve</h3><p>A seller in Dhaka, Chattogram or Sylhet who runs a page on Facebook, ships with Pathao or Steadfast, takes bKash, Nagad or cash on delivery and keeps the stock count in a notebook.</p></div>
+      <div class="card"><h3>What they fear</h3><p>Selling something that is already gone. Chasing a courier for the cash. A store that looks like everyone else's. A tool that needs a developer.</p></div>
+      <div class="card"><h3>What we promise</h3><p>Stock that always matches the shelf. A shop that looks like theirs. Money that arrives where they expect it. Set up in an afternoon, in Bangla or English.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag">Logo</span>
+    <h2>Icon, name, lockups</h2>
+    <p class="lede">The icon follows the supplied artwork exactly. The name is set in a heavy geometric capital, with a quiet spaced line under it. Every file is drawn from plain geometry, so it stays sharp at any size and needs no font to display. Use the horizontal lockup first, the stacked one for square spaces, and the icon alone for avatars, favicons and app icons.</p>
+    <div class="board" style="margin-top:28px">
+      <div><div class="tile t1">{{logo-horizontal}}</div><p class="cap">Horizontal, on Mist. <code>logo-horizontal.svg</code></p></div>
+      <div><div class="tile t2">{{logo-horizontal-reverse}}</div><p class="cap">Horizontal reverse, on Teal Ink. <code>logo-horizontal-reverse.svg</code></p></div>
+      <div><div class="tile t1"><div style="width:190px">{{logo-stacked}}</div></div><p class="cap">Stacked. <code>logo-stacked.svg</code></p></div>
+      <div><div class="tile t2"><div style="width:190px">{{logo-stacked-reverse}}</div></div><p class="cap">Stacked reverse. <code>logo-stacked-reverse.svg</code></p></div>
+      <div><div class="tile t3">{{logo-horizontal}}</div><p class="cap">On Coral, in Teal Ink. Never white on Coral: see contrast below.</p></div>
+      <div><div class="tile t4">{{logo-horizontal}}</div><p class="cap">On Sunflower, in Teal Ink.</p></div>
+      <div><div class="tile t1"><div class="m">{{mark}}</div></div><p class="cap">Icon alone. <code>mark.svg</code></p></div>
+      <div><div class="tile t1"><div class="m">{{mark-tile}}</div></div><p class="cap">Icon tile for avatars and apps. <code>mark-tile.svg</code></p></div>
+    </div>
+
+    <div class="grid" style="margin-top:44px;align-items:start">
+      <div>
+        <h3>Clear space</h3>
+        <p>Keep a quarter of the icon's height empty on every side. Nothing enters it: no text, edge or other logo.</p>
+        <div class="clear"><div class="lg-l">{{logo-horizontal}}</div><div class="lg-d">{{logo-horizontal-reverse}}</div><i style="top:3px;left:50%">¼</i><i style="bottom:3px;left:50%">¼</i><i style="left:5px;top:50%">¼</i><i style="right:5px;top:50%">¼</i></div>
+      </div>
+      <div>
+        <h3>Minimum size</h3>
+        <p>Horizontal lockup: 190px wide on screen, 40mm in print. Below that, use the icon alone. The icon alone: 16px, using the simplified favicon cut under 48px.</p>
+        <div class="sizes">
+          <div><span class="sz" style="width:96px">{{mark-tile}}</span>96</div>
+          <div><span class="sz" style="width:48px">{{mark-tile}}</span>48</div>
+          <div><span class="sz" style="width:32px">{{favicon}}</span>32</div>
+          <div><span class="sz" style="width:16px">{{favicon}}</span>16</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:44px">Do not</h3>
+    <div class="misuse">
+      <div><div class="mu"><div style="transform:scale(1.5,.7)">{{mark-tile}}</div></div>Stretch or squash it.</div>
+      <div><div class="mu"><div style="transform:rotate(-18deg) scale(.8)">{{mark-tile}}</div></div>Rotate or tilt it.</div>
+      <div><div class="mu"><div style="filter:hue-rotate(140deg) saturate(4)">{{mark-tile}}</div></div>Recolour it outside the palette.</div>
+      <div><div class="mu" style="padding:8px"><div style="filter:drop-shadow(5px 5px 4px rgba(0,0,0,.6))">{{mark-tile}}</div></div>Add shadows, glows, gradients or outlines.</div>
+      <div><div class="mu"><div style="background:#F7B538;padding:0">{{mark}}</div></div>Put a light mark on a light ground, or a dark one on a dark ground.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag">Colour</span>
+    <h2>Rich teal, coral, a little sunflower</h2>
+    <p class="lede">Teal does the work. Coral marks the one thing to act on or celebrate on a screen, such as the main button or a sale. Sunflower is the rare third voice, for a highlight or a badge. The canvas is a soft grey with a green cast. It is never pure white and never pure black.</p>
+    <div class="sw" style="margin-top:28px">
+      <div style="background:#0A2E2C;color:#F6F9F8"><b>Teal Ink</b><span>#0A2E2C</span><span>text, tile, bands</span></div>
+      <div style="background:#0B5D59;color:#F6F9F8"><b>Teal 700</b><span>#0B5D59</span><span>links, selected, charts</span></div>
+      <div style="background:#FF6A4D;color:#0A2E2C"><b>Coral</b><span>#FF6A4D</span><span>main action, the sale</span></div>
+      <div style="background:#F7B538;color:#0A2E2C"><b>Sunflower</b><span>#F7B538</span><span>highlight, badge</span></div>
+      <div style="background:#F1F4F3;color:#0A2E2C;border:1px solid var(--line)"><b>Mist</b><span>#F1F4F3</span><span>page canvas</span></div>
+      <div style="background:#F8FAF9;color:#0A2E2C;border:1px solid var(--line)"><b>Card</b><span>#F8FAF9</span><span>raised surface</span></div>
+      <div style="background:#566D6B;color:#F6F9F8"><b>Slate</b><span>#566D6B</span><span>secondary text</span></div>
+      <div style="background:#6F8683;color:#0A2E2C"><b>Edge</b><span>#6F8683</span><span>input and control borders</span></div>
+    </div>
+    <div class="ratio" aria-label="Colour proportions: 70 percent canvas, 18 percent teal, 8 percent ink, 3 percent coral, 1 percent sunflower">
+      <span style="flex:70;background:#F1F4F3;color:#0A2E2C">70 canvas</span><span style="flex:18;background:#0B5D59;color:#F6F9F8">18 teal</span><span style="flex:8;background:#0A2E2C;color:#F6F9F8">8</span><span style="flex:3;background:#FF6A4D"></span><span style="flex:1;background:#F7B538"></span>
+    </div>
+    <p class="cap">Proportion on a typical screen: coral about 3%, sunflower about 1%. If coral shows up in three places at once, none of them is the main action any more.</p>
+
+    <h3 style="margin-top:40px">Contrast, measured</h3>
+    <p>WCAG ratios computed from the exact hex values. Body text needs 4.5, large text and control borders need 3.</p>
+    <div class="tbl"><table>
+      <tr><th>Pair</th><th>Ratio</th><th>Use</th></tr>
+      <tr><td><span class="chip" style="background:#0A2E2C"></span>Teal Ink on Mist</td><td class="pass">13.2 : 1</td><td>Body text</td></tr>
+      <tr><td><span class="chip" style="background:#566D6B"></span>Slate on Mist</td><td class="pass">5.0 : 1</td><td>Secondary text, captions</td></tr>
+      <tr><td><span class="chip" style="background:#0B5D59"></span>Teal 700 on Mist</td><td class="pass">7.0 : 1</td><td>Links, selected states</td></tr>
+      <tr><td><span class="chip" style="background:#F6F9F8"></span>Off-white on Teal 700</td><td class="pass">7.3 : 1</td><td>Teal buttons, bands</td></tr>
+      <tr><td><span class="chip" style="background:#FF6A4D"></span>Teal Ink on Coral</td><td class="pass">5.2 : 1</td><td>Coral buttons: ink text, never white</td></tr>
+      <tr><td><span class="chip" style="background:#FF6A4D"></span>White on Coral</td><td class="fail">2.8 : 1</td><td>Do not use</td></tr>
+      <tr><td><span class="chip" style="background:#BC381F"></span>Coral Text on Mist</td><td class="pass">≥ 4.5 : 1</td><td>Coral as text or an icon on light grounds (#BC381F, not the fill coral)</td></tr>
+      <tr><td><span class="chip" style="background:#F7B538"></span>Teal Ink on Sunflower</td><td class="pass">8.1 : 1</td><td>Badges</td></tr>
+      <tr><td><span class="chip" style="background:#6F8683"></span>Edge on Mist</td><td class="pass">3.5 : 1</td><td>Input and checkbox borders</td></tr>
+      <tr><td><span class="chip" style="background:#1E7A4C"></span>Success / Warning / Danger on Mist</td><td class="pass">4.8 / 5.4 / 5.9</td><td>#1E7A4C, #8A5A00, #B3261E</td></tr>
+      <tr><td><span class="chip" style="background:#102B29"></span>Dark theme: text, muted, teal, coral on #0A1F1E</td><td class="pass">14.6 / 7.8 / 8.0 / 6.8</td><td>Dark values: #E6EFEE, #9DB3B0, #4FC3B8, #FF7D63</td></tr>
+    </table></div>
+    <p class="cap">Status never relies on colour alone: every status carries a dot and a word. Use the toggle at the bottom right to see the dark theme.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag">Type</span>
+    <h2>Three faces and one for Bangla</h2>
+    <p class="lede">Bricolage Grotesque has a slightly quirky, friendly build that suits a shop sign. Figtree keeps screens easy to read. JetBrains Mono sets SKUs, prices in tables and order numbers. Anek Bangla sits beside them wherever the language is Bangla, sized up one step because Bengali letters carry more height.</p>
+    <div class="spec" style="margin-top:28px">
+      <div class="card"><span class="tag">Display · Bricolage Grotesque 700 / 800</span><div class="big" style="font-family:var(--display);font-weight:800">Aa 11:11</div><p>Headlines, big numbers, product names. Tight tracking, never below 20px.</p></div>
+      <div class="card"><span class="tag">Text · Figtree 400 / 600</span><div class="big" style="font-family:var(--body);font-weight:500">Aa 2,490</div><p>Everything you read: forms, tables, paragraphs, menus. 16px minimum on a phone.</p></div>
+      <div class="card"><span class="tag">Data · JetBrains Mono 400 / 600</span><div class="big mono" style="font-size:54px">SKU-0417</div><p>Order numbers, SKUs, API keys, anything where digits must line up.</p></div>
+      <div class="card"><span class="tag">Bangla · Anek Bangla 400 / 600 / 800</span><div class="big bn" style="font-weight:800">আজকের বিক্রি</div><p class="bn" style="font-size:18px">আপনার দোকান, আপনার স্টক, আপনার টাকা। বিকাশ, নগদ আর ক্যাশ অন ডেলিভারি, সবই এক জায়গায়।</p></div>
+    </div>
+    <h3 style="margin-top:40px">Scale</h3>
+    <div class="tbl"><table>
+      <tr><th>Role</th><th>Face</th><th>Desktop / phone</th><th>Sample</th></tr>
+      <tr><td>Display</td><td>Bricolage 800</td><td>76 / 40</td><td style="font:800 28px var(--display)">Sell more</td></tr>
+      <tr><td>H2</td><td>Bricolage 700</td><td>42 / 28</td><td style="font:700 24px var(--display)">Every order, one screen</td></tr>
+      <tr><td>H3</td><td>Bricolage 700</td><td>20 / 20</td><td style="font:700 20px var(--display)">Today</td></tr>
+      <tr><td>Body</td><td>Figtree 400</td><td>16 / 16</td><td>Your store is live.</td></tr>
+      <tr><td>Label</td><td>Figtree 600</td><td>13 / 13</td><td style="font:600 13px var(--body)">Delivery area</td></tr>
+      <tr><td>Data</td><td>JetBrains Mono</td><td>13 / 13</td><td class="mono">#ELV-20418</td></tr>
+    </table></div>
+    <p class="cap">Never Inter or Roboto as display. Bangla body line-height 1.7; English 1.55. Prices use tabular figures. In Bangla UI, price digits may be Bangla or Latin: pick one per shop and keep it everywhere.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <span class="tag">Signature element</span>
+    <h2>The rising bars</h2>
+    <p class="lede">The two bars in the icon are the brand's unit. A row of them, climbing, is the loading indicator, the empty state, the divider before a section and the backdrop of the hero. The last bar is coral and means "this one just sold". Never more than one coral bar in a row.</p>
+    <div class="tally" aria-hidden="true">
+      <i style="height:26px"></i><i style="height:34px"></i><i style="height:42px"></i><i style="height:50px"></i><i style="height:60px"></i><i style="height:70px"></i><i style="height:82px"></i><i style="height:94px"></i><i style="height:108px"></i><i style="height:124px"></i><i class="hot" style="height:142px"></i>
+    </div>
+    <div class="grid">
+      <div class="card"><h3>Hero scroll story</h3><p class="m">The marketing page opens on a quiet row of bars. As you scroll, they climb, the last one turns coral, and the row becomes a store, then an order, then a delivered parcel.</p></div>
+      <div class="card"><h3>Loading</h3><p class="m">The bars rise one after another, the last in coral. Under reduced motion it is a still, full row.</p></div>
+      <div class="card"><h3>Charts and empty states</h3><p class="m">Sales charts use the same bar. A shop with no orders yet shows one flat coral bar waiting for company.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag">Voice</span>
+    <h2>Plain, warm, specific</h2>
+    <p class="lede">We talk the way a good shop assistant does: short sentences, real numbers, the seller's own words. We name things by what a seller recognises. A seller manages <em>orders</em>, not <em>fulfilment workflows</em>.</p>
+    <div class="dd" style="margin-top:28px">
+      <div class="card"><span class="tag yes">Say</span><p class="say">Your first order is in. Packing slip is ready.</p><p class="say">Only 3 left in stock. Reorder before Friday?</p><p class="say">bKash payment received: ৳2,490.</p></div>
+      <div class="card"><span class="tag no">Not</span><p class="say">Unlock a seamless commerce experience.</p><p class="say">Inventory threshold alert triggered.</p><p class="say">Transaction successfully processed!</p></div>
+    </div>
+    <div class="grid" style="margin-top:28px">
+      <div class="card"><h3>Rules for every line of copy</h3><ul class="clean"><li>No em dashes. Use a full stop or a comma.</li><li>No "seamless", "unlock", "empower", "elevate", "revolutionise", "all-in-one".</li><li>No "not X, but Y" framing. Say the thing.</li><li>A button names its result: "Publish store", "Mark as shipped".</li><li>An error says what happened and the fix, without an apology.</li><li>Use real numbers and units: ৳, kg, "2 days", never "fast".</li></ul></div>
+      <div class="card"><h3>Same idea, two languages</h3><div class="q"><p class="say" style="margin:0">Add a product in two minutes.</p></div><div class="q"><p class="say bn" style="margin:0;font-size:21px">দুই মিনিটে একটি পণ্য যোগ করুন।</p></div><p class="cap">Write Bangla from scratch for a Bangla reader. Do not translate English word by word. Keep ৳ before the number, and keep brand and payment names (bKash, Nagad, Pathao) in Latin script.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag">Interface</span>
+    <h2>The parts the dashboard is made from</h2>
+    <p class="lede">The dashboard stays calm so the seller's own products and numbers stand out. One coral action per screen. Teal marks what is selected and what is live.</p>
+    <div class="ui" style="margin-top:28px">
+      <div class="card"><h3>Buttons</h3><div class="row"><button class="btn b1" type="button">Publish store</button><button class="btn b2" type="button">Save</button><button class="btn b3" type="button">Cancel</button></div><p class="cap" style="margin-top:12px">Coral with ink text for the one main action. Teal for the usual save. Outlined for everything else.</p></div>
+      <div class="card"><h3>Field</h3><label for="f1">Product name</label><input class="inp" id="f1" value="Jamdani cotton saree" aria-describedby="f1h"><p class="cap" id="f1h" style="margin:6px 0 0">Shown on your store and on the packing slip.</p></div>
+      <div class="card"><h3>Status</h3><div class="row"><span class="st s-new">New</span><span class="st s-warn">Packing</span><span class="st s-ok">Delivered</span><span class="st s-bad">Out of stock</span></div><p class="cap" style="margin-top:12px">A dot, a word and a colour. Never colour alone.</p></div>
+      <div class="card"><h3>Today</h3><div class="row" style="justify-content:space-between;align-items:flex-end"><div><div class="cap" style="margin:0">Sales today</div><div class="kpi">৳18,420</div></div><span class="delta">▲ 12% vs yesterday</span></div><p class="cap" style="margin-top:12px">Figures use tabular digits. Delta uses the success colour plus an arrow.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag">Product presentation</span>
+    <h2>A store that looks like the seller's</h2>
+    <p class="lede">Each shop gets a tint, so a saree, a mug and a sneaker never share one grey box. The tile gets a soft colour from the product, one price, one flag. Sale flags are coral, new or limited flags are sunflower. These are drawn shapes standing in for seller photography.</p>
+    <div class="shop" style="margin-top:28px">
+      <div class="prod"><div class="ph" style="background:#FFE3DC"><span class="flag">-20%</span><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M22 28 L50 14 L78 28 L70 86 H30 Z" fill="#BC381F"/><path d="M38 40 H62 M36 54 H64 M34 68 H66" stroke="#FFE3DC" stroke-width="4" stroke-linecap="round"/></svg></div><div class="pi"><h4>Jamdani cotton saree</h4><span class="pr">৳2,490</span><span class="was">৳3,100</span></div></div>
+      <div class="prod"><div class="ph" style="background:#DDEDEA"><span class="flag sun">NEW</span><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M26 30 H70 V68 Q70 84 48 84 Q26 84 26 68 Z" fill="#0B5D59"/><path d="M70 40 H80 Q90 40 90 52 Q90 64 78 64 H70" fill="none" stroke="#0B5D59" stroke-width="7"/></svg></div><div class="pi"><h4>Hand-thrown clay mug</h4><span class="pr">৳650</span></div></div>
+      <div class="prod"><div class="ph" style="background:#FDEFCB"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M12 64 Q12 44 34 42 L48 50 Q62 54 84 56 Q92 58 92 68 V72 H12 Z" fill="#0A2E2C"/><path d="M12 72 H92" stroke="#F7B538" stroke-width="6"/></svg></div><div class="pi"><h4>Canvas low sneaker</h4><span class="pr">৳1,890</span></div></div>
+      <div class="prod"><div class="ph" style="background:#E5E9F5"><span class="flag">3 LEFT</span><svg viewBox="0 0 100 100" aria-hidden="true"><rect x="28" y="14" width="44" height="72" rx="10" fill="#33407A"/><rect x="34" y="24" width="32" height="46" rx="4" fill="#E5E9F5"/><circle cx="50" cy="78" r="4" fill="#E5E9F5"/></svg></div><div class="pi"><h4>Slim power bank 10,000</h4><span class="pr">৳1,450</span></div></div>
+    </div>
+    <p class="cap" style="margin-top:14px">Low stock is shown to shoppers only below 5 and always as a real count. The tint changes per product, the type and spacing never do.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="tag">Favicon and app icons</span>
+    <h2>Small sizes, same idea</h2>
+    <p class="lede">Small sizes sit on a tile, drop the thin lens rim and enlarge the bubble so the bars stay readable. Every file is in <code>frontend/public/brand/</code> and is generated by <code>brand/build.js</code> and <code>brand/export.js</code>.</p>
+    <div class="fav" style="margin-top:24px">
+      <figure><img src="{{img:favicon-16.png}}" width="16" height="16" alt="">16<br>favicon-16.png</figure>
+      <figure><img src="{{img:favicon-32.png}}" width="32" height="32" alt="">32<br>favicon-32.png</figure>
+      <figure><img src="{{img:favicon-48.png}}" width="48" height="48" alt="">48<br>favicon-48.png</figure>
+      <figure><img src="{{img:apple-touch-icon.png}}" width="90" height="90" alt="" style="border-radius:20px">180<br>apple-touch-icon.png</figure>
+      <figure><img src="{{img:icon-192.png}}" width="96" height="96" alt="" style="border-radius:22px">192<br>icon-192.png</figure>
+      <figure><img src="{{img:icon-512.png}}" width="128" height="128" alt="" style="border-radius:28px">512<br>icon-512.png</figure>
+    </div>
+    <div style="margin-top:28px"><div class="tab"><img src="{{img:favicon-16.png}}" width="16" height="16" alt="">Eleventory · Dashboard</div><div style="height:6px;background:var(--card);border:1px solid var(--line);border-top:0;width:min(260px,100%)"></div></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Eleventory brand guide, version 1.0. The mark and every file here are original work for this project. Fonts: Bricolage Grotesque, Figtree, JetBrains Mono, Anek Bangla, all under the SIL Open Font License through Google Fonts.</div>
+</footer>
+
+<script>
+(function(){
+  var b=document.getElementById("themeBtn");
+  b.addEventListener("click",function(){
+    var r=document.documentElement;
+    var dark=r.getAttribute("data-theme")==="dark"||(r.getAttribute("data-theme")!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);
+    r.setAttribute("data-theme",dark?"light":"dark");
+  });
+})();
+</script>

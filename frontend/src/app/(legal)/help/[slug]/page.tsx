@@ -33,7 +33,7 @@ export default async function HelpArticlePage({ params }: { params: Promise<{ sl
         ))}
       </ol>
       {article.link ? (
-        <Link href={article.link.href} className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white">
+        <Link href={article.link.href} className="inline-block rounded-md bg-primary px-4 py-2 text-sm font-semibold text-on-primary">
           {article.link.label}
         </Link>
       ) : null}

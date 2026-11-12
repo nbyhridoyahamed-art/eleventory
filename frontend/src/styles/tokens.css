@@ -19,6 +19,9 @@
      usages needed a lighter opacity, fixed at each call site instead of
      the token, to leave the brand blue itself untouched. */
   --color-primary: #2563eb;
+  --color-on-primary: #ffffff;
+  --color-accent: #ffa800;
+  --color-on-accent: #0f172a;
   --color-success: #107435;
   --color-warning: #8d5a06;
   --color-danger: #c21f1f;

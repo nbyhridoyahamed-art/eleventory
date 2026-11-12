@@ -263,7 +263,7 @@ export default function BillingSettingsPage() {
                 key={value}
                 type="button"
                 onClick={() => setCycle(value)}
-                className={`rounded px-3 py-1 ${cycle === value ? "bg-primary text-white" : "text-text-secondary"}`}
+                className={`rounded px-3 py-1 ${cycle === value ? "bg-primary text-on-primary" : "text-text-secondary"}`}
               >
                 {value === "monthly" ? "Monthly" : "Yearly"}
               </button>

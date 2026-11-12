@@ -93,7 +93,7 @@ export function SalesTrendChart({ data, isLoading, currencyCode, title }: SalesT
                 yAxisId="orders"
                 type="monotone"
                 dataKey="orders_count"
-                stroke="var(--color-success)"
+                stroke="var(--color-accent)"
                 strokeWidth={2}
                 strokeDasharray="4 3"
                 dot={false}
@@ -106,7 +106,7 @@ export function SalesTrendChart({ data, isLoading, currencyCode, title }: SalesT
             <span className="inline-block h-2 w-2 rounded-full bg-primary" /> Revenue
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-full bg-success" /> Orders
+            <span className="inline-block h-2 w-2 rounded-full bg-accent" /> Orders
           </span>
         </div>
       </CardContent>

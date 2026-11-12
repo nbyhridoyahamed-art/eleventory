@@ -15,13 +15,13 @@ export function AdminSidebar() {
   return (
     <aside
       className={cn(
-        "sticky top-0 hidden h-screen shrink-0 flex-col self-start border-r border-border bg-surface transition-[width] duration-200 md:flex",
+        "sticky top-0 hidden h-screen shrink-0 flex-col self-start border-r border-white/5 bg-[var(--brand-rail)] transition-[width] duration-200 md:flex",
         sidebarCollapsed ? "w-[72px]" : "w-[260px]",
       )}
     >
-      <div className="flex h-14 items-center gap-2 border-b border-border px-4">
+      <div className="flex h-14 items-center gap-2 border-b border-white/10 px-4">
         <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
-          {sidebarCollapsed ? <LogoMark size={32} /> : <Logo />}
+          {sidebarCollapsed ? <LogoMark size={36} tone="reverse" /> : <Logo iconSize={30} tone="reverse" />}
         </Link>
       </div>
 
@@ -29,11 +29,11 @@ export function AdminSidebar() {
         {sidebarCollapsed ? null : <SidebarNav />}
       </div>
 
-      <div className="border-t border-border p-3">
+      <div className="border-t border-white/10 p-3">
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-center"
+          className="w-full justify-center text-[var(--brand-rail-muted)] hover:bg-white/10 hover:text-white"
           onClick={toggleSidebar}
           aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >

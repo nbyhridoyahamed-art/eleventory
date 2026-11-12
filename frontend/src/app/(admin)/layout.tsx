@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 
 import { useAuthToken } from "@/lib/auth-token";
 import { useCurrentUser } from "@/hooks/use-auth";
+import { brandFontClasses } from "@/lib/brand-fonts";
+import { BrandSurface } from "@/components/shared/brand-surface";
 import { AdminShell } from "@/components/layout/admin-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -43,8 +45,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [mounted, token, isError, router]);
 
   if (!mounted || !token || isLoading) {
-    return <AuthGateSkeleton />;
+    return (
+      <BrandSurface fontClassName={brandFontClasses}>
+        <AuthGateSkeleton />
+      </BrandSurface>
+    );
   }
 
-  return <AdminShell user={user}>{children}</AdminShell>;
+  return (
+    <BrandSurface fontClassName={brandFontClasses}>
+      <AdminShell user={user}>{children}</AdminShell>
+    </BrandSurface>
+  );
 }

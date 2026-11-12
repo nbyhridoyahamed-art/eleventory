@@ -521,7 +521,7 @@ export function ProductForm({
                         {/* eslint-disable-next-line @next/next/no-img-element -- local preview of a chosen file */}
                         <img src={item.url} alt="" className="aspect-square w-full object-cover" />
                         {index === 0 ? (
-                          <span className="absolute left-1 top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-white">
+                          <span className="absolute left-1 top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-on-primary">
                             Primary
                           </span>
                         ) : null}

@@ -57,7 +57,7 @@ export function ProductImageGallery({ productId, images }: { productId: number; 
               <img src={image.url} alt={image.alt_text ?? ""} className="aspect-square w-full object-cover" />
 
               {image.is_primary ? (
-                <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-white">
+                <span className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-on-primary">
                   <Star className="size-3 fill-current" />
                   Primary
                 </span>

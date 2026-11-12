@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Logo } from "@/components/shared/logo";
+import { AuthShell } from "@/components/shared/auth-shell";
 import { useLogin, useResendVerification } from "@/hooks/use-auth";
 import { ApiError } from "@/types/api";
 
@@ -49,13 +49,11 @@ export default function LoginPage() {
   const unverified = login.error instanceof ApiError && login.error.errors?.code?.includes("email_unverified");
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="space-y-3 text-center">
-          <Logo className="justify-center" iconSize={40} textClassName="text-display font-semibold" />
-          <h1 className="text-page-title font-semibold text-text-primary">Sign in to your store</h1>
-          <p className="text-sm text-text-secondary">Manage your ecommerce operations from one place.</p>
-        </div>
+    <AuthShell
+      title="Sign in to your store"
+      subtitle="Manage orders, stock and customers from one place."
+    >
+      <div className="space-y-6">
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {verified === "1" ? (
@@ -123,6 +121,6 @@ export default function LoginPage() {
           </p>
         </form>
       </div>
-    </main>
+    </AuthShell>
   );
 }

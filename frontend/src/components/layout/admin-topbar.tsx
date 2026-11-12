@@ -94,8 +94,8 @@ export function AdminTopbar({ user }: { user?: User }) {
               <Menu />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0">
-            <SheetHeader className="border-b border-border p-4">
+          <SheetContent side="left" className="w-64 border-white/10 bg-[var(--brand-rail)] p-0 text-white [&>button]:text-white">
+            <SheetHeader className="border-b border-white/10 p-4">
               <SheetTitle asChild>
                 <Logo />
               </SheetTitle>
@@ -127,7 +127,7 @@ export function AdminTopbar({ user }: { user?: User }) {
             <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
               <Bell />
               {unreadCount > 0 ? (
-                <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-white">
+                <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-on-primary">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               ) : null}

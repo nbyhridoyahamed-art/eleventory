@@ -1,3 +1,5 @@
+import { brandFontClasses } from "@/lib/brand-fonts";
+import { BrandSurface } from "@/components/shared/brand-surface";
 import Link from "next/link";
 import { Store } from "lucide-react";
 
@@ -8,7 +10,7 @@ export const metadata = { title: "Store unavailable", robots: { index: false, fo
 /** Shown for a store that is suspended, closed or cannot be found. */
 export default function StoreUnavailablePage() {
   return (
-    <div className="flex min-h-screen flex-col bg-background text-text-primary">
+    <BrandSurface fontClassName={brandFontClasses} className="flex flex-col">
       <header className="px-6 py-5 lg:px-16">
         <Logo />
       </header>
@@ -22,12 +24,12 @@ export default function StoreUnavailablePage() {
             The shop you are looking for is closed or temporarily offline. If you were trying to place an order, please
             try again later or contact the shop directly.
           </p>
-          <Link href="/platform" className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-white hover:opacity-90">
+          <Link href="/platform" className="rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-on-primary hover:opacity-90">
             Visit Eleventory
           </Link>
           <p className="text-xs text-text-muted">Are you the owner? Sign in to check your store status.</p>
         </div>
       </main>
-    </div>
+    </BrandSurface>
   );
 }

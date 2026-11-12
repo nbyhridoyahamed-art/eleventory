@@ -96,7 +96,7 @@ export function OnboardingChecklist() {
                         href={step.href}
                         className={
                           isNext
-                            ? "rounded-md bg-primary px-3.5 py-1.5 text-sm font-semibold text-white hover:opacity-90"
+                            ? "rounded-md bg-primary px-3.5 py-1.5 text-sm font-semibold text-on-primary hover:opacity-90"
                             : "rounded-md border border-border px-3.5 py-1.5 text-sm font-semibold text-text-primary hover:bg-background"
                         }
                       >

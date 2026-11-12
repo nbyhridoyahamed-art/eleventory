@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Logo } from "@/components/shared/logo";
+import { AuthShell } from "@/components/shared/auth-shell";
 import { useRegisterStaff, useResendVerification } from "@/hooks/use-auth";
 import { ApiError } from "@/types/api";
 
@@ -43,16 +43,11 @@ export default function RegisterPage() {
   const done = registerStaff.data;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="space-y-3 text-center">
-          <Logo className="justify-center" iconSize={40} textClassName="text-display font-semibold" />
-          <h1 className="text-page-title font-semibold text-text-primary">Create your account</h1>
-          <p className="text-sm text-text-secondary">
-            Sign up for the store dashboard. You will confirm your email address, then an administrator gives you
-            access.
-          </p>
-        </div>
+    <AuthShell
+      title="Create your account"
+      subtitle="Sign up for the store dashboard. You will confirm your email address, then an administrator gives you access."
+    >
+      <div className="space-y-6">
 
         {done ? (
           <div className="space-y-4 rounded-lg border border-border bg-surface p-5 text-center">
@@ -159,6 +154,6 @@ export default function RegisterPage() {
           </form>
         )}
       </div>
-    </main>
+    </AuthShell>
   );
 }

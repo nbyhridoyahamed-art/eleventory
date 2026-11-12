@@ -15,7 +15,7 @@ function Toaster(props: ToasterProps) {
           toast:
             "group toast group-[.toaster]:bg-surface group-[.toaster]:text-text-primary group-[.toaster]:border-border group-[.toaster]:shadow-lg",
           description: "group-[.toast]:text-text-secondary",
-          actionButton: "group-[.toast]:bg-primary group-[.toast]:text-white",
+          actionButton: "group-[.toast]:bg-primary group-[.toast]:text-on-primary",
           cancelButton: "group-[.toast]:bg-border group-[.toast]:text-text-secondary",
         },
       }}
