@@ -10,8 +10,15 @@ FROM node:22-alpine AS build
 WORKDIR /app
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_SITE_URL
+# Multi-store mode: next.config.ts reads these at build time (rewrites), the proxy at run time.
+ARG MULTI_STORE=false
+ARG PLATFORM_HOSTS=
+ARG PLATFORM_LANDING=false
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
     NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
+    MULTI_STORE=$MULTI_STORE \
+    PLATFORM_HOSTS=$PLATFORM_HOSTS \
+    PLATFORM_LANDING=$PLATFORM_LANDING \
     NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
