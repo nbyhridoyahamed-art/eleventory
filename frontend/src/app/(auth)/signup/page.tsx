@@ -80,10 +80,36 @@ export default function SignupPage() {
   const done = signup.data;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
+    <main className="grid min-h-screen bg-background lg:grid-cols-2">
+      <aside className="hidden flex-col justify-between gap-10 bg-slate-900 p-16 text-slate-50 lg:flex">
+        <Logo textClassName="text-xl font-semibold text-slate-50" />
+        <div className="max-w-md space-y-6">
+          <h2 className="text-4xl font-bold leading-tight tracking-tight">Open your store in a few minutes.</h2>
+          <ul className="space-y-4 text-base text-slate-300">
+            {[
+              "14-day free trial, no card needed",
+              "Your own address the moment you sign up",
+              "Cash on delivery and couriers ready to use",
+            ].map((item) => (
+              <li key={item} className="flex gap-3">
+                <Check className="mt-0.5 size-5 shrink-0 text-green-400" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <p className="text-sm text-slate-400">
+          Already selling with Eleventory?{" "}
+          <Link href="/login" className="text-blue-300 hover:underline">
+            Sign in
+          </Link>
+        </p>
+      </aside>
+
+      <div className="flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md space-y-6">
-        <div className="space-y-3 text-center">
-          <Logo className="justify-center" iconSize={40} textClassName="text-display font-semibold" />
+        <div className="space-y-2">
+          <Logo className="lg:hidden" />
           <h1 className="text-page-title font-semibold text-text-primary">Start your online store</h1>
           <p className="text-sm text-text-secondary">
             Create your account and your store in one step. Confirm your email, then add your first products.
@@ -256,6 +282,7 @@ export default function SignupPage() {
             </p>
           </form>
         )}
+      </div>
       </div>
     </main>
   );

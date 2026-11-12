@@ -12,6 +12,10 @@ const TABS = [
   { label: "Users", href: "/dashboard/settings/users", permission: "users.view" },
   { label: "Roles", href: "/dashboard/settings/roles", permission: "roles.view" },
   { label: "Notifications", href: "/dashboard/settings/notifications", permission: "settings.manage" },
+  { label: "Domains", href: "/dashboard/settings/domains", permission: "settings.manage" },
+  { label: "Payments", href: "/dashboard/settings/payments", permission: "settings.manage" },
+  { label: "Billing", href: "/dashboard/settings/billing", permission: "settings.manage" },
+  { label: "Themes", href: "/dashboard/settings/themes", permission: "settings.manage" },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
