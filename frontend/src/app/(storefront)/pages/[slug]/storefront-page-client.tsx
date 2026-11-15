@@ -40,7 +40,14 @@ export function StorefrontPageClient({ slug }: { slug: string }) {
   return (
     <div className="mx-auto max-w-3xl space-y-4 px-4 py-8">
       <h1 className="text-page-title font-semibold text-text-primary">{page.title}</h1>
-      {page.content ? <p className="whitespace-pre-line text-text-secondary">{page.content}</p> : null}
+      {page.content ? (
+        // The API sanitises page HTML; plain-text pages (no tags) keep their line breaks.
+        /<[a-z][\s\S]*>/i.test(page.content) ? (
+          <div className="rich-text-content text-text-secondary" dangerouslySetInnerHTML={{ __html: page.content }} />
+        ) : (
+          <p className="whitespace-pre-line text-text-secondary">{page.content}</p>
+        )
+      ) : null}
     </div>
   );
 }
