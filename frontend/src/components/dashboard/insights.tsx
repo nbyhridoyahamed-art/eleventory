@@ -60,7 +60,7 @@ export function useDashboardInsights(storeId: number | null | undefined, days: n
   });
 }
 
-const PALETTE = ["#2563eb", "#f59e0b", "#16a34a", "#9333ea", "#0ea5e9", "#e11d48", "#64748b"];
+const PALETTE = ["#0B5D59", "#FF6A4D", "#F7B538", "#2a78d6", "#1baf7a", "#e87ba4", "#64748b"];
 
 const PAYMENT_LABELS: Record<string, string> = {
   cod: "Cash on delivery",
@@ -81,12 +81,9 @@ const PIPELINE_LABELS: Record<string, string> = {
 };
 
 const PIPELINE_COLORS: Record<string, string> = {
-  pending_pickup: "#64748b",
-  picked_up: "#0ea5e9",
-  in_transit: "#f59e0b",
-  delivered: "#16a34a",
+  pending_pickup: "#64748b", picked_up: "#2a78d6", in_transit: "#F7B538", delivered: "#1baf7a",
   failed_delivery: "#e11d48",
-  returned_to_seller: "#9333ea",
+  returned_to_seller: "#FF6A4D",
 };
 
 function compact(value: number): string {
@@ -241,7 +238,7 @@ export function DashboardInsightsPanel({ storeId, days }: { storeId: number | nu
                     contentStyle={tooltipStyle}
                     formatter={(value, _name, item) => [`${money(Number(value))} · ${(item.payload as { units: number }).units} sold`, "Revenue"]}
                   />
-                  <Bar dataKey="revenue_amount" fill="#2563eb" radius={[0, 4, 4, 0]} barSize={18} />
+                  <Bar dataKey="revenue_amount" fill="#0B5D59" radius={[0, 4, 4, 0]} barSize={18} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -296,7 +293,7 @@ export function DashboardInsightsPanel({ storeId, days }: { storeId: number | nu
               <Tooltip contentStyle={tooltipStyle} formatter={(value) => [value, "Orders"]} />
               <Bar dataKey="orders" radius={[4, 4, 0, 0]}>
                 {data.orders_by_weekday.map((d) => (
-                  <Cell key={d.day} fill={peakDay && d.day === peakDay.day && d.orders > 0 ? "#f59e0b" : "#2563eb"} />
+                  <Cell key={d.day} fill={peakDay && d.day === peakDay.day && d.orders > 0 ? "#FF6A4D" : "#0B5D59"} />
                 ))}
               </Bar>
             </BarChart>
@@ -311,15 +308,15 @@ export function DashboardInsightsPanel({ storeId, days }: { storeId: number | nu
             <AreaChart data={data.orders_by_hour} margin={{ top: 4, right: 8, bottom: 0, left: -16 }}>
               <defs>
                 <linearGradient id="hourFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#9333ea" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#9333ea" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor="#FF6A4D" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#FF6A4D" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="hour" interval={3} stroke="var(--color-text-muted)" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis allowDecimals={false} stroke="var(--color-text-muted)" fontSize={12} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={tooltipStyle} formatter={(value) => [value, "Orders"]} />
-              <Area type="monotone" dataKey="orders" stroke="#9333ea" strokeWidth={2} fill="url(#hourFill)" />
+              <Area type="monotone" dataKey="orders" stroke="#FF6A4D" strokeWidth={2} fill="url(#hourFill)" />
             </AreaChart>
           </ResponsiveContainer>
         </ChartCard>

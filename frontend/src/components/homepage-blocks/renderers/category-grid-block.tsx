@@ -12,7 +12,7 @@ export function CategoryGridBlock({ settings, categories }: { settings: AutoManu
   return (
     <section className="@container space-y-4">
       <SectionHeading title={settings.heading} />
-      <div className="grid grid-cols-3 border-l border-t border-border bg-surface @xl:grid-cols-4 @4xl:grid-cols-8">
+      <div className="hb-stagger grid grid-cols-3 border-l border-t border-border bg-surface @xl:grid-cols-4 @4xl:grid-cols-8">
         {categories.map((category) => (
           <Link
             key={category.id}
@@ -25,7 +25,7 @@ export function CategoryGridBlock({ settings, categories }: { settings: AutoManu
                 <img
                   src={category.image_url}
                   alt=""
-                  className="max-h-full max-w-full object-contain transition-transform group-hover:scale-110"
+                  className="max-h-full max-w-full object-contain transition-transform duration-300 ease-out motion-safe:group-hover:scale-110"
                 />
               ) : (
                 <Package className="size-6 text-text-muted" />

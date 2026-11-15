@@ -29,7 +29,7 @@ export default function ReportsLayout({ children }: { children: React.ReactNode 
 
       {visibleTabs.length > 0 ? (
         <div className="border-b border-border">
-          <nav aria-label="Report sections" className="flex gap-1">
+          <nav aria-label="Report sections" className="flex gap-1 overflow-x-auto [scrollbar-width:none]">
             {visibleTabs.map((tab) => {
               const isActive = pathname.startsWith(tab.href);
               return (
@@ -37,7 +37,7 @@ export default function ReportsLayout({ children }: { children: React.ReactNode 
                   key={tab.href}
                   href={tab.href}
                   className={cn(
-                    "border-b-2 px-3 py-2 text-sm font-medium transition-colors",
+                    "shrink-0 whitespace-nowrap border-b-2 px-3 py-2 first:pl-0 text-sm font-medium transition-colors",
                     isActive
                       ? "border-primary text-primary"
                       : "border-transparent text-text-secondary hover:text-text-primary",

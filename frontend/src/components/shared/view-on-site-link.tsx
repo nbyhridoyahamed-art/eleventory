@@ -1,6 +1,27 @@
 import { Eye } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useDomains } from "@/hooks/use-domains";
+
+/**
+ * Where this store lives: its primary custom domain, else its free subdomain.
+ * Null when the platform has no per-store addresses (single-store installs), so links stay relative.
+ */
+function useStoreOrigin(): string | null {
+  const { data } = useDomains();
+  if (typeof window === "undefined" || !data) return null;
+
+  const primary = data.domains.find((d) => d.is_primary && d.status === "active")?.domain ?? data.free_address;
+  if (!primary) return null;
+
+  const local = primary.endsWith(".localhost") || primary.endsWith(".test");
+  if (local) {
+    const port = primary.includes(":") ? "" : window.location.port ? `:${window.location.port}` : "";
+    return `http://${primary}${port}`;
+  }
+
+  return `https://${primary}`;
+}
 
 /**
  * "View" button for admin list rows: opens the item's public storefront page in
@@ -20,6 +41,8 @@ export function ViewOnSiteLink({
   /** Names the item for screen readers, e.g. the product name. */
   label: string;
 }) {
+  const origin = useStoreOrigin();
+  const target = origin && href.startsWith("/") ? `${origin}${href}` : href;
   const base =
     "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors";
 
@@ -38,7 +61,7 @@ export function ViewOnSiteLink({
 
   return (
     <a
-      href={href}
+      href={target}
       target="_blank"
       rel="noopener noreferrer"
       aria-label={`View ${label} on the storefront (opens in a new tab)`}

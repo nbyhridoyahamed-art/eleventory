@@ -91,7 +91,7 @@ export function ShopProductCard({
           src={product.primary_image_url}
           alt={product.name}
           loading="lazy"
-          className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+          className="max-h-full max-w-full object-contain transition-transform duration-500 ease-out motion-safe:group-hover:scale-105"
         />
       ) : (
         <Package className="size-10 text-text-muted" />
@@ -126,7 +126,7 @@ export function ShopProductCard({
   }
 
   return (
-    <article className="group flex flex-col bg-surface">
+    <article className="group relative flex flex-col bg-surface motion-safe:transition-[transform,box-shadow] motion-safe:duration-200 motion-safe:ease-out hover:z-10 hover:shadow-lg motion-safe:hover:-translate-y-1 motion-safe:active:translate-y-0 motion-safe:active:scale-[0.99]">
       {image}
       <div className="flex flex-1 flex-col gap-1.5 px-4 pb-4">
         <Link href={href} className="line-clamp-2 min-h-[2.5rem] text-[13px] font-medium text-text-primary hover:text-shop-ink">

@@ -22,9 +22,9 @@ import { useCurrentUser } from "@/hooks/use-auth";
 import { useOrderStatusBreakdown, useSalesTrend } from "@/hooks/use-dashboard";
 import { useOrders } from "@/hooks/use-orders";
 import { formatMoney } from "@/lib/money";
-import { DashboardInsightsPanel } from "@/components/dashboard/insights";
+import { DashboardInsightsPanel, useDashboardInsights } from "@/components/dashboard/insights";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
-import { Sparkline } from "@/components/charts/sparkline";
+import { KpiTile, PaymentMix, VisitorFunnel } from "@/components/dashboard/home-panels";
 import { OrderStatusChart } from "@/components/charts/order-status-chart";
 import { SalesTrendChart } from "@/components/charts/sales-trend-chart";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -123,23 +123,19 @@ export default function DashboardPage() {
     enabled: Boolean(storeId),
   });
 
-  const salesTrend = useSalesTrend(storeId, 14);
+  const [days, setDays] = useState(30);
+  const salesTrend = useSalesTrend(storeId, days);
+  const insights = useDashboardInsights(storeId, days);
   const orderStatusBreakdown = useOrderStatusBreakdown(storeId);
   const recentOrders = useOrders(storeId, { page: 1 });
 
   const canViewOrders = can(user, "orders.view");
 
-  // Headline numbers for the last 14 days, from the same real trend the chart below draws.
   const trend = salesTrend.data ?? [];
-  const revenue14 = trend.reduce((sum, point) => sum + Number(point.revenue_amount), 0);
-  const orders14 = trend.reduce((sum, point) => sum + point.orders_count, 0);
-  const average14 = orders14 > 0 ? revenue14 / orders14 : 0;
-  const kpis = [
-    { label: "Revenue, 14 days", value: formatMoney(revenue14, "BDT"), series: trend.map((p) => Number(p.revenue_amount)) },
-    { label: "Orders, 14 days", value: String(orders14), series: trend.map((p) => p.orders_count) },
-    { label: "Average order", value: formatMoney(average14, "BDT"), series: trend.map((p) => (p.orders_count ? Number(p.revenue_amount) / p.orders_count : 0)) },
-  ];
-  const [days, setDays] = useState(30);
+  const kpiData = insights.data?.kpis;
+  const currency = insights.data?.currency_code ?? "BDT";
+  const vs = `vs previous ${days} days`;
+  const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 
   // Each card names the permission that backs its number — a user who
   // lacks it never sees a card showing a misleading 0 for data it can't
@@ -178,13 +174,37 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-semibold tracking-tight text-text-primary">
-          {user ? `Welcome back, ${user.name.split(" ")[0]}` : "Welcome back"}
-        </h1>
-        <p className="text-sm text-text-secondary">
-          Here&apos;s the current state of your store.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-text-muted">{today}</p>
+          <h1 className="font-display text-3xl font-semibold tracking-tight text-text-primary">
+            {user ? `Welcome back, ${user.name.split(" ")[0]}` : "Welcome back"}
+          </h1>
+          <p className="text-sm text-text-secondary">
+            {canViewOrders && pendingOrders.data
+              ? `${pendingOrders.data} ${pendingOrders.data === 1 ? "order is" : "orders are"} waiting to be packed.`
+              : "Here’s the current state of your store."}
+          </p>
+        </div>
+        {canViewOrders ? (
+          <div className="inline-flex rounded-md border border-border bg-surface p-0.5" role="group" aria-label="Period">
+            {[7, 30, 90].map((option) => (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={days === option}
+                onClick={() => setDays(option)}
+                className={
+                  days === option
+                    ? "rounded px-3 py-1 text-sm font-medium bg-primary text-on-primary"
+                    : "rounded px-3 py-1 text-sm font-medium text-text-secondary hover:text-text-primary"
+                }
+              >
+                {option} days
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <OnboardingChecklist />
@@ -201,54 +221,36 @@ export default function DashboardPage() {
 
       {canViewOrders ? (
         <>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {kpis.map((kpi) =>
-              salesTrend.isLoading ? (
-                <Skeleton key={kpi.label} className="h-32 w-full" />
-              ) : (
-                <Card key={kpi.label}>
-                  <CardContent className="space-y-3 p-5">
-                    <p className="text-sm text-text-secondary">{kpi.label}</p>
-                    <p className="font-display text-3xl font-semibold tracking-tight text-text-primary">{kpi.value}</p>
-                    <Sparkline values={kpi.series} className="w-full" label={`${kpi.label} trend`} />
-                  </CardContent>
-                </Card>
-              ),
-            )}
+          {insights.isLoading || !kpiData ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-40 w-full" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <KpiTile label="Revenue" value={formatMoney(kpiData.revenue.value, currency)} percent={kpiData.revenue.change_percent} series={trend.map((p) => Number(p.revenue_amount))} footnote={vs} />
+              <KpiTile label="Orders" value={kpiData.orders.value.toLocaleString("en-US")} percent={kpiData.orders.change_percent} series={trend.map((p) => p.orders_count)} footnote={vs} />
+              <KpiTile label="Average order" value={formatMoney(kpiData.average_order_value.value, currency)} percent={kpiData.average_order_value.change_percent} series={trend.map((p) => (p.orders_count ? Number(p.revenue_amount) / p.orders_count : 0))} footnote={vs} />
+              <KpiTile label="New customers" value={kpiData.new_customers.value.toLocaleString("en-US")} percent={kpiData.new_customers.change_percent} series={trend.map((p) => p.orders_count)} footnote={vs} />
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <SalesTrendChart data={salesTrend.data} isLoading={salesTrend.isLoading} currencyCode={currency} title={`Sales, last ${days} days`} />
+            </div>
+            <PaymentMix methods={insights.data?.payment_methods ?? []} />
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <SalesTrendChart
-              data={salesTrend.data}
-              isLoading={salesTrend.isLoading}
-              currencyCode="BDT"
-              title="Sales trend (last 14 days)"
-            />
+            {can(user, "analytics.view") ? <VisitorFunnel storeId={storeId} days={days} /> : null}
             <OrderStatusChart data={orderStatusBreakdown.data} isLoading={orderStatusBreakdown.isLoading} />
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <div>
-              <h2 className="text-lg font-semibold text-text-primary">Insights</h2>
-              <p className="text-sm text-text-secondary">How the store is performing, compared with the period before.</p>
-            </div>
-            <div className="inline-flex rounded-md border border-border bg-surface p-0.5" role="group" aria-label="Insight period">
-              {[7, 30, 90].map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  aria-pressed={days === option}
-                  onClick={() => setDays(option)}
-                  className={
-                    days === option
-                      ? "rounded px-3 py-1 text-sm font-medium bg-primary text-on-primary"
-                      : "rounded px-3 py-1 text-sm font-medium text-text-secondary hover:text-text-primary"
-                  }
-                >
-                  {option} days
-                </button>
-              ))}
-            </div>
+          <div className="pt-2">
+            <h2 className="font-display text-xl font-semibold text-text-primary">More detail</h2>
+            <p className="text-sm text-text-secondary">Products, stock, delivery and timing for the same period.</p>
           </div>
 
           <DashboardInsightsPanel storeId={storeId} days={days} />

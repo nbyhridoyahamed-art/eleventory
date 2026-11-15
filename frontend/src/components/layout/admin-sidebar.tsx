@@ -20,13 +20,20 @@ export function AdminSidebar() {
       )}
     >
       <div className="flex h-14 items-center gap-2 border-b border-white/10 px-4">
-        <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
-          {sidebarCollapsed ? <LogoMark size={36} tone="reverse" /> : <Logo iconSize={30} tone="reverse" />}
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 overflow-hidden"
+        >
+          {sidebarCollapsed ? (
+            <LogoMark size={36} tone="reverse" />
+          ) : (
+            <Logo iconSize={30} tone="reverse" />
+          )}
         </Link>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4">
-        {sidebarCollapsed ? null : <SidebarNav />}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <SidebarNav collapsed={sidebarCollapsed} />
       </div>
 
       <div className="border-t border-white/10 p-3">

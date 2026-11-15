@@ -119,19 +119,70 @@
   }
 
   .hb-anim-fade.hb-anim-in {
-    animation: hb-fade 0.5s ease-out forwards;
+    animation: hb-fade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .hb-anim-slide.hb-anim-in {
-    animation: hb-slide 0.5s ease-out forwards;
+    animation: hb-slide 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .hb-anim-scale.hb-anim-in {
-    animation: hb-scale 0.4s ease-out forwards;
+    animation: hb-scale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .hb-anim-reveal.hb-anim-in {
     animation: hb-reveal 0.6s ease-out forwards;
+  }
+
+  /* Cards and tiles inside an animated block rise in one after another (first ten; the rest follow together). */
+  .hb-anim-slide:not(.hb-anim-in) .hb-stagger > *,
+  .hb-anim-scale:not(.hb-anim-in) .hb-stagger > *,
+  .hb-anim-fade:not(.hb-anim-in) .hb-stagger > * {
+    opacity: 0;
+  }
+
+  .hb-anim-in .hb-stagger > * {
+    animation: hb-slide 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .hb-anim-in .hb-stagger > :nth-child(1) {
+    animation-delay: 0ms;
+  }
+
+  .hb-anim-in .hb-stagger > :nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .hb-anim-in .hb-stagger > :nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .hb-anim-in .hb-stagger > :nth-child(4) {
+    animation-delay: 180ms;
+  }
+
+  .hb-anim-in .hb-stagger > :nth-child(5) {
+    animation-delay: 240ms;
+  }
+
+  .hb-anim-in .hb-stagger > :nth-child(6) {
+    animation-delay: 300ms;
+  }
+
+  .hb-anim-in .hb-stagger > :nth-child(7) {
+    animation-delay: 360ms;
+  }
+
+  .hb-anim-in .hb-stagger > :nth-child(8) {
+    animation-delay: 420ms;
+  }
+
+  .hb-anim-in .hb-stagger > :nth-child(9) {
+    animation-delay: 480ms;
+  }
+
+  .hb-anim-in .hb-stagger > :nth-child(10) {
+    animation-delay: 540ms;
   }
 
   @keyframes hb-fade {
